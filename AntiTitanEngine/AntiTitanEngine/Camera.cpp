@@ -195,6 +195,17 @@ void Camera::Walk(float d)//look方向向量上平移，即前后平移
 	mViewDirty = true;
 }
 
+void Camera::Fly(float d) //up方向向量上平移，即上下平移
+{
+	// mPosition += d*mUp
+	XMVECTOR s = XMVectorReplicate(d);
+	XMVECTOR u = XMLoadFloat3(&mUp);
+	XMVECTOR p = XMLoadFloat3(&mPosition);
+	XMStoreFloat3(&mPosition, XMVectorMultiplyAdd(s, u, p));
+
+	mViewDirty = true;
+}
+
 void Camera::Pitch(float angle)
 {
 	// Rotate up and look vector about the right vector.
@@ -245,6 +256,7 @@ void Camera::UpdateViewMatrix()
 		XMStoreFloat3(&mUp, U);
 		XMStoreFloat3(&mLook, L);
 
+		//填观察矩阵
 		mView(0, 0) = mRight.x;
 		mView(1, 0) = mRight.y;
 		mView(2, 0) = mRight.z;

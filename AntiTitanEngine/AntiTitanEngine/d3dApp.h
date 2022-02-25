@@ -1,13 +1,13 @@
 #pragma once
-#include "stdafx.h"
+//#include "stdafx.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
-//#include <crtdbg.h>
+#include <crtdbg.h>
 #endif
 
-//#include "d3dUtil.h"
-//#include "GameTimer.h"
+#include "d3dUtil.h"
+#include "GameTimer.h"
 
 // Link necessary d3d12 libraries.
 #pragma comment(lib,"d3dcompiler.lib")
@@ -86,7 +86,7 @@ protected:
     bool      m4xMsaaState = false;    // 4X MSAA enabled
     UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
-    // Used to keep track of the “delta-time?and game time (?.4).
+    // Used to keep track of the Delta-time?and game time (?.4).
     GameTimer mTimer;
 
     Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
@@ -123,4 +123,3 @@ protected:
     int mClientWidth = 800;
     int mClientHeight = 600;
 };
-

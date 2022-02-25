@@ -53,6 +53,7 @@ public:
 	//将摄像机按距离d左右平移（Strafe）或前后移动（Walk）
 	void Strafe(float distance);//左右平移摄像机
 	void Walk(float distance);//前后推拉摄像机
+	void Fly(float distance);//上下移动摄像机
 
 	//旋转摄像机
 	void Pitch(float angle);//Pitch方向
@@ -81,6 +82,10 @@ private:
 	//观察矩阵和投影矩阵
 	DirectX::XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	DirectX::XMFLOAT4X4 mProj = MathHelper::Identity4x4();
+
+public:
+	//相机移动速度
+	float MoveSpeed=10.0;
 };
 
 #endif // !CAMERA_H

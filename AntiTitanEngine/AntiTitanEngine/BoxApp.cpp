@@ -18,6 +18,7 @@ bool BoxApp::Initialize()
     ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
     mCamera.SetPosition(0.0f, 2.0f, -15.0f);
+    mCamera.MoveSpeed = 50.0;
 
     BuildDescriptorHeaps();
     BuildConstantBuffers();
@@ -41,37 +42,47 @@ void BoxApp::OnResize()
 {
     D3DApp::OnResize();
 
-    //mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+    mCamera.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
 
     // The window resized, so update the aspect ratio and recompute the projection matrix.
-    XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-    XMStoreFloat4x4(&mProj, P);
+    //XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+    //XMStoreFloat4x4(&mProj, P);
 }
 
 void BoxApp::Update(const GameTimer& gt)
 {
-    //OnKeyboardInput(gt);
-    // Convert Spherical to Cartesian coordinates.
-    float x = mRadius * sinf(mPhi) * cosf(mTheta);
-    float z = mRadius * sinf(mPhi) * sinf(mTheta);
-    float y = mRadius * cosf(mPhi);
+    OnKeyboardInput(gt);
 
-    // Build the view matrix.
-    XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
-    XMVECTOR target = XMVectorZero();
-    XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	ObjectConstants objConstants;
 
-    XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
-    XMStoreFloat4x4(&mView, view);
-
-    XMMATRIX world = XMLoadFloat4x4(&mWorld);
-    XMMATRIX proj = XMLoadFloat4x4(&mProj);
-    XMMATRIX worldViewProj = world * view * proj;
-
-    // Update the constant buffer with the latest worldViewProj matrix.
-    ObjectConstants objConstants;
+    auto world = MathHelper::Identity4x4();
+    XMMATRIX worldViewProj = XMLoadFloat4x4(&world) * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
     XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
     mObjectCB->CopyData(0, objConstants);
+    //以下注释掉的为废弃的旋转更新
+    {
+    //// Convert Spherical to Cartesian coordinates.
+    //float x = mRadius * sinf(mPhi) * cosf(mTheta);
+    //float z = mRadius * sinf(mPhi) * sinf(mTheta);
+    //float y = mRadius * cosf(mPhi);
+
+    //// Build the view matrix.
+    //XMVECTOR pos = XMVectorSet(x, y, z, 1.0f);
+    //XMVECTOR target = XMVectorZero();
+    //XMVECTOR up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+    //XMMATRIX view = XMMatrixLookAtLH(pos, target, up);
+    //XMStoreFloat4x4(&mView, view);
+
+    //XMMATRIX world = XMLoadFloat4x4(&mWorld);
+    //XMMATRIX proj = XMLoadFloat4x4(&mProj);
+    //XMMATRIX worldViewProj = world * view * proj;
+
+    //// Update the constant buffer with the latest worldViewProj matrix.
+    //ObjectConstants objConstants;
+    //XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+    //mObjectCB->CopyData(0, objConstants);
+    }
 }
 
 void BoxApp::Draw(const GameTimer& gt)
@@ -109,9 +120,7 @@ void BoxApp::Draw(const GameTimer& gt)
 
     mCommandList->SetGraphicsRootDescriptorTable(0, mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 
-    mCommandList->DrawIndexedInstanced(
-        mBoxGeo->DrawArgs["box"].IndexCount,
-        1, 0, 0, 0);
+    mCommandList->DrawIndexedInstanced(mBoxGeo->DrawArgs["box"].IndexCount, 1, 0, 0, 0);
 
     // Indicate a state transition on the resource usage.
     mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -149,48 +158,48 @@ void BoxApp::OnMouseUp(WPARAM btnState, int x, int y)
 
 void BoxApp::OnMouseMove(WPARAM btnState, int x, int y)
 {
-    //if ((btnState & MK_LBUTTON) != 0) {
-    //    float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-    //    float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+    if ((btnState & MK_RBUTTON) != 0) {
+        float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+        float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
 
-    //    mCamera.Pitch(dy);
-    //    mCamera.Yaw(dx);
-    //}
-
-    //mLastMousePos.x = x;
-    //mLastMousePos.y = y;
-
-    ////以下注释为废弃的相机盯着（0,0,0）绕球壳旋转
-    {
-    if ((btnState & MK_LBUTTON) != 0)
-    {
-        // Make each pixel correspond to a quarter of a degree.
-        float dx = XMConvertToRadians(-0.25f * static_cast<float>(x - mLastMousePos.x));
-        float dy = XMConvertToRadians(-0.25f * static_cast<float>(y - mLastMousePos.y));
-
-        // Update angles based on input to orbit camera around box.
-        mTheta += dx;
-        mPhi += dy;
-
-        // Restrict the angle mPhi.
-        mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
-    }
-    else if ((btnState & MK_RBUTTON) != 0)
-    {
-        // Make each pixel correspond to 0.005 unit in the scene.
-        float dx = 0.01f * static_cast<float>(x - mLastMousePos.x);
-        float dy = 0.01f * static_cast<float>(y - mLastMousePos.y);
-
-        // Update the camera radius based on input.
-        mRadius += dx - dy;
-
-        // Restrict the radius.
-        mRadius = MathHelper::Clamp(mRadius, 3.0f, 500.0f);
+        mCamera.Pitch(dy);
+        mCamera.Yaw(dx);
     }
 
     mLastMousePos.x = x;
     mLastMousePos.y = y;
-}
+
+    ////以下注释为废弃的相机盯着（0,0,0）绕球壳旋转
+//    {
+//    if ((btnState & MK_LBUTTON) != 0)
+//    {
+//        // Make each pixel correspond to a quarter of a degree.
+//        float dx = XMConvertToRadians(-0.25f * static_cast<float>(x - mLastMousePos.x));
+//        float dy = XMConvertToRadians(-0.25f * static_cast<float>(y - mLastMousePos.y));
+//
+//        // Update angles based on input to orbit camera around box.
+//        mTheta += dx;
+//        mPhi += dy;
+//
+//        // Restrict the angle mPhi.
+//        mPhi = MathHelper::Clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
+//    }
+//    else if ((btnState & MK_RBUTTON) != 0)
+//    {
+//        // Make each pixel correspond to 0.005 unit in the scene.
+//        float dx = 0.01f * static_cast<float>(x - mLastMousePos.x);
+//        float dy = 0.01f * static_cast<float>(y - mLastMousePos.y);
+//
+//        // Update the camera radius based on input.
+//        mRadius += dx - dy;
+//
+//        // Restrict the radius.
+//        mRadius = MathHelper::Clamp(mRadius, 3.0f, 500.0f);
+//    }
+//
+//    mLastMousePos.x = x;
+//    mLastMousePos.y = y;
+//}
 }
 
 void BoxApp::BuildDescriptorHeaps()
@@ -401,9 +410,9 @@ void BoxApp::BuildPSO()
     psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
     psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
     psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+    psoDesc.RasterizerState.FrontCounterClockwise = true;
     psoDesc.SampleMask = UINT_MAX;
     psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-    psoDesc.RasterizerState.FrontCounterClockwise = true;
     psoDesc.NumRenderTargets = 1;
     psoDesc.RTVFormats[0] = mBackBufferFormat;
     psoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
@@ -416,21 +425,29 @@ void BoxApp::OnKeyboardInput(const GameTimer&gt) {
 
     const float dt = gt.DeltaTime();
 
-    if (GetAsyncKeyState('w') & 0x8000){
-        mCamera.Walk(10.0f * dt);
+    if (GetAsyncKeyState('W') & 0x8000){
+        mCamera.Walk(mCamera.MoveSpeed * dt);
     }
 
 	if (GetAsyncKeyState('S') & 0x8000){
-		mCamera.Walk(-10.0f * dt);
+		mCamera.Walk(-(mCamera.MoveSpeed) * dt);
     }
 
 	if (GetAsyncKeyState('A') & 0x8000){
-		mCamera.Strafe(-10.0f * dt);
+		mCamera.Strafe(-(mCamera.MoveSpeed) * dt);
     }
 
 	if (GetAsyncKeyState('D') & 0x8000){
-		mCamera.Strafe(10.0f * dt);
+		mCamera.Strafe(mCamera.MoveSpeed * dt);
     }
+
+	if (GetAsyncKeyState('Q') & 0x8000) {
+		mCamera.Fly(-(mCamera.MoveSpeed) * dt);
+	}
+
+	if (GetAsyncKeyState('E') & 0x8000) {
+		mCamera.Fly(mCamera.MoveSpeed * dt);
+	}
 
 	mCamera.UpdateViewMatrix();
 }

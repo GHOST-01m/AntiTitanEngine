@@ -1,6 +1,4 @@
 
-#include "stdafx.h"
-
 #ifndef GAMETIMER_H
 #define GAMETIMER_H
 
