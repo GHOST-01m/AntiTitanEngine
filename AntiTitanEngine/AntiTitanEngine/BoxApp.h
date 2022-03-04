@@ -2,6 +2,8 @@
 #include "stdafx.h"
 #include "StaticMesh.h"
 #include "Camera.h"
+#include "MeshGeometry.h"
+#include "WindowsApp.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -11,6 +13,7 @@ struct Vertex
 {
 	XMFLOAT3 Pos;
 	XMFLOAT4 Color;
+	XMFLOAT4 Normal;
 
 	Vertex SetValueFromFVector(FVector& a) {
 		Pos.x = a.X;
@@ -20,10 +23,11 @@ struct Vertex
 	}
 };
 
-struct ObjectConstants
-{
-	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
-};
+//struct ObjectConstants
+//{
+//	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
+//	glm::mat4 WorldViewProjMat4 = glm::mat4(1.0f);
+//};
 
 class BoxApp : public D3DApp
 {

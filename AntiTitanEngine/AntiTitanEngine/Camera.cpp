@@ -5,7 +5,7 @@ using namespace DirectX;
 
 Camera::Camera()
 {
-	SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 1000.0f);
+	SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 100000.0f);
 }
 
 Camera::~Camera()
@@ -173,6 +173,13 @@ XMFLOAT4X4 Camera::GetProj4x4f()const
 	return mProj;
 }
 
+glm::mat4 Camera::GetViewMat4()const {//直接给了单位矩阵，不确定对不对
+	return mViewMat4;
+};
+glm::mat4 Camera::GetProjMat4()const {//直接给了单位矩阵，不确定对不对
+	return mProjMat4;
+};
+
 void Camera::Strafe(float d)//right方向向量上平移，即左右平移
 {
 	// mPosition += d*mRight
@@ -222,7 +229,7 @@ void Camera::Yaw(float angle)
 {
 	// Rotate the basis vectors about the world y-axis.
 
-	XMMATRIX R = XMMatrixRotationY(angle);
+	XMMATRIX R = XMMatrixRotationZ(angle);
 
 	XMStoreFloat3(&mRight, XMVector3TransformNormal(XMLoadFloat3(&mRight), R));
 	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
@@ -230,6 +237,18 @@ void Camera::Yaw(float angle)
 
 	mViewDirty = true;
 }
+
+void Camera::Roll(float angle) {
+
+	XMMATRIX R = XMMatrixRotationY(angle);
+
+	XMStoreFloat3(&mRight, XMVector3TransformNormal(XMLoadFloat3(&mRight), R));
+	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
+	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
+
+	mViewDirty = true;
+};//Roll方向
+
 
 void Camera::UpdateViewMatrix()
 {

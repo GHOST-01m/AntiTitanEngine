@@ -1,8 +1,9 @@
 #include "stdafx.h"
-
 void StaticMesh::SetStaticMeshFromBat(const std::string& StaticMeshPath) {
+
 	std::ifstream BatFile(StaticMeshPath, std::ios::in | std::ios::binary);
 	int32_t DataLength;
+
 	BatFile.read((char*)&DataLength, sizeof(int32_t));//Mesh名字长度
 	MeshInfo.MeshName.resize(DataLength);
 	BatFile.read((char*)MeshInfo.MeshName.data(), sizeof(char)*DataLength);//MeshName值
@@ -18,10 +19,13 @@ void StaticMesh::SetStaticMeshFromBat(const std::string& StaticMeshPath) {
 	MeshInfo.MeshIndexInfo.resize(DataLength);
 	BatFile.read((char*)MeshInfo.MeshIndexInfo.data(), sizeof(int32_t)*DataLength);//Mesh索引
 
+	BatFile.read((char*)&DataLength, sizeof(int32_t));//MeshNormal长度
+	MeshInfo.MeshVertexNormalInfo.resize(DataLength);
+	BatFile.read((char*)MeshInfo.MeshVertexNormalInfo.data(), sizeof(FVector) * DataLength);//MeshNormal
 
 	BatFile.close();
 }
 
-void StaticMesh::BuildStaticMeshGeometry() {
-
+std::string StaticMesh::getMeshName() {
+	return MeshInfo.MeshName;
 }

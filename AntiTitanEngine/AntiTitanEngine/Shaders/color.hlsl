@@ -13,6 +13,7 @@ struct VertexIn
 {
 	float3 PosL  : POSITION;
     float4 Color : COLOR;
+	float4 Normal: NORMAL;
 };
 
 struct VertexOut
@@ -29,7 +30,7 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 	
 	// Just pass vertex color into the pixel shader.
-    vout.Color = vin.Color;
+    vout.Color = (vin.Normal*0.5f+0.5f);
     
     return vout;
 }

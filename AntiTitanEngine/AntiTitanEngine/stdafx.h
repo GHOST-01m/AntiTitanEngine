@@ -49,7 +49,7 @@
 #include <Windows.h>
 #include <DirectXMath.h>
 #include <cstdint>
-
+#include <WindowsX.h>
 
 #include "d3dApp.h"
 #include "d3dUtil.h"
@@ -59,12 +59,16 @@
 #include "BoxApp.h"
 #include "StaticMesh.h"
 #include "Camera.h"
-#include "Window.h"
-
-
+#include "MeshGeometry.h"
+#include "App.h"
+#include "WindowsApp.h"
+#include "ActorsInfo.h"
 
 
 
 #include "iostream"
 #include <string.h>
 #include "vector"
+#include "set"
+#include "map"
+#include "glm/glm/gtx/quaternion.hpp"

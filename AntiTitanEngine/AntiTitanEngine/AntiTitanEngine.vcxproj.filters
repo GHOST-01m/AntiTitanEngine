@@ -19,30 +19,24 @@
     <Filter Include="Source Files\D3D">
       <UniqueIdentifier>{042ff2d2-d2e3-402c-9db7-3670c6abcdd6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Window">
-      <UniqueIdentifier>{f199516b-5181-438d-9d36-9e96bc6ab85a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Window">
-      <UniqueIdentifier>{f75e230e-42b8-457f-a185-53e356d95d96}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\APP">
       <UniqueIdentifier>{67988997-be63-4711-aac2-0b94ba4add78}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\APP">
       <UniqueIdentifier>{b63604f6-b797-4da6-b595-a6a05c99f407}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ObsoleteD3DApp">
+      <UniqueIdentifier>{cb5f6fef-b31a-4fb7-8024-792eda9ed060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ObsoleteD3DApp">
+      <UniqueIdentifier>{fe9b3927-cea1-4743-a1db-72328a0464b6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="d3dApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StaticMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BoxApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="d3dUtil.h">
@@ -63,26 +57,26 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Header Files\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsWindow.h">
-      <Filter>Header Files\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="APP.h">
+    <ClInclude Include="App.h">
       <Filter>Header Files\APP</Filter>
     </ClInclude>
     <ClInclude Include="WindowsApp.h">
       <Filter>Header Files\APP</Filter>
     </ClInclude>
+    <ClInclude Include="d3dApp.h">
+      <Filter>Header Files\ObsoleteD3DApp</Filter>
+    </ClInclude>
+    <ClInclude Include="BoxApp.h">
+      <Filter>Header Files\ObsoleteD3DApp</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshGeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ActorsInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="d3dApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BoxApp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -95,9 +89,6 @@
     <ClCompile Include="d3dUtil.cpp">
       <Filter>Source Files\D3D</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Common\DDSTextureLoader.cpp">
-      <Filter>Source Files\D3D</Filter>
-    </ClCompile>
     <ClCompile Include="GameTimer.cpp">
       <Filter>Source Files\D3D</Filter>
     </ClCompile>
@@ -107,14 +98,23 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>Source Files\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsWindow.cpp">
-      <Filter>Source Files\Window</Filter>
-    </ClCompile>
     <ClCompile Include="WindowsApp.cpp">
       <Filter>Source Files\APP</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <Filter>Source Files\APP</Filter>
+    </ClCompile>
+    <ClCompile Include="BoxApp.cpp">
+      <Filter>Source Files\ObsoleteD3DApp</Filter>
+    </ClCompile>
+    <ClCompile Include="d3dApp.cpp">
+      <Filter>Source Files\ObsoleteD3DApp</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshGeometry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorsInfo.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

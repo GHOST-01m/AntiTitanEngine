@@ -25,25 +25,25 @@ protected:
 
 public:
 
-    static D3DApp* GetApp();
+    static D3DApp* GetApp();//非Windows
 
     HINSTANCE AppInst()const;
     HWND      MainWnd()const;
-    float     AspectRatio()const;
+    float     AspectRatio()const;//非Windows
 
-    bool Get4xMsaaState()const;
-    void Set4xMsaaState(bool value);
+    bool Get4xMsaaState()const;//非Windows
+    void Set4xMsaaState(bool value);//非Windows
 
-    int Run();
+    int Run();//设置成虚函数
 
-    virtual bool Initialize();
+    virtual bool Initialize();//包含了Windows,设置为虚函数
     virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
-    virtual void CreateRtvAndDsvDescriptorHeaps();
-    virtual void OnResize();
-    virtual void Update(const GameTimer& gt) = 0;
-    virtual void Draw(const GameTimer& gt) = 0;
+    virtual void CreateRtvAndDsvDescriptorHeaps();//非Windows
+    virtual void OnResize();//非Windows
+    virtual void Update(const GameTimer& gt) = 0;//非Windows
+    virtual void Draw(const GameTimer& gt) = 0;//非Windows
 
     // Convenience overrides for handling mouse input.
     virtual void OnMouseDown(WPARAM btnState, int x, int y) { }
@@ -54,21 +54,22 @@ protected:
 protected:
 
     bool InitMainWindow();
-    bool InitDirect3D();
-    void CreateCommandObjects();
-    void CreateSwapChain();
+    bool InitDirect3D();//非Windows
+    void CreateCommandObjects();//非Windows
+	void CreateSwapChain();//非Windows，但是内部swapchain用到了Windows的HWND
 
-    void FlushCommandQueue();
 
-    ID3D12Resource* CurrentBackBuffer()const;
-    D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
-    D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const;
+    void FlushCommandQueue();//非Windows
 
-    void CalculateFrameStats();
+    ID3D12Resource* CurrentBackBuffer()const;//非Windows
+    D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;//非Windows
+    D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const;//非Windows
+
+    void CalculateFrameStats();//窗口上面变动的fps和mspf
 public:
-    void LogAdapters();
-    void LogAdapterOutputs(IDXGIAdapter* adapter);
-    void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
+    void LogAdapters();//非Windows
+    void LogAdapterOutputs(IDXGIAdapter* adapter);//非Windows
+    void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);//非Windows
 
 protected:
 

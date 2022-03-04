@@ -10,6 +10,22 @@ struct FVector
 	float X;
 	float Y;
 	float Z;
+
+	operator XMFLOAT3() const {
+		return { X,Y,Z };
+	}
+};
+struct FVector4
+{
+	float X;
+	float Y;
+	float Z;
+	float W;
+
+	operator XMFLOAT4() const {
+		return { X,Y,Z,W };
+	}
+
 };
 
 struct StaticMeshInfo
@@ -21,7 +37,7 @@ public:
 	int MeshTrianglesNum;
 	std::vector<FVector> MeshVertexInfo;
 	std::vector<int32_t> MeshIndexInfo;
-
+	std::vector<FVector4> MeshVertexNormalInfo;
 };
 
 class StaticMesh 
@@ -32,5 +48,7 @@ public:
 
 public:
 	void SetStaticMeshFromBat(const std::string& filepath);
-	void BuildStaticMeshGeometry();
+	void SetNull();
+public:
+	std::string getMeshName();
 };
