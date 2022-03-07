@@ -22,6 +22,7 @@
 #include "d3dx12.h"
 #include "Common/DDSTextureLoader.h"
 #include "MathHelper.h"
+#include "Renderer.h"
 
 //#include "stdafx.h"
 
@@ -107,6 +108,8 @@ protected:
 protected:
 	bool      m4xMsaaState = false;    // 4X MSAA enabled
 	UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
+public:
+	Renderer mRenderer;
 
 protected:
 

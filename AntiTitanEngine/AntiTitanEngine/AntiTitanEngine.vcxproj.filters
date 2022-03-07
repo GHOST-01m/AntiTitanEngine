@@ -31,6 +31,21 @@
     <Filter Include="Source Files\ObsoleteD3DApp">
       <UniqueIdentifier>{fe9b3927-cea1-4743-a1db-72328a0464b6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Launch">
+      <UniqueIdentifier>{a4641541-5ac5-4c49-a17d-187e890a54d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Launch">
+      <UniqueIdentifier>{be8f2e74-755e-4f29-ae06-4ef807b8121b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Launch\Windows">
+      <UniqueIdentifier>{6e7e9b4a-35b1-41f5-b304-8f78e2455675}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine">
+      <UniqueIdentifier>{150b1940-a904-4c5e-85c6-e31c195e1f49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{45ecbb29-f53f-4319-913d-144a05b50dad}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -75,6 +90,21 @@
     <ClInclude Include="ActorsInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Launch.h">
+      <Filter>Header Files\Launch</Filter>
+    </ClInclude>
+    <ClInclude Include="Asset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -115,6 +145,24 @@
     </ClCompile>
     <ClCompile Include="ActorsInfo.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Launch.cpp">
+      <Filter>Source Files\Launch</Filter>
+    </ClCompile>
+    <ClCompile Include="LaunchWindows.cpp">
+      <Filter>Source Files\Launch\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Asset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

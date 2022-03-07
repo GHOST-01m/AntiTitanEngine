@@ -63,7 +63,7 @@
 #include "App.h"
 #include "WindowsApp.h"
 #include "ActorsInfo.h"
-
+#include "Asset.h"
 
 
 #include "iostream"
@@ -72,3 +72,4 @@
 #include "set"
 #include "map"
 #include "glm/glm/gtx/quaternion.hpp"
+#include "glm/glm/gtc/type_ptr.hpp"

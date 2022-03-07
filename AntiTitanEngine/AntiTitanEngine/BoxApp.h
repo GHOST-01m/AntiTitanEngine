@@ -23,12 +23,6 @@ struct Vertex
 	}
 };
 
-//struct ObjectConstants
-//{
-//	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
-//	glm::mat4 WorldViewProjMat4 = glm::mat4(1.0f);
-//};
-
 class BoxApp : public D3DApp
 {
 public:

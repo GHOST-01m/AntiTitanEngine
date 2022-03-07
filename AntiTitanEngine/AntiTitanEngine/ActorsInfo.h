@@ -61,7 +61,9 @@ public:
 	void SetSceneActorsInfoFromBat(const std::string& filepath);
 
 	int Size() {
-		return ActorNameArray.size();
+		int size;
+		size = ActorNameArray.size();
+		return size;
 	}
 };
 

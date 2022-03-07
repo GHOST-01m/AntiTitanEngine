@@ -86,15 +86,13 @@ bool WindowsApp::Initialize() {
 
 	mCamera.SetPosition(300.0f, -3000.0f, 1000.0f);
 	mCamera.MoveSpeed = 500.0;
-	//mCamera.Roll(90.0f);
-	MapActor.SetSceneActorsInfoFromBat("MapActorInfo/MapActorInfo.bat");
-	uploadBuffer.resize(MapActor.Size());
 
+	mAsset.LoadExternalMapActor("MapActorInfo/MapActorInfo.bat");//要先从外部导入地图数据才能绘制
 	BuildDescriptorHeaps();
-	//BuildConstantBuffers();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	BuildBoxGeometry();
+	mAsset.LoadAsset(md3dDevice,mCommandList);
+
 	BuildPSO();
 
 	// Execute the initialization commands.
@@ -119,25 +117,25 @@ void WindowsApp::Update(const GameTimer& gt) {
 
 	ObjectConstants objConstants;
 
-	for (int i =0;i<MapActor.Size();i++)
+	for (int i =0;i<mAsset.MapActor.Size();i++)
 	{
 		//auto world = MathHelper::Identity4x4();
 		auto location=XMMatrixTranslation(
-			MapActor.ActorsTransformArray[i].translation.x,
-			MapActor.ActorsTransformArray[i].translation.y,
-			MapActor.ActorsTransformArray[i].translation.z
+			mAsset.MapActor.ActorsTransformArray[i].translation.x,
+			mAsset.MapActor.ActorsTransformArray[i].translation.y,
+			mAsset.MapActor.ActorsTransformArray[i].translation.z
 			);
 		auto Scale = XMMatrixScaling(
-			MapActor.ActorsTransformArray[i].scale3D.x,
-			MapActor.ActorsTransformArray[i].scale3D.y,
-			MapActor.ActorsTransformArray[i].scale3D.z
+			mAsset.MapActor.ActorsTransformArray[i].scale3D.x,
+			mAsset.MapActor.ActorsTransformArray[i].scale3D.y,
+			mAsset.MapActor.ActorsTransformArray[i].scale3D.z
 		);
 
 		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
-				MapActor.ActorsQuatArray[i].X,
-				MapActor.ActorsQuatArray[i].Y,
-				MapActor.ActorsQuatArray[i].Z,
-				MapActor.ActorsQuatArray[i].W
+				mAsset.MapActor.ActorsQuatArray[i].X,
+				mAsset.MapActor.ActorsQuatArray[i].Y,
+				mAsset.MapActor.ActorsQuatArray[i].Z,
+				mAsset.MapActor.ActorsQuatArray[i].W
 			} } };
 		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
 
@@ -147,24 +145,23 @@ void WindowsApp::Update(const GameTimer& gt) {
 		//	MapActor.ActorsTransformArray[i].rotation.Roll 
 		//);//直接用虚幻的角度是不对的
 
-		/*Glm库的方法，暂时不用，改掉的工程量有点大*/
-		glm::mat4 translateMat4 = glm::translate(glm::mat4(1.f), glm::vec3(
-			MapActor.ActorsTransformArray[i].translation.x, 
-			MapActor.ActorsTransformArray[i].translation.y,
-			MapActor.ActorsTransformArray[i].translation.z
+		glm::mat4 translateMat4 = glm::translate(glm::identity<glm::mat4>(), glm::vec3(
+			mAsset.MapActor.ActorsTransformArray[i].translation.x,
+			mAsset.MapActor.ActorsTransformArray[i].translation.y,
+			mAsset.MapActor.ActorsTransformArray[i].translation.z
 		));
 
-		glm::mat4 scaleMat4 = glm::scale(glm::mat4(1.f), glm::vec3(
-			MapActor.ActorsTransformArray[i].scale3D.x,
-			MapActor.ActorsTransformArray[i].scale3D.y,
-			MapActor.ActorsTransformArray[i].scale3D.z
+		glm::mat4 scaleMat4 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(
+			mAsset.MapActor.ActorsTransformArray[i].scale3D.x,
+			mAsset.MapActor.ActorsTransformArray[i].scale3D.y,
+			mAsset.MapActor.ActorsTransformArray[i].scale3D.z
 		));
 
 		glm::quat rotationQuat(
-			MapActor.ActorsQuatArray[i].X,
-			MapActor.ActorsQuatArray[i].Y,
-			MapActor.ActorsQuatArray[i].Z,
-			MapActor.ActorsQuatArray[i].W
+			mAsset.MapActor.ActorsQuatArray[i].X,
+			mAsset.MapActor.ActorsQuatArray[i].Y,
+			mAsset.MapActor.ActorsQuatArray[i].Z,
+			mAsset.MapActor.ActorsQuatArray[i].W
 		);
 		glm::mat4 rotationMat4 = glm::toMat4(rotationQuat);
 
@@ -177,9 +174,7 @@ void WindowsApp::Update(const GameTimer& gt) {
 		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 		objConstants.WorldViewProjMat4=glm::transpose(worldViewProjMat4);
 
-
 		mObjectCB->CopyData(i, objConstants);
-		//copy mat4
 	}
 };
 
@@ -212,21 +207,21 @@ void WindowsApp::Draw(const GameTimer& gt) {
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	for (int i=0;i<MapActor.Size();i++)
+	for (int i=0;i< mAsset.MapActor.Size();i++)//绘制每一个Actor
 	{
-		for (std::map<int, std::string>::iterator it = MapofGeosMesh.begin(); it != MapofGeosMesh.end(); it++)
+		for (auto it = mAsset.MapofGeosMesh.begin(); it != mAsset.MapofGeosMesh.end(); it++)
 		{
 			//MapofGeosMesh通过映射找到MapActor的名字对应的Geos中的key
-			if (it->second == MapActor.MeshNameArray[i]){
-			mCommandList->IASetVertexBuffers(0, 1, &Geos[it->first]->VertexBufferView());
-			mCommandList->IASetIndexBuffer(&Geos[it->first]->IndexBufferView());
+			if (it->second == mAsset.MapActor.MeshNameArray[i]){
+			mCommandList->IASetVertexBuffers(0, 1, &mAsset.Geos[it->first]->VertexBufferView());
+			mCommandList->IASetIndexBuffer(&mAsset.Geos[it->first]->IndexBufferView());
 			mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 			heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 			mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
-			mCommandList->DrawIndexedInstanced(Geos[it->first]->DrawArgs[MapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
+			mCommandList->DrawIndexedInstanced(mAsset.Geos[it->first]->DrawArgs[mAsset.MapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
 			break;
 			}
 		}
@@ -624,7 +619,13 @@ void WindowsApp::CalculateFrameStats() {
 void WindowsApp::BuildDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	cbvHeapDesc.NumDescriptors = MapActor.Size();
+	if (!mAsset.MapActor.Size())
+	{
+		cbvHeapDesc.NumDescriptors = 1;
+	}
+	else {
+		cbvHeapDesc.NumDescriptors = mAsset.MapActor.Size();
+	}
 
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -637,7 +638,7 @@ void WindowsApp::BuildDescriptorHeaps()
 
 void WindowsApp::SetDescriptorHeaps() {//给Heap开辟空间
 
-	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), MapActor.Size(), true);
+	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), mAsset.MapActor.Size(), true);
 
 	UINT DescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	UINT ConstantbufferSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -645,11 +646,9 @@ void WindowsApp::SetDescriptorHeaps() {//给Heap开辟空间
 	// Offset to the ith object constant buffer in the buffer.
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-	//cbvDesc.BufferLocation = cbAddress;
-	//cbvDesc.SizeInBytes = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 
 	//循环开辟Heap空间
-	for (int i=0;i<MapActor.Size();i++)
+	for (int i=0;i< mAsset.MapActor.Size();i++)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 		auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
@@ -660,7 +659,6 @@ void WindowsApp::SetDescriptorHeaps() {//给Heap开辟空间
 		cbvDesc.SizeInBytes = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 		md3dDevice->CreateConstantBufferView(&cbvDesc, heapCPUHandle);
 
-		//heapCPUHandle.Offset(i, DescriptorSize);
 	}
 }
 
@@ -742,105 +740,104 @@ void WindowsApp::BuildShadersAndInputLayout()
 	};
 }
 
-void WindowsApp::BuildBoxGeometry()
-{
-	std::string StaticMeshPath;
-	std::set<std::string> StaticMeshs;//用于去重
-
-	StaticMesh mesh;
-
-	Geos.resize(MapActor.Size());
-
-	//std::vector<Vertex> vertices;
-	//std::vector<int32_t> indices;
-
-	Vertex vertice;
-
-	UINT vbByteSize ;
-	UINT ibByteSize ;
-
-	//循环加入MeshGeometry
-	for (int i = 0; i < Geos.size();i++)
-	{
-		std::vector<Vertex> vertices;
-		std::vector<int32_t> indices;
-		//相同的StaticMesh不用重复建立
-		auto check = StaticMeshs.find(MapActor.MeshNameArray[i]);
-		if (check == StaticMeshs.end()){
-			StaticMeshs.insert(MapActor.MeshNameArray[i]);
-			MapofGeosMesh.insert(std::pair<int, std::string>(i, MapActor.MeshNameArray[i]));
-		}
-		else{continue;}
-
-		//读取mesh信息
-		StaticMeshPath = "SplitMesh/" + MapActor.MeshNameArray[i];
-		//StaticMeshPath = "SplitMesh/SM_MatPreviewMesh_02";
-		StaticMeshPath.erase(StaticMeshPath.length()-1);
-		StaticMeshPath += ".bat";
-		mesh.SetStaticMeshFromBat(StaticMeshPath);
-
-		if (mesh.MeshInfo.MeshVertexInfo.size() < 3) { continue; }//没有StaticMesh就不读取
-		//--------------------------------------------------------------------------------
-
-		for (int j = 0; j < mesh.MeshInfo.MeshVertexInfo.size(); j++)
-		{
-			vertice.Pos = mesh.MeshInfo.MeshVertexInfo[j] ;
-			
-			//vertice.Color = {
-			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
-			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
-			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
-			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
-			//};//Random Color
-
-			vertice.Color = {
-				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
-				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
-				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
-				1 };//黑白色
-
-			vertice.Normal = mesh.MeshInfo.MeshVertexNormalInfo[j];
-
-			vertices.push_back(vertice);
-		}
-
-		indices = mesh.MeshInfo.MeshIndexInfo;
-
-		vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
-		ibByteSize = (UINT)indices.size() * sizeof(std::uint32_t);
-
-		Geos[i] = std::make_unique<MeshGeometry>();
-		Geos[i]->Name = mesh.getMeshName();
-
-		ThrowIfFailed(D3DCreateBlob(vbByteSize, &Geos[i]->VertexBufferCPU));
-		CopyMemory(Geos[i]->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
-
-		ThrowIfFailed(D3DCreateBlob(ibByteSize, &Geos[i]->IndexBufferCPU));
-		CopyMemory(Geos[i]->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
-
-		Geos[i]->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-			mCommandList.Get(), vertices.data(), vbByteSize, Geos[i]->VertexBufferUploader);
-
-		Geos[i]->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
-			mCommandList.Get(), indices.data(), ibByteSize, Geos[i]->IndexBufferUploader);
-
-		Geos[i]->VertexByteStride = sizeof(Vertex);
-		Geos[i]->VertexBufferByteSize = vbByteSize;
-		Geos[i]->IndexFormat = DXGI_FORMAT_R32_UINT;
-		Geos[i]->IndexBufferByteSize = ibByteSize;
-
-		SubmeshGeometry submesh;
-		submesh.IndexCount = (UINT)indices.size();
-		submesh.StartIndexLocation = 0;
-		submesh.BaseVertexLocation = 0;
-
-		//Geos[i]->DrawArgs["box"] = submesh;
-		Geos[i]->DrawArgs[MapActor.MeshNameArray[i]] = submesh;
-		//--------------------------------------------------------------------------------
-	}
-
-}
-
+/*注释掉的是没有资产管理类前的buildbox*/
+//void WindowsApp::BuildBoxGeometry()
+//{
+//	std::string StaticMeshPath;
+//	std::set<std::string> StaticMeshs;//用于去重
+//
+//	StaticMesh mesh;
+//
+//	Geos.resize(MapActor.Size());
+//
+//	//std::vector<Vertex> vertices;
+//	//std::vector<int32_t> indices;
+//
+//	Vertex vertice;
+//
+//	UINT vbByteSize ;
+//	UINT ibByteSize ;
+//
+//	//循环加入MeshGeometry
+//	for (int i = 0; i < Geos.size();i++)
+//	{
+//		std::vector<Vertex> vertices;
+//		std::vector<int32_t> indices;
+//		//相同的StaticMesh不用重复建立
+//		auto check = StaticMeshs.find(MapActor.MeshNameArray[i]);
+//		if (check == StaticMeshs.end()){
+//			StaticMeshs.insert(MapActor.MeshNameArray[i]);
+//			MapofGeosMesh.insert(std::pair<int, std::string>(i, MapActor.MeshNameArray[i]));
+//		}
+//		else{continue;}
+//
+//		//读取mesh信息
+//		StaticMeshPath = "SplitMesh/" + MapActor.MeshNameArray[i];
+//		//StaticMeshPath = "SplitMesh/SM_MatPreviewMesh_02";
+//		StaticMeshPath.erase(StaticMeshPath.length()-1);
+//		StaticMeshPath += ".bat";
+//		mesh.SetStaticMeshFromBat(StaticMeshPath);
+//
+//		if (mesh.MeshInfo.MeshVertexInfo.size() < 3) { continue; }//没有StaticMesh就不读取
+//		//--------------------------------------------------------------------------------
+//
+//		for (int j = 0; j < mesh.MeshInfo.MeshVertexInfo.size(); j++)
+//		{
+//			vertice.Pos = mesh.MeshInfo.MeshVertexInfo[j] ;
+//			
+//			//vertice.Color = {
+//			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
+//			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
+//			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX),
+//			//	static_cast <float> (rand()) / static_cast <float> (RAND_MAX)
+//			//};//Random Color
+//
+//			vertice.Color = {
+//				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+//				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+//				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+//				1 };//黑白色
+//
+//			vertice.Normal = mesh.MeshInfo.MeshVertexNormalInfo[j];
+//
+//			vertices.push_back(vertice);
+//		}
+//
+//		indices = mesh.MeshInfo.MeshIndexInfo;
+//
+//		vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+//		ibByteSize = (UINT)indices.size() * sizeof(std::uint32_t);
+//
+//		Geos[i] = std::make_unique<MeshGeometry>();
+//		Geos[i]->Name = mesh.getMeshName();
+//
+//		ThrowIfFailed(D3DCreateBlob(vbByteSize, &Geos[i]->VertexBufferCPU));
+//		CopyMemory(Geos[i]->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+//
+//		ThrowIfFailed(D3DCreateBlob(ibByteSize, &Geos[i]->IndexBufferCPU));
+//		CopyMemory(Geos[i]->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+//
+//		Geos[i]->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+//			mCommandList.Get(), vertices.data(), vbByteSize, Geos[i]->VertexBufferUploader);
+//
+//		Geos[i]->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+//			mCommandList.Get(), indices.data(), ibByteSize, Geos[i]->IndexBufferUploader);
+//
+//		Geos[i]->VertexByteStride = sizeof(Vertex);
+//		Geos[i]->VertexBufferByteSize = vbByteSize;
+//		Geos[i]->IndexFormat = DXGI_FORMAT_R32_UINT;
+//		Geos[i]->IndexBufferByteSize = ibByteSize;
+//
+//		SubmeshGeometry submesh;
+//		submesh.IndexCount = (UINT)indices.size();
+//		submesh.StartIndexLocation = 0;
+//		submesh.BaseVertexLocation = 0;
+//
+//		//Geos[i]->DrawArgs["box"] = submesh;
+//		Geos[i]->DrawArgs[MapActor.MeshNameArray[i]] = submesh;
+//		//--------------------------------------------------------------------------------
+//	}
+//}
 
 /*下面注释掉的代码是原来build单个Geometry的代码*/
 //void WindowsApp::BuildBoxGeometry()

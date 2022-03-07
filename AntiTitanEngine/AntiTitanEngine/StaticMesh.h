@@ -1,9 +1,9 @@
 #pragma once
-#include "stdafx.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
+
 
 struct FVector
 {
@@ -14,6 +14,10 @@ struct FVector
 	operator XMFLOAT3() const {
 		return { X,Y,Z };
 	}
+
+	//operator glm::vec3() const {
+	//	return { X,Y,Z };
+	//}
 };
 struct FVector4
 {
@@ -26,6 +30,9 @@ struct FVector4
 		return { X,Y,Z,W };
 	}
 
+	//operator glm::vec4() const {
+	//	return { X,Y,Z,W };
+	//}
 };
 
 struct StaticMeshInfo
@@ -40,6 +47,7 @@ public:
 	std::vector<FVector4> MeshVertexNormalInfo;
 };
 
+
 class StaticMesh 
 {
 //New
@@ -48,7 +56,7 @@ public:
 
 public:
 	void SetStaticMeshFromBat(const std::string& filepath);
-	void SetNull();
+
 public:
 	std::string getMeshName();
 };

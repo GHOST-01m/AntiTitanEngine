@@ -17,12 +17,12 @@ float     App::AspectRatio()const {
 };
 
 bool App::Get4xMsaaState()const {
-	return m4xMsaaState;
+	return mRenderer.m4xMsaaState;
 };
 void App::Set4xMsaaState(bool value) {
-	if (m4xMsaaState != value)
+	if (mRenderer.m4xMsaaState != value)
 	{
-		m4xMsaaState = value;
+		mRenderer.m4xMsaaState = value;
 
 		// Recreate the swapchain and buffers with new multisample settings.
 		CreateSwapChain();
@@ -30,24 +30,15 @@ void App::Set4xMsaaState(bool value) {
 	}
 };
 
-//int App::Run() {
-//
-//};
-//
-//bool App::Initialize() {
-//
-//};
-
 void App::CreateRtvAndDsvDescriptorHeaps() {
 
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
-	rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
+	rtvHeapDesc.NumDescriptors = mRenderer.SwapChainBufferCount;
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	rtvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
-		&rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf())));
-
+	ThrowIfFailed(mRenderer.md3dDevice->CreateDescriptorHeap(
+		&rtvHeapDesc, IID_PPV_ARGS(mRenderer.mRtvHeap.GetAddressOf())));
 
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
 	dsvHeapDesc.NumDescriptors = 1;

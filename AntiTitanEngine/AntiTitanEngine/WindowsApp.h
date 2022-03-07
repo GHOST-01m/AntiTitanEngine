@@ -5,14 +5,15 @@
 #include "vector"
 #include "ActorsInfo.h"
 #include "map"
+#include "Asset.h"
 
 
+//原来在BoxApp里面
 struct ObjectConstants
-{//原来在BoxApp里面
+{
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
-	glm::mat4 WorldViewProjMat4 = glm::mat4(1.0f);
+	glm::mat4 WorldViewProjMat4 = glm::identity<glm::mat4>();
 };
-
 
 class WindowsApp : public App {
 
@@ -28,11 +29,10 @@ public:
 	HINSTANCE AppInst()const;
 	HWND      MainWnd()const;
 
-	int Run() ;//设置成虚函数
-
+	int Run() ;
 
 	static WindowsApp* GetApp();
-	virtual bool Initialize();//包含了Windows,设置为虚函数
+	virtual bool Initialize();
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	void OnResize()override;
@@ -51,7 +51,7 @@ public:
 	//void BuildConstantBuffers();
 	void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildBoxGeometry();
+	//void BuildBoxGeometry();
 	void BuildPSO();
 
 protected:
@@ -69,10 +69,10 @@ private:
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
 
-	std::unique_ptr<MeshGeometry> mBoxGeo = nullptr;
-	std::vector<std::unique_ptr<MeshGeometry>> Geos;
-	ActorsInfo MapActor;
-	std::map<int, std::string> MapofGeosMesh;
+	//std::unique_ptr<MeshGeometry> mBoxGeo = nullptr;
+	//std::vector<std::unique_ptr<MeshGeometry>> Geos;
+	//ActorsInfo MapActor;
+	//std::map<int, std::string> MapofGeosMesh;
 
 	ComPtr<ID3DBlob> mvsByteCode = nullptr;
 	ComPtr<ID3DBlob> mpsByteCode = nullptr;
@@ -80,7 +80,6 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> mInputLayout;
 
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
-	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>uploadBuffer;
 
 
 	ComPtr<ID3D12PipelineState> mPSO = nullptr;
@@ -95,5 +94,7 @@ protected:
 private:
 POINT mLastMousePos;
 //Camera mCamera;
+
+Asset mAsset;
 
 };

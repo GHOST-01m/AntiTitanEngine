@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="ActorsInfo.h" />
     <ClInclude Include="App.h" />
+    <ClInclude Include="Asset.h" />
     <ClInclude Include="BoxApp.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClInclude>
@@ -154,9 +155,13 @@
     </ClInclude>
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="Engine.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="Launch.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="MeshGeometry.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="StaticMesh.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="UploadBuffer.h" />
@@ -165,6 +170,7 @@
   <ItemGroup>
     <ClCompile Include="ActorsInfo.cpp" />
     <ClCompile Include="App.cpp" />
+    <ClCompile Include="Asset.cpp" />
     <ClCompile Include="BoxApp.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
@@ -173,10 +179,15 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="d3dUtil.cpp" />
+    <ClCompile Include="Engine.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="Launch.cpp" />
+    <ClCompile Include="LaunchWindows.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="MeshGeometry.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="StaticMesh.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
