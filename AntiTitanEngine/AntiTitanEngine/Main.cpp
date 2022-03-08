@@ -24,11 +24,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 //		return 0;
 //	}
 
-WindowsApp theApp(hInstance);
-//BoxApp theApp(hInstance);
-if (!theApp.Initialize())
-return 0;
+	WindowsApp theApp(hInstance);
+	//BoxApp theApp(hInstance);
+	if (!theApp.Initialize())
+	return 0;
 
-//theApp.LogAdapters();
-return theApp.Run();
+	//theApp.LogAdapters();
+	return theApp.Run();
 }

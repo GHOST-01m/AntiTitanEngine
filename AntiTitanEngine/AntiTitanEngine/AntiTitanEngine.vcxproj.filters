@@ -46,6 +46,18 @@
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{45ecbb29-f53f-4319-913d-144a05b50dad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Window">
+      <UniqueIdentifier>{44026549-8577-4129-a41f-af5be59d9b53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Window">
+      <UniqueIdentifier>{e63bdf05-4bbf-4e23-a334-1a3daf731fd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Window\Windows">
+      <UniqueIdentifier>{f617f4d6-9aad-4603-9993-65571cd4e727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Window\Windows">
+      <UniqueIdentifier>{7aa47901-0fb3-4254-88a2-434576c35a3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -105,6 +117,12 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="Win32Window.h">
+      <Filter>Header Files\Window\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -163,6 +181,12 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32Window.cpp">
+      <Filter>Source Files\Window\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

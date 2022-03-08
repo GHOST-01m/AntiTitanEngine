@@ -75,6 +75,4 @@ public:
 		void InitDX_CreateCommandObjects();
 		void InitDX_CreateSwapChain();
 		void InitDX_CreateRtvAndDsvDescriptorHeaps();
-
 };
-
