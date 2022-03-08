@@ -22,14 +22,14 @@ Renderer* Engine::GetRenderer() {
 	return &mRenderer;
 }
 
-bool Engine::InitEngine() {
+bool Engine::InitEngine(HINSTANCE hInstance) {
 
 	if (mEngine == nullptr)
 	{
 		mEngine = new Engine;
 	}
 
-	if (!InitWindow())
+	if (!InitWindow( hInstance))
 	{
 		return false;
 	}	
@@ -63,9 +63,9 @@ void Engine::EngineDestroy() {
 	delete mEngine;
 };
 
-void Engine::GuardedMain()
+void Engine::GuardedMain(HINSTANCE hInstance)
 {
-	if (!InitEngine())
+	if (!InitEngine(hInstance))
 	{
 		return;
 	}
@@ -80,12 +80,13 @@ bool Engine::InitDX() {
 };
 
 
-bool Engine::InitWindow() {
+bool Engine::InitWindow(HINSTANCE hInstance) {
 
-
-	mWindow = std::make_shared<Win32Window>();
-
-	return std::dynamic_pointer_cast<Win32Window>(mWindow)->InitWindow();
+	Win32Window a;
+	a.InitWindow(hInstance);
+	mWindow = std::make_shared<Win32Window>(a);
+	
+	return std::dynamic_pointer_cast<Win32Window>(mWindow)->InitWindow(hInstance);
 
 	//return dynamic_cast<Win32Window*>(&mWindow)->InitWindow();
 };
@@ -98,7 +99,6 @@ void Engine::GameTick() {
 void Engine::RenderTick() {
 	mRenderer.Draw();
 };
-
 
 bool Engine::AppRun()
 {

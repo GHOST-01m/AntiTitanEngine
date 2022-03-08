@@ -165,8 +165,8 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 
 };
 
-bool Win32Window::InitWindow() {
-
+bool Win32Window::InitWindow(HINSTANCE hInstance) {
+	mhAppInst = hInstance;
 	if (mWin32Window==nullptr)
 	{
 		mWin32Window = new Win32Window;

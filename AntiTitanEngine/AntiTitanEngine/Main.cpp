@@ -36,6 +36,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 */
 
 	Engine engine;
-	engine.GuardedMain();
+	engine.GuardedMain(hInstance);
 	return 	0;
 }

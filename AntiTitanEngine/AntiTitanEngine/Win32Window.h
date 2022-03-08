@@ -4,7 +4,7 @@
 class Win32Window :public Window
 {
 public:
-	bool InitWindow();
+	bool InitWindow(HINSTANCE hInstance);
 	static Win32Window* mWin32Window;
 	static Win32Window* Get();
 

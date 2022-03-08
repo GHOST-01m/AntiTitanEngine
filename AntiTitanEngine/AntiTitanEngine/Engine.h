@@ -15,8 +15,8 @@ public:
 	//Window* GetWindow();
 	Renderer* GetRenderer();
 
-	bool InitEngine();	//InitEngine内使用到的函数
-		bool InitWindow();
+	bool InitEngine(HINSTANCE hInstance);	//InitEngine内使用到的函数
+		bool InitWindow(HINSTANCE hInstance);
 		bool InitDX();
 
 	void EngineLoop();	//EngineLoop内的函数
@@ -28,7 +28,7 @@ public:
 
 	void EngineDestroy();
 
-	void GuardedMain();
+	void GuardedMain(HINSTANCE hInstance);
 
 public:
 	GameTimer mTimer;
