@@ -123,6 +123,9 @@
     <ClInclude Include="Win32Window.h">
       <Filter>Header Files\Window\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="MyStruct.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

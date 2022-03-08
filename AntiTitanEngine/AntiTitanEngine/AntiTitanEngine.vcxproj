@@ -160,6 +160,7 @@
     <ClInclude Include="Launch.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="MeshGeometry.h" />
+    <ClInclude Include="MyStruct.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="StaticMesh.h" />

@@ -22,9 +22,14 @@
 #include "d3dx12.h"
 #include "Common/DDSTextureLoader.h"
 #include "MathHelper.h"
+#include "MyStruct.h"
+#include "Asset.h"
 
 class Renderer
 {
+public:
+	Microsoft::WRL::ComPtr<ID3D12Device> Getd3dDevice();
+
 public:
 	int mCurrBackBuffer = 0;
 
@@ -56,23 +61,65 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
 
+	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
+	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
+
 	D3D12_VIEWPORT mScreenViewport;
 	D3D12_RECT mScissorRect;
 
+	ComPtr<ID3DBlob> mvsByteCode = nullptr;
+	ComPtr<ID3DBlob> mpsByteCode = nullptr;
+	std::vector<D3D12_INPUT_ELEMENT_DESC> mInputLayout;
+
 public:
+	bool Get4xMsaaState()const;
+	void Set4xMsaaState(bool value);
 	bool      m4xMsaaState = false;    // 4X MSAA enabled
 	UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
-public:
-	HWND      mhMainWnd = nullptr; // main window handle
-									//这个handle要在windows创建后传进来
 public:
 	int mClientWidth = 1920;
 	int mClientHeight = 1080;
 
 public:
-	bool InitRenderer(HWND& mhMainWnd);
+	bool InitRenderer();
 		void InitDX_CreateCommandObjects();
 		void InitDX_CreateSwapChain();
 		void InitDX_CreateRtvAndDsvDescriptorHeaps();
+
+public:
+	void OnResize();
+	void Update() ;
+	void Draw() ;
+
+	void FlushCommandQueue();
+	void CreateSwapChain();
+public:
+	void BuildDescriptorHeaps();
+	void SetDescriptorHeaps();//往Heap里面灌数据
+	void BuildRootSignature();
+	void BuildShadersAndInputLayout();
+	void BuildPSO();
+
+public:
+	ID3D12Resource* CurrentBackBuffer()const;
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
+	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView();
+
+public:
+	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
+	
+	ComPtr<ID3D12PipelineState> mPSO = nullptr;
+
+
+public://这一部分应该写到Game里，先放在这
+	void OnMouseDown(WPARAM btnState, int x, int y);
+	void OnMouseUp(WPARAM btnState, int x, int y);
+	void OnMouseMove(WPARAM btnState, int x, int y);
+	void OnKeyboardInput(const GameTimer& gt);
+
+public:
+	Asset mAsset;
+	POINT mLastMousePos;
+	Camera mCamera;
 };

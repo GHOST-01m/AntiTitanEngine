@@ -108,8 +108,6 @@ protected:
 protected:
 	bool      m4xMsaaState = false;    // 4X MSAA enabled
 	UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
-public:
-	Renderer mRenderer;
 
 protected:
 

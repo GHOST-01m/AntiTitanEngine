@@ -64,7 +64,10 @@
 #include "WindowsApp.h"
 #include "ActorsInfo.h"
 #include "Asset.h"
-
+#include "Renderer.h"
+#include "Engine.h"
+#include "Window.h"
+#include "Win32Window.h"
 
 #include "iostream"
 #include <string.h>

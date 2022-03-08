@@ -1,7 +1,8 @@
 #pragma once
 class Window
 {
-	virtual bool InitWindow();
+public:
+	virtual bool InitWindow() { return false; };
 
 public:
 	std::wstring mMainWndCaption = L"AntiTitanEngine";

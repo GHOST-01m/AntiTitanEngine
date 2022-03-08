@@ -24,6 +24,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 //		return 0;
 //	}
 
+
+/*
 	WindowsApp theApp(hInstance);
 	//BoxApp theApp(hInstance);
 	if (!theApp.Initialize())
@@ -31,4 +33,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 
 	//theApp.LogAdapters();
 	return theApp.Run();
+*/
+
+	Engine engine;
+	engine.GuardedMain();
+	return 	0;
 }

@@ -62,7 +62,7 @@ public:
 
 	int Size() {
 		int size;
-		size = ActorNameArray.size();
+		size = int(ActorNameArray.size());
 		return size;
 	}
 };

@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Win32Window.h"
 
+Win32Window* Win32Window::mWin32Window = nullptr;
 
 LRESULT CALLBACK
-MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+Main_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	// Forward hwnd on because we can get messages (e.g., WM_CREATE)
 	// before CreateWindow returns, and thus before mhMainWnd is valid.
@@ -11,8 +12,12 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 Win32Window* Win32Window::Get() {
-	return mWindow;
+	return mWin32Window;
 }
+
+HWND Win32Window::GetHWND() {
+	return mhMainWnd;
+};
 
 LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
@@ -24,13 +29,14 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 	case WM_ACTIVATE:
 		if (LOWORD(wParam) == WA_INACTIVE)
 		{
-			mAppPaused = true;
-			mTimer.Stop();
+			Engine::Get()->mAppPaused = true;
+			Engine::Get()->GetGameTimer()->Stop();
+
 		}
 		else
 		{
-			mAppPaused = false;
-			mTimer.Start();
+			Engine::Get()->mAppPaused = false;
+			Engine::Get()->GetGameTimer()->Start();
 		}
 		return 0;
 
@@ -39,40 +45,40 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 		// Save the new client area dimensions.
 		mClientWidth = LOWORD(lParam);
 		mClientHeight = HIWORD(lParam);
-		if (md3dDevice)
+		if (Engine::Get()->GetRenderer()->Getd3dDevice())
 		{
 			if (wParam == SIZE_MINIMIZED)
 			{
-				mAppPaused = true;
-				mMinimized = true;
-				mMaximized = false;
+				Engine::Get()->mAppPaused = true;
+				Engine::Get()->mMinimized = true;
+				Engine::Get()->mMaximized = false;
 			}
 			else if (wParam == SIZE_MAXIMIZED)
 			{
-				mAppPaused = false;
-				mMinimized = false;
-				mMaximized = true;
-				OnResize();
+				Engine::Get()->mAppPaused = false;
+				Engine::Get()->mMinimized = false;
+				Engine::Get()->mMaximized = true;
+				Engine::Get()->GetRenderer()->OnResize();
 			}
 			else if (wParam == SIZE_RESTORED)
 			{
 
 				// Restoring from minimized state?
-				if (mMinimized)
+				if (Engine::Get()->mMinimized)
 				{
-					mAppPaused = false;
-					mMinimized = false;
-					OnResize();
+					Engine::Get()->mAppPaused = false;
+					Engine::Get()->mMinimized = false;
+					Engine::Get()->GetRenderer()->OnResize();
 				}
 
 				// Restoring from maximized state?
-				else if (mMaximized)
+				else if (Engine::Get()->mMaximized)
 				{
-					mAppPaused = false;
-					mMaximized = false;
-					OnResize();
+					Engine::Get()->mAppPaused = false;
+					Engine::Get()->mMaximized = false;
+					Engine::Get()->GetRenderer()->OnResize();
 				}
-				else if (mResizing)
+				else if (Engine::Get()->mResizing)
 				{
 					// If user is dragging the resize bars, we do not resize 
 					// the buffers here because as the user continuously 
@@ -85,7 +91,7 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 				}
 				else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 				{
-					OnResize();
+					Engine::Get()->GetRenderer()->OnResize();
 				}
 			}
 		}
@@ -93,18 +99,19 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 
 		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 	case WM_ENTERSIZEMOVE:
-		mAppPaused = true;
-		mResizing = true;
-		mTimer.Stop();
+		Engine::Get()->mAppPaused = true;
+		Engine::Get()->mResizing = true;
+		Engine::Get()->GetGameTimer()->Stop();
+
 		return 0;
 
 		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 		// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
-		mAppPaused = false;
-		mResizing = false;
-		mTimer.Start();
-		OnResize();
+		Engine::Get()->mAppPaused = false;
+		Engine::Get()->mResizing = false;
+		Engine::Get()->GetGameTimer()->Start();
+		Engine::Get()->GetRenderer()->OnResize();
 		return 0;
 
 		// WM_DESTROY is sent when the window is being destroyed.
@@ -127,15 +134,15 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
-		OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		Engine::Get()->GetRenderer()->OnMouseDown(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;
 	case WM_LBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
-		OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		Engine::Get()->GetRenderer()->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;
 	case WM_MOUSEMOVE:
-		OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		Engine::Get()->GetRenderer()->OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		return 0;
 	case WM_KEYUP:
 		if (wParam == VK_ESCAPE)
@@ -143,8 +150,13 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 			PostQuitMessage(0);
 		}
 		else if ((int)wParam == VK_F2)
-			Set4xMsaaState(!m4xMsaaState);
-
+			Engine::Get()->GetRenderer()->Set4xMsaaState(!Engine::Get()->GetRenderer()->m4xMsaaState);
+	case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			BeginPaint(hwnd, &ps);
+			EndPaint(hwnd, &ps);
+		}
 
 		return 0;
 	}
@@ -153,12 +165,16 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 
 };
 
-
 bool Win32Window::InitWindow() {
+
+	if (mWin32Window==nullptr)
+	{
+		mWin32Window = new Win32Window;
+	}
 
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
-	wc.lpfnWndProc = MainWndProc;
+	wc.lpfnWndProc = Main_WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = mhAppInst;

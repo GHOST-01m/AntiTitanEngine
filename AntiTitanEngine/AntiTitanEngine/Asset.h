@@ -1,4 +1,7 @@
 #pragma once
+#include "ActorsInfo.h"
+#include "map"
+#include "vector"
 class Asset
 {
 public:

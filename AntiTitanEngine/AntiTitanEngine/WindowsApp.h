@@ -6,14 +6,7 @@
 #include "ActorsInfo.h"
 #include "map"
 #include "Asset.h"
-
-
-//原来在BoxApp里面
-struct ObjectConstants
-{
-	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
-	glm::mat4 WorldViewProjMat4 = glm::identity<glm::mat4>();
-};
+#include "MyStruct.h"
 
 class WindowsApp : public App {
 
@@ -81,7 +74,6 @@ private:
 
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
 
-
 	ComPtr<ID3D12PipelineState> mPSO = nullptr;
 
 protected:
@@ -89,7 +81,6 @@ protected:
 	void CreateSwapChain();
 
 	void CalculateFrameStats();//窗口上面变动的fps和mspf
-
 
 private:
 POINT mLastMousePos;
