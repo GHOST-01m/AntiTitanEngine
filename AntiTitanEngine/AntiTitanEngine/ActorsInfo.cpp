@@ -3,7 +3,18 @@
 
 void ActorsInfo::SetSceneActorsInfoFromBat(const std::string& StaticMeshPath) {
 
+		//std::string test = "E:/DX12Homework/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/MapActorInfo/MapActorInfo.bat";
+		std::string test = "MapActorInfo/MapActorInfo.bat";
+		
 		std::ifstream BatFile(StaticMeshPath, std::ios::in | std::ios::binary);
+
+		//std::ifstream BatFile(test, std::ios::in | std::ios::binary);
+
+		if (BatFile.is_open())
+		{
+			int a=0;
+		}
+
 		int32_t DataLength;
 		int32_t DataStringLength;
 

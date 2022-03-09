@@ -28,7 +28,6 @@ public:
 		return ms_Singleton;
 	}
 
-
 protected:
 	static T* ms_Singleton;
 };

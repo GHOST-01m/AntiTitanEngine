@@ -6,19 +6,20 @@
 #include "FSingleton.h"
 
 
-
 class Engine
-{
-public:
+{	
 	Engine();
+public:
+	~Engine();
 	Engine(const Engine& rhs) = delete;
 	Engine& operator=(const Engine& rhs) = delete;
 
 public:
 	static Engine* mEngine;
 	static Engine* Get();
-	GameTimer* GetGameTimer();
+	std::shared_ptr<GameTimer> GetGameTimer();
 	std::shared_ptr<Window> GetWindow();
+	std::shared_ptr<Asset> GetAsset();
 	//Renderer* GetRenderer();
 	std::shared_ptr <Renderer> GetRenderer();
 
@@ -37,11 +38,11 @@ public:
 	void GuardedMain(HINSTANCE hInstance);
 
 public:
-	GameTimer mTimer;
-	static std::shared_ptr <Renderer>  mRenderer;
 
-	static std::shared_ptr <Window>    mWindow;
-
+	static std::shared_ptr<GameTimer>   mTimer;
+	static std::shared_ptr<Renderer>    mRenderer;
+	static std::shared_ptr<Window>      mWindow;
+	static std::shared_ptr<Asset>       mAsset;
 public:
 	bool      mAppPaused = true;  // is the application paused?
 	bool      mMinimized = false;  // is the application minimized?
@@ -51,5 +52,6 @@ public:
 
 public:
 	std::wstring mMainWndCaption = L"AntiTitanEngine";
+	std::string MapPath="MapActorInfo / MapActorInfo.bat";
 };
 

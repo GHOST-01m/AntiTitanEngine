@@ -3,13 +3,16 @@
 
 WindowsTopApp::WindowsTopApp()
 {
-	mEngine = std::make_shared<Engine>();
-	mGameLogic= std::make_shared<GameLogic>();
+	mGameLogic = std::make_shared<GameLogic>();
 }
 
 void WindowsTopApp::Init(HINSTANCE hInstance)
 {
-	if (!mEngine->InitEngine(hInstance))
+
+	//mGameLogic->LoadMap("MapActorInfo / MapActorInfo.bat");
+	//Engine 
+
+	if (!Engine::Get()->InitEngine(hInstance))
 	{
 		return;
 	}
@@ -21,14 +24,19 @@ void WindowsTopApp::Init(HINSTANCE hInstance)
 
 void WindowsTopApp::Run()
 {
-	while (mEngine->mAppPaused && std::dynamic_pointer_cast<Win32Window>(mEngine->mWindow)->Run())
+	auto t0 = Engine::Get();
+	auto t = Engine::Get()->GetWindow();
+	auto t1 = Engine::Get()->mAppPaused;
+
+	while (Engine::Get()->mAppPaused && std::dynamic_pointer_cast<Win32Window>(Engine::Get()->GetWindow())->Run())
 	{
-		mEngine->Tick();
+		Engine::Get()->Tick();
 		mGameLogic->Tick();
 	}
 }
 
 void WindowsTopApp::Destroy()
 {
-	mEngine->EngineDestroy();
+	Engine::Get()->EngineDestroy();
+
 }

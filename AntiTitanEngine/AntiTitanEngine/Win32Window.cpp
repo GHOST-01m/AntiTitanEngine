@@ -30,94 +30,94 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  
 		// We pause the game when the window is deactivated and unpause it 
 		// when it becomes active.  
-	case WM_ACTIVATE:
-		if (LOWORD(wParam) == WA_INACTIVE)
-		{
-			Engine::Get()->mAppPaused = true;
-			Engine::Get()->GetGameTimer()->Stop();
-		}
-		else
-		{
-			Engine::Get()->mAppPaused = false;
-			Engine::Get()->GetGameTimer()->Start();
-		}
-		return 0;
+	//case WM_ACTIVATE:
+	//	if (LOWORD(wParam) == WA_INACTIVE)
+	//	{
+	//		Engine::Get()->mAppPaused = true;
+	//		Engine::Get()->GetGameTimer()->Stop();
+	//	}
+	//	else
+	//	{
+	//		Engine::Get()->mAppPaused = false;
+	//		Engine::Get()->GetGameTimer()->Start();
+	//	}
+	//	return 0;
 
-		// WM_SIZE is sent when the user resizes the window.  
-	case WM_SIZE:
-		// Save the new client area dimensions.
-		mClientWidth = LOWORD(lParam);
-		mClientHeight = HIWORD(lParam);
-		if (Engine::Get()->GetRenderer()->Getd3dDevice())
-		//if (Engine::Get()->GetRenderer()->IsDeviceValid())
-		//if (true)
-		{
-			if (wParam == SIZE_MINIMIZED)
-			{
-				Engine::Get()->mAppPaused = true;
-				Engine::Get()->mMinimized = true;
-				Engine::Get()->mMaximized = false;
-			}
-			else if (wParam == SIZE_MAXIMIZED)
-			{
-				Engine::Get()->mAppPaused = false;
-				Engine::Get()->mMinimized = false;
-				Engine::Get()->mMaximized = true;
-				Engine::Get()->GetRenderer()->OnResize();
-			}
-			else if (wParam == SIZE_RESTORED)
-			{
+	//	// WM_SIZE is sent when the user resizes the window.  
+	//case WM_SIZE:
+	//	// Save the new client area dimensions.
+	//	mClientWidth = LOWORD(lParam);
+	//	mClientHeight = HIWORD(lParam);
+	//	if (Engine::Get()->GetRenderer()->Getd3dDevice())
+	//	//if (Engine::Get()->GetRenderer()->IsDeviceValid())
+	//	//if (true)
+	//	{
+	//		if (wParam == SIZE_MINIMIZED)
+	//		{
+	//			Engine::Get()->mAppPaused = true;
+	//			Engine::Get()->mMinimized = true;
+	//			Engine::Get()->mMaximized = false;
+	//		}
+	//		else if (wParam == SIZE_MAXIMIZED)
+	//		{
+	//			Engine::Get()->mAppPaused = false;
+	//			Engine::Get()->mMinimized = false;
+	//			Engine::Get()->mMaximized = true;
+	//			Engine::Get()->GetRenderer()->OnResize();
+	//		}
+	//		else if (wParam == SIZE_RESTORED)
+	//		{
 
-				// Restoring from minimized state?
-				if (Engine::Get()->mMinimized)
-				{
-					Engine::Get()->mAppPaused = false;
-					Engine::Get()->mMinimized = false;
-					Engine::Get()->GetRenderer()->OnResize();
-				}
+	//			// Restoring from minimized state?
+	//			if (Engine::Get()->mMinimized)
+	//			{
+	//				Engine::Get()->mAppPaused = false;
+	//				Engine::Get()->mMinimized = false;
+	//				Engine::Get()->GetRenderer()->OnResize();
+	//			}
 
-				// Restoring from maximized state?
-				else if (Engine::Get()->mMaximized)
-				{
-					Engine::Get()->mAppPaused = false;
-					Engine::Get()->mMaximized = false;
-					Engine::Get()->GetRenderer()->OnResize();
-				}
-				else if (Engine::Get()->mResizing)
-				{
-					// If user is dragging the resize bars, we do not resize 
-					// the buffers here because as the user continuously 
-					// drags the resize bars, a stream of WM_SIZE messages are
-					// sent to the window, and it would be pointless (and slow)
-					// to resize for each WM_SIZE message received from dragging
-					// the resize bars.  So instead, we reset after the user is 
-					// done resizing the window and releases the resize bars, which 
-					// sends a WM_EXITSIZEMOVE message.
-				}
-				else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
-				{
-					Engine::Get()->GetRenderer()->OnResize();
-				}
-			}
-		}
-		return 0;
+	//			// Restoring from maximized state?
+	//			else if (Engine::Get()->mMaximized)
+	//			{
+	//				Engine::Get()->mAppPaused = false;
+	//				Engine::Get()->mMaximized = false;
+	//				Engine::Get()->GetRenderer()->OnResize();
+	//			}
+	//			else if (Engine::Get()->mResizing)
+	//			{
+	//				// If user is dragging the resize bars, we do not resize 
+	//				// the buffers here because as the user continuously 
+	//				// drags the resize bars, a stream of WM_SIZE messages are
+	//				// sent to the window, and it would be pointless (and slow)
+	//				// to resize for each WM_SIZE message received from dragging
+	//				// the resize bars.  So instead, we reset after the user is 
+	//				// done resizing the window and releases the resize bars, which 
+	//				// sends a WM_EXITSIZEMOVE message.
+	//			}
+	//			else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
+	//			{
+	//				Engine::Get()->GetRenderer()->OnResize();
+	//			}
+	//		}
+	//	}
+	//	return 0;
 
-		// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
-	case WM_ENTERSIZEMOVE:
-		Engine::Get()->mAppPaused = true;
-		Engine::Get()->mResizing = true;
-		Engine::Get()->GetGameTimer()->Stop();
+	//	// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+	//case WM_ENTERSIZEMOVE:
+	//	Engine::Get()->mAppPaused = true;
+	//	Engine::Get()->mResizing = true;
+	//	Engine::Get()->GetGameTimer()->Stop();
 
-		return 0;
+	//	return 0;
 
-		// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
-		// Here we reset everything based on the new window dimensions.
-	case WM_EXITSIZEMOVE:
-		Engine::Get()->mAppPaused = false;
-		Engine::Get()->mResizing = false;
-		Engine::Get()->GetGameTimer()->Start();
-		Engine::Get()->GetRenderer()->OnResize();
-		return 0;
+	//	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
+	//	// Here we reset everything based on the new window dimensions.
+	//case WM_EXITSIZEMOVE:
+	//	Engine::Get()->mAppPaused = false;
+	//	Engine::Get()->mResizing = false;
+	//	Engine::Get()->GetGameTimer()->Start();
+	//	Engine::Get()->GetRenderer()->OnResize();
+	//	return 0;
 
 		// WM_DESTROY is sent when the window is being destroyed.
 	case WM_DESTROY:
@@ -126,15 +126,15 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 
 		// The WM_MENUCHAR message is sent when a menu is active and the user presses 
 		// a key that does not correspond to any mnemonic or accelerator key. 
-	case WM_MENUCHAR:
-		// Don't beep when we alt-enter.
-		return MAKELRESULT(0, MNC_CLOSE);
+	//case WM_MENUCHAR:
+	//	// Don't beep when we alt-enter.
+	//	return MAKELRESULT(0, MNC_CLOSE);
 
 		// Catch this message so to prevent the window from becoming too small.
-	case WM_GETMINMAXINFO:
-		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
-		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
-		return 0;
+	//case WM_GETMINMAXINFO:
+	//	((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+	//	((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+	//	return 0;
 
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -153,9 +153,11 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 		if (wParam == VK_ESCAPE)
 		{
 			PostQuitMessage(0);
+			return 0;
 		}
 		else if ((int)wParam == VK_F2)
 			Engine::Get()->GetRenderer()->Set4xMsaaState(!Engine::Get()->GetRenderer()->m4xMsaaState);
+		return 0;
 	case WM_PAINT:
 		{
 			PAINTSTRUCT ps;

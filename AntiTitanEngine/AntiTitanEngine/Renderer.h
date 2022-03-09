@@ -29,7 +29,7 @@ class Renderer
 {
 public:
 	Renderer();
-
+	~Renderer();
 public:
 	Microsoft::WRL::ComPtr<ID3D12Device>* Getd3dDevice();
 	//std::shared_ptr<Camera> GetCamera();
@@ -123,11 +123,12 @@ public://这一部分应该写到Game里，先放在这
 	void OnMouseDown(WPARAM btnState, int x, int y);
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
-	void OnKeyboardInput(const GameTimer& gt);
+	//void OnKeyboardInput(const GameTimer& gt);
 
 public:
-	Asset mAsset;
+	//Asset mAsset;
 	POINT mLastMousePos;
+	std::string MapLoadPath= "MapActorInfo/MapActorInfo.bat";
 	//Camera mCamera;
 	static std::shared_ptr<Camera> mCamera;
 	std::shared_ptr<Camera> GetCamera();

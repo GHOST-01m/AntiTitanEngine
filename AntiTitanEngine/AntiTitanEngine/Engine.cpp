@@ -1,26 +1,40 @@
 #include "stdafx.h"
 
-Engine* Engine::mEngine = nullptr;
-std::shared_ptr<Window> Engine::mWindow = nullptr;
-std::shared_ptr<Renderer> Engine::mRenderer = nullptr;
+Engine* Engine::mEngine = new Engine();
+std::shared_ptr<GameTimer>   Engine::mTimer = nullptr;
+std::shared_ptr<Window>      Engine::mWindow = nullptr;
+std::shared_ptr<Renderer>    Engine::mRenderer = nullptr;
+std::shared_ptr<Asset>       Engine::mAsset = nullptr;
+
 
 Engine::Engine()
 {
-//	assert(mEngine == nullptr);
-//	mEngine = this;
+	mEngine = this;
+}
+
+Engine::~Engine()
+{
+	delete mEngine;
+	OutputDebugStringA("Engine::~Engine()\n");
 }
 
 Engine* Engine::Get() {
 	return mEngine;
 }
 
-GameTimer* Engine::GetGameTimer() {
-	return &mTimer;
+std::shared_ptr<GameTimer> Engine::GetGameTimer() {
+	return mTimer;
 };
 
 std::shared_ptr<Window> Engine::GetWindow() {
 	return mWindow;
 };
+
+std::shared_ptr<Asset> Engine::GetAsset()
+{
+	return mAsset;
+}
+
 //Window* Engine::GetWindow() {
 //	return &mWindow;
 //};
@@ -35,39 +49,37 @@ std::shared_ptr<Renderer> Engine::GetRenderer() {
 
 bool Engine::InitEngine(HINSTANCE hInstance) {
 
-	if (mEngine == nullptr)
-	{
-		mEngine = new Engine;
-	}
 
 	if (!InitWindow( hInstance))
 	{
 		return false;
 	}
-	//mWindow->mMainWndCaption = mMainWndCaption;
+	/*std::shared_ptr<Renderer> test = std::make_shared<Renderer>();
+	bool cool = (test == nullptr);*/
+	mTimer = std::make_shared<GameTimer>();
 	mRenderer = std::make_shared<Renderer>();
-
+	mAsset = std::make_shared<Asset>();
 	if (!InitDX())
 	{
 		return false;
 	}
 
-	mTimer.Reset();
+	mTimer->Reset();
 
 	return true;
 };
 
 void Engine::EngineLoop() {
 
-	while (mAppPaused && std::dynamic_pointer_cast<Win32Window>(mWindow)->Run())
-	{
-		Tick();
-	}
+	//while (mAppPaused && std::dynamic_pointer_cast<Win32Window>(mWindow)->Run())
+	//{
+	//	Tick();
+	//}
 };
 
 void Engine::Tick()
 {
-	mTimer.Tick();
+	mTimer->Tick();
 	mRenderer->Update();
 	mRenderer->Draw();
 	mRenderer->CalculateFrameStats();
@@ -77,8 +89,8 @@ void Engine::Tick()
 }
 
 void Engine::EngineDestroy() {
-	delete mEngine;
-	PostQuitMessage(0);
+	mRenderer = nullptr;
+	mEngine = nullptr;
 };
 
 void Engine::GuardedMain(HINSTANCE hInstance)
@@ -106,12 +118,12 @@ bool Engine::InitDX() {
 
 bool Engine::InitWindow(HINSTANCE hInstance) {
 
-	Win32Window a;
+	//Win32Window a;
 	//a.InitWindow(hInstance);
 	
-	mWindow = std::make_shared<Win32Window>(a);
-	
-	return std::dynamic_pointer_cast<Win32Window>(mWindow)->InitWindow(hInstance);
+	auto Window = std::make_shared<Win32Window>();
+	mWindow = Window;
+	return Window->InitWindow(hInstance);
 
 	//return dynamic_cast<Win32Window*>(&mWindow)->InitWindow();
 };

@@ -9,6 +9,6 @@ public:
 	void Run();
 	void Destroy();
 
-	Engine mEngine;
-	GameLogic mGameLogic;
+
+	//GameLogic mGameLogic;
 };

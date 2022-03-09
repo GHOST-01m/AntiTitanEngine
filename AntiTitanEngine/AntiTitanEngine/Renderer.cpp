@@ -6,6 +6,11 @@ Renderer::Renderer()
 
 }
 
+Renderer::~Renderer()
+{
+	OutputDebugStringA("Renderer::~Renderer()\n");
+}
+
 Microsoft::WRL::ComPtr<ID3D12Device>* Renderer::Getd3dDevice() {
 	return &md3dDevice;
 };
@@ -112,12 +117,13 @@ bool Renderer::InitRenderer() {
 
 	// Reset the command list to prep for initialization commands.
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
-
-	mAsset.LoadExternalMapActor("MapActorInfo/MapActorInfo.bat");//要先从外部导入地图数据才能绘制//这个应该放在游戏里
+	
+	//mAsset.LoadExternalMapActor(MapLoadPath);//要先从外部导入地图数据才能绘制//这个应该放在游戏里
+	Engine::Get()->GetAsset()->LoadExternalMapActor(MapLoadPath);
 	BuildDescriptorHeaps();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	mAsset.LoadAsset(md3dDevice, mCommandList);
+	Engine::Get()->GetAsset()->LoadAsset(md3dDevice, mCommandList);
 
 	BuildPSO();
 
@@ -307,50 +313,50 @@ void Renderer::OnResize()
 
 void Renderer::Update()
 {
-	OnKeyboardInput(*(Engine::Get()->GetGameTimer()));
+	//OnKeyboardInput(*(Engine::Get()->GetGameTimer()));
 
 	ObjectConstants objConstants;
 
-	for (int i = 0; i < mAsset.MapActor.Size(); i++)
+	for (int i = 0; i < Engine::Get()->GetAsset()->MapActor.Size(); i++)
 	{
 		//auto world = MathHelper::Identity4x4();
 		auto location = XMMatrixTranslation(
-			mAsset.MapActor.ActorsTransformArray[i].translation.x,
-			mAsset.MapActor.ActorsTransformArray[i].translation.y,
-			mAsset.MapActor.ActorsTransformArray[i].translation.z
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.x,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.y,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.z
 		);
 		auto Scale = XMMatrixScaling(
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.x,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.y,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.z
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.x,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.y,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.z
 		);
 
 		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
-				mAsset.MapActor.ActorsQuatArray[i].X,
-				mAsset.MapActor.ActorsQuatArray[i].Y,
-				mAsset.MapActor.ActorsQuatArray[i].Z,
-				mAsset.MapActor.ActorsQuatArray[i].W
+				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].X,
+				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Y,
+				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Z,
+				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].W
 			} } };
 
 		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
 
 		glm::mat4 translateMat4 = glm::translate(glm::identity<glm::mat4>(), glm::vec3(
-			mAsset.MapActor.ActorsTransformArray[i].translation.x,
-			mAsset.MapActor.ActorsTransformArray[i].translation.y,
-			mAsset.MapActor.ActorsTransformArray[i].translation.z
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.x,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.y,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.z
 		));
 
 		glm::mat4 scaleMat4 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.x,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.y,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.z
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.x,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.y,
+			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.z
 		));
 
 		glm::quat rotationQuat(
-			mAsset.MapActor.ActorsQuatArray[i].X,
-			mAsset.MapActor.ActorsQuatArray[i].Y,
-			mAsset.MapActor.ActorsQuatArray[i].Z,
-			mAsset.MapActor.ActorsQuatArray[i].W
+			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].X,
+			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Y,
+			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Z,
+			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].W
 		);
 		glm::mat4 rotationMat4 = glm::toMat4(rotationQuat);
 
@@ -400,21 +406,21 @@ void Renderer::Draw()
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	for (int i = 0; i < mAsset.MapActor.Size(); i++)//绘制每一个Actor
+	for (int i = 0; i < Engine::Get()->GetAsset()->MapActor.Size(); i++)//绘制每一个Actor
 	{
-		for (auto it = mAsset.MapofGeosMesh.begin(); it != mAsset.MapofGeosMesh.end(); it++)
+		for (auto it = Engine::Get()->GetAsset()->MapofGeosMesh.begin(); it != Engine::Get()->GetAsset()->MapofGeosMesh.end(); it++)
 		{
 			//MapofGeosMesh通过映射找到MapActor的名字对应的Geos中的key
-			if (it->second == mAsset.MapActor.MeshNameArray[i]) {
-				mCommandList->IASetVertexBuffers(0, 1, &mAsset.Geos[it->first]->VertexBufferView());
-				mCommandList->IASetIndexBuffer(&mAsset.Geos[it->first]->IndexBufferView());
+			if (it->second == Engine::Get()->GetAsset()->MapActor.MeshNameArray[i]) {
+				mCommandList->IASetVertexBuffers(0, 1, &Engine::Get()->GetAsset()->Geos[it->first]->VertexBufferView());
+				mCommandList->IASetIndexBuffer(&Engine::Get()->GetAsset()->Geos[it->first]->IndexBufferView());
 				mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 				auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 				heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 				mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
-				mCommandList->DrawIndexedInstanced(mAsset.Geos[it->first]->DrawArgs[mAsset.MapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
+				mCommandList->DrawIndexedInstanced(Engine::Get()->GetAsset()->Geos[it->first]->DrawArgs[Engine::Get()->GetAsset()->MapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
 				break;
 			}
 		}
@@ -509,7 +515,7 @@ void Renderer::CalculateFrameStats()
 	frameCnt++;
 
 	// Compute averages over one second period.
-	if ((Engine::Get()->mTimer.TotalTime() - timeElapsed) >= 1.0f)
+	if ((Engine::Get()->GetGameTimer()->TotalTime() - timeElapsed) >= 1.0f)
 	{
 		float fps = (float)frameCnt; // fps = frameCnt / 1
 		float mspf = 1000.0f / fps;
@@ -550,12 +556,12 @@ void Renderer::BuildDescriptorHeaps()
 {
 
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	if (!mAsset.MapActor.Size())
+	if (!Engine::Get()->GetAsset()->MapActor.Size())
 	{
 		cbvHeapDesc.NumDescriptors = 1;
 	}
 	else {
-		cbvHeapDesc.NumDescriptors = mAsset.MapActor.Size();
+		cbvHeapDesc.NumDescriptors = Engine::Get()->GetAsset()->MapActor.Size();
 	}
 
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -569,7 +575,7 @@ void Renderer::BuildDescriptorHeaps()
 
 void Renderer::SetDescriptorHeaps()
 {
-	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), mAsset.MapActor.Size(), true);
+	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), Engine::Get()->GetAsset()->MapActor.Size(), true);
 
 	UINT DescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	UINT ConstantbufferSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -579,7 +585,7 @@ void Renderer::SetDescriptorHeaps()
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 
 	//循环开辟Heap空间
-	for (int i = 0; i < mAsset.MapActor.Size(); i++)
+	for (int i = 0; i < Engine::Get()->GetAsset()->MapActor.Size(); i++)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 		auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
@@ -732,47 +738,47 @@ void Renderer::OnMouseMove(WPARAM btnState, int x, int y)
 	mLastMousePos.y = y;
 }
 
-void Renderer::OnKeyboardInput(const GameTimer& gt)
-{
-	//const float dt = gt.DeltaTime();
-	const float dt = 5;
-
-	//if (GetAsyncKeyState('W') & 0x8000) {
-	//	mCamera.Walk(mCamera.MoveSpeed * dt);
-	//}
-	//if (GetAsyncKeyState('S') & 0x8000) {
-	//	mCamera.Walk(-(mCamera.MoveSpeed) * dt);
-	//}
-	//if (GetAsyncKeyState('A') & 0x8000) {
-	//	mCamera.Strafe(-(mCamera.MoveSpeed) * dt);
-	//}
-	//if (GetAsyncKeyState('D') & 0x8000) {
-	//	mCamera.Strafe(mCamera.MoveSpeed * dt);
-	//}
-	//if (GetAsyncKeyState('Q') & 0x8000) {
-	//	mCamera.Fly(-(mCamera.MoveSpeed) * dt);
-	//}
-	//if (GetAsyncKeyState('E') & 0x8000) {
-	//	mCamera.Fly(mCamera.MoveSpeed * dt);
-	//}
-	//mCamera.UpdateViewMatrix();
-	if (GetAsyncKeyState('W') & 0x8000) {
-		mCamera->Walk(mCamera->MoveSpeed * dt);
-	}
-	if (GetAsyncKeyState('S') & 0x8000) {
-		mCamera->Walk(-(mCamera->MoveSpeed) * dt);
-	}
-	if (GetAsyncKeyState('A') & 0x8000) {
-		mCamera->Strafe(-(mCamera->MoveSpeed) * dt);
-	}
-	if (GetAsyncKeyState('D') & 0x8000) {
-		mCamera->Strafe(mCamera->MoveSpeed * dt);
-	}
-	if (GetAsyncKeyState('Q') & 0x8000) {
-		mCamera->Fly(-(mCamera->MoveSpeed) * dt);
-	}
-	if (GetAsyncKeyState('E') & 0x8000) {
-		mCamera->Fly(mCamera->MoveSpeed * dt);
-	}
-	mCamera->UpdateViewMatrix();
-}
+//void Renderer::OnKeyboardInput(const GameTimer& gt)
+//{
+//	//const float dt = gt.DeltaTime();
+//	const float dt = 5;
+//
+//	//if (GetAsyncKeyState('W') & 0x8000) {
+//	//	mCamera.Walk(mCamera.MoveSpeed * dt);
+//	//}
+//	//if (GetAsyncKeyState('S') & 0x8000) {
+//	//	mCamera.Walk(-(mCamera.MoveSpeed) * dt);
+//	//}
+//	//if (GetAsyncKeyState('A') & 0x8000) {
+//	//	mCamera.Strafe(-(mCamera.MoveSpeed) * dt);
+//	//}
+//	//if (GetAsyncKeyState('D') & 0x8000) {
+//	//	mCamera.Strafe(mCamera.MoveSpeed * dt);
+//	//}
+//	//if (GetAsyncKeyState('Q') & 0x8000) {
+//	//	mCamera.Fly(-(mCamera.MoveSpeed) * dt);
+//	//}
+//	//if (GetAsyncKeyState('E') & 0x8000) {
+//	//	mCamera.Fly(mCamera.MoveSpeed * dt);
+//	//}
+//	//mCamera.UpdateViewMatrix();
+//	if (GetAsyncKeyState('W') & 0x8000) {
+//		mCamera->Walk(mCamera->MoveSpeed * dt);
+//	}
+//	if (GetAsyncKeyState('S') & 0x8000) {
+//		mCamera->Walk(-(mCamera->MoveSpeed) * dt);
+//	}
+//	if (GetAsyncKeyState('A') & 0x8000) {
+//		mCamera->Strafe(-(mCamera->MoveSpeed) * dt);
+//	}
+//	if (GetAsyncKeyState('D') & 0x8000) {
+//		mCamera->Strafe(mCamera->MoveSpeed * dt);
+//	}
+//	if (GetAsyncKeyState('Q') & 0x8000) {
+//		mCamera->Fly(-(mCamera->MoveSpeed) * dt);
+//	}
+//	if (GetAsyncKeyState('E') & 0x8000) {
+//		mCamera->Fly(mCamera->MoveSpeed * dt);
+//	}
+//	mCamera->UpdateViewMatrix();
+//}
