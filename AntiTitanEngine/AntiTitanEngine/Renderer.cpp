@@ -1,10 +1,31 @@
 #include "stdafx.h"
 #include "Renderer.h"
 
-Microsoft::WRL::ComPtr<ID3D12Device> Renderer::Getd3dDevice() {
-	return md3dDevice;
+Renderer::Renderer()
+{
+
+}
+
+Microsoft::WRL::ComPtr<ID3D12Device>* Renderer::Getd3dDevice() {
+	return &md3dDevice;
 };
 
+bool Renderer::IsDeviceValid()
+{
+	return true;
+}
+
+std::shared_ptr<Camera> Renderer::mCamera = nullptr;
+
+std::shared_ptr<Camera> Renderer::GetCamera()
+{
+	return mCamera;
+}
+
+//Camera* Renderer::GetCamera()
+//{
+//	return &mCamera;
+//}
 
 bool Renderer::Get4xMsaaState() const
 {
@@ -25,6 +46,8 @@ void Renderer::Set4xMsaaState(bool value)
 }
 
 bool Renderer::InitRenderer() {
+
+	mCamera = std::make_shared<Camera>();
 
 #if defined(DEBUG) || defined(_DEBUG) 
 	// Enable the D3D12 debug layer.
@@ -82,6 +105,29 @@ bool Renderer::InitRenderer() {
 	InitDX_CreateCommandObjects();
 	InitDX_CreateSwapChain();
 	InitDX_CreateRtvAndDsvDescriptorHeaps();
+	//--------------------------------------------------------------------------------
+
+
+	OnResize();
+
+	// Reset the command list to prep for initialization commands.
+	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+
+	mAsset.LoadExternalMapActor("MapActorInfo/MapActorInfo.bat");//要先从外部导入地图数据才能绘制//这个应该放在游戏里
+	BuildDescriptorHeaps();
+	BuildRootSignature();
+	BuildShadersAndInputLayout();
+	mAsset.LoadAsset(md3dDevice, mCommandList);
+
+	BuildPSO();
+
+	// Execute the initialization commands.
+	ThrowIfFailed(mCommandList->Close());
+	ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+	// Wait until initialization is complete.
+	FlushCommandQueue();
 
 	return true;
 }
@@ -311,9 +357,13 @@ void Renderer::Update()
 		auto world = Scale * mrotation * location;
 		glm::mat4 worldMat4 = scaleMat4 * rotationMat4 * translateMat4;
 
-		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
-		glm::mat4 worldViewProjMat4 = mCamera.GetProjMat4() * mCamera.GetViewMat4() * worldMat4;
+		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4((&mCamera->GetProj4x4f()));
+		glm::mat4 worldViewProjMat4 = mCamera->GetProjMat4() * mCamera->GetViewMat4() * worldMat4;
+		
+		//XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
+		//glm::mat4 worldViewProjMat4 = mCamera.GetProjMat4() * mCamera.GetViewMat4() * worldMat4;
 
+		
 		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 		objConstants.WorldViewProjMat4 = glm::transpose(worldViewProjMat4);
 
@@ -416,7 +466,6 @@ void Renderer::FlushCommandQueue()
 
 void Renderer::CreateSwapChain()
 {
-
 	// Release the previous swapchain we will be recreating.
 	mSwapChain.Reset();
 
@@ -444,6 +493,56 @@ void Renderer::CreateSwapChain()
 		mCommandQueue.Get(),
 		&sd,
 		mSwapChain.GetAddressOf()));
+
+}
+
+void Renderer::CalculateFrameStats()
+{
+
+	// Code computes the average frames per second, and also the 
+	// average time it takes to render one frame.  These stats 
+	// are appended to the window caption bar.
+
+	static int frameCnt = 0;
+	static float timeElapsed = 0.0f;
+
+	frameCnt++;
+
+	// Compute averages over one second period.
+	if ((Engine::Get()->mTimer.TotalTime() - timeElapsed) >= 1.0f)
+	{
+		float fps = (float)frameCnt; // fps = frameCnt / 1
+		float mspf = 1000.0f / fps;
+
+		std::wstring fpsStr = std::to_wstring(fps);
+		std::wstring mspfStr = std::to_wstring(mspf);
+
+		//std::wstring mCameraX = std::to_wstring(mCamera.mPosition.x);
+		//std::wstring mCameraY = std::to_wstring(mCamera.mPosition.y);
+		//std::wstring mCameraZ = std::to_wstring(mCamera.mPosition.z);
+		//std::wstring totaltime = std::to_wstring(Engine::Get()->GetGameTimer()->TotalTime());
+		
+		std::wstring mCameraX = std::to_wstring(mCamera->mPosition.x);
+		std::wstring mCameraY = std::to_wstring(mCamera->mPosition.y);
+		std::wstring mCameraZ = std::to_wstring(mCamera->mPosition.z);
+		std::wstring totaltime = std::to_wstring(Engine::Get()->GetGameTimer()->TotalTime());
+
+		std::wstring windowText = Engine::Get()->GetWindow()->mMainWndCaption +
+			L"    fps: " + fpsStr +
+			L"   mspf: " + mspfStr +
+			L"   Location: " +
+			L"   x: " + mCameraX +
+			L"   y: " + mCameraY +
+			L"   z: " + mCameraZ +
+			L"   -TotalTime:" + totaltime
+			;
+
+		SetWindowText(std::dynamic_pointer_cast<Win32Window>(Engine::Get()->GetWindow())->mhMainWnd, windowText.c_str());
+
+		// Reset for next average.
+		frameCnt = 0;
+		timeElapsed += 1.0f;
+	}
 
 }
 
@@ -609,7 +708,6 @@ void Renderer::OnMouseDown(WPARAM btnState, int x, int y)
 
 	SetCapture(std::dynamic_pointer_cast<Win32Window>(Engine::Get()->GetWindow())->GetHWND());
 	//SetCapture(dynamic_cast<Win32Window*>(Engine::Get()->GetWindow())->GetHWND());
-
 }
 
 void Renderer::OnMouseUp(WPARAM btnState, int x, int y)
@@ -624,8 +722,10 @@ void Renderer::OnMouseMove(WPARAM btnState, int x, int y)
 		float dx = XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
 		float dy = XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
 
-		mCamera.Pitch(dy);
-		mCamera.Yaw(dx);
+		//mCamera.Pitch(dy);
+		//mCamera.Yaw(dx);
+		mCamera->Pitch(dy);
+		mCamera->Yaw(dx);
 	}
 
 	mLastMousePos.x = x;
@@ -634,31 +734,45 @@ void Renderer::OnMouseMove(WPARAM btnState, int x, int y)
 
 void Renderer::OnKeyboardInput(const GameTimer& gt)
 {
-	const float dt = gt.DeltaTime();
+	//const float dt = gt.DeltaTime();
+	const float dt = 5;
 
+	//if (GetAsyncKeyState('W') & 0x8000) {
+	//	mCamera.Walk(mCamera.MoveSpeed * dt);
+	//}
+	//if (GetAsyncKeyState('S') & 0x8000) {
+	//	mCamera.Walk(-(mCamera.MoveSpeed) * dt);
+	//}
+	//if (GetAsyncKeyState('A') & 0x8000) {
+	//	mCamera.Strafe(-(mCamera.MoveSpeed) * dt);
+	//}
+	//if (GetAsyncKeyState('D') & 0x8000) {
+	//	mCamera.Strafe(mCamera.MoveSpeed * dt);
+	//}
+	//if (GetAsyncKeyState('Q') & 0x8000) {
+	//	mCamera.Fly(-(mCamera.MoveSpeed) * dt);
+	//}
+	//if (GetAsyncKeyState('E') & 0x8000) {
+	//	mCamera.Fly(mCamera.MoveSpeed * dt);
+	//}
+	//mCamera.UpdateViewMatrix();
 	if (GetAsyncKeyState('W') & 0x8000) {
-		mCamera.Walk(mCamera.MoveSpeed * dt);
+		mCamera->Walk(mCamera->MoveSpeed * dt);
 	}
-
 	if (GetAsyncKeyState('S') & 0x8000) {
-		mCamera.Walk(-(mCamera.MoveSpeed) * dt);
+		mCamera->Walk(-(mCamera->MoveSpeed) * dt);
 	}
-
 	if (GetAsyncKeyState('A') & 0x8000) {
-		mCamera.Strafe(-(mCamera.MoveSpeed) * dt);
+		mCamera->Strafe(-(mCamera->MoveSpeed) * dt);
 	}
-
 	if (GetAsyncKeyState('D') & 0x8000) {
-		mCamera.Strafe(mCamera.MoveSpeed * dt);
+		mCamera->Strafe(mCamera->MoveSpeed * dt);
 	}
-
 	if (GetAsyncKeyState('Q') & 0x8000) {
-		mCamera.Fly(-(mCamera.MoveSpeed) * dt);
+		mCamera->Fly(-(mCamera->MoveSpeed) * dt);
 	}
-
 	if (GetAsyncKeyState('E') & 0x8000) {
-		mCamera.Fly(mCamera.MoveSpeed * dt);
+		mCamera->Fly(mCamera->MoveSpeed * dt);
 	}
-
-	mCamera.UpdateViewMatrix();
+	mCamera->UpdateViewMatrix();
 }

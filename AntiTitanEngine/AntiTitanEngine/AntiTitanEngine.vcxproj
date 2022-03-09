@@ -156,6 +156,9 @@
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="Engine.h" />
+    <ClInclude Include="FSingleton.h" />
+    <ClInclude Include="TopAPP.h" />
+    <ClInclude Include="GameLogic.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Launch.h" />
     <ClInclude Include="MathHelper.h" />
@@ -165,6 +168,7 @@
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="StaticMesh.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="WindowsTopApp.h" />
     <ClInclude Include="UploadBuffer.h" />
     <ClInclude Include="Win32Window.h" />
     <ClInclude Include="Window.h" />
@@ -183,18 +187,20 @@
     </ClCompile>
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="Engine.cpp" />
+    <ClCompile Include="TopAPP.cpp" />
+    <ClCompile Include="GameLogic.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="Launch.cpp" />
     <ClCompile Include="LaunchWindows.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MathHelper.cpp" />
-    <ClCompile Include="MeshGeometry.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="StaticMesh.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WindowsTopApp.cpp" />
     <ClCompile Include="Win32Window.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="WindowsApp.cpp" />

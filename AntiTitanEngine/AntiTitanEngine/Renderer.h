@@ -28,8 +28,12 @@
 class Renderer
 {
 public:
-	Microsoft::WRL::ComPtr<ID3D12Device> Getd3dDevice();
+	Renderer();
 
+public:
+	Microsoft::WRL::ComPtr<ID3D12Device>* Getd3dDevice();
+	//std::shared_ptr<Camera> GetCamera();
+	bool IsDeviceValid();
 public:
 	int mCurrBackBuffer = 0;
 
@@ -94,6 +98,9 @@ public:
 
 	void FlushCommandQueue();
 	void CreateSwapChain();
+
+	void CalculateFrameStats();
+
 public:
 	void BuildDescriptorHeaps();
 	void SetDescriptorHeaps();//往Heap里面灌数据
@@ -121,5 +128,7 @@ public://这一部分应该写到Game里，先放在这
 public:
 	Asset mAsset;
 	POINT mLastMousePos;
-	Camera mCamera;
+	//Camera mCamera;
+	static std::shared_ptr<Camera> mCamera;
+	std::shared_ptr<Camera> GetCamera();
 };

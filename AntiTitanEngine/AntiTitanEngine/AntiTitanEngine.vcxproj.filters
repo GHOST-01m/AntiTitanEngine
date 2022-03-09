@@ -19,12 +19,6 @@
     <Filter Include="Source Files\D3D">
       <UniqueIdentifier>{042ff2d2-d2e3-402c-9db7-3670c6abcdd6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\APP">
-      <UniqueIdentifier>{67988997-be63-4711-aac2-0b94ba4add78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\APP">
-      <UniqueIdentifier>{b63604f6-b797-4da6-b595-a6a05c99f407}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\ObsoleteD3DApp">
       <UniqueIdentifier>{cb5f6fef-b31a-4fb7-8024-792eda9ed060}</UniqueIdentifier>
     </Filter>
@@ -58,12 +52,36 @@
     <Filter Include="Header Files\Window\Windows">
       <UniqueIdentifier>{7aa47901-0fb3-4254-88a2-434576c35a3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Asset">
+      <UniqueIdentifier>{b70ece51-ddc8-497c-86f8-aae38d8bc87a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Asset">
+      <UniqueIdentifier>{2b5feb57-2700-478f-b8b7-6d4d7b874568}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ObsoleteAPP">
+      <UniqueIdentifier>{67988997-be63-4711-aac2-0b94ba4add78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ObsoleteAPP">
+      <UniqueIdentifier>{b63604f6-b797-4da6-b595-a6a05c99f407}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\NewFilter1">
+      <UniqueIdentifier>{b7270fdd-eec3-4a69-b8ad-eca14a39c86d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TopAPP">
+      <UniqueIdentifier>{467815f6-1a05-47ba-8039-eefc72342a97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TopAPP\Windows">
+      <UniqueIdentifier>{55e0f4c3-44cf-4edd-a3b0-f5ddc7baac58}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TopAPP">
+      <UniqueIdentifier>{8d629b26-f795-4a1d-95b4-dc8f000c4116}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TopAPP\Windows">
+      <UniqueIdentifier>{cd71728c-fd80-4b54-9592-4407f5f60376}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StaticMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="d3dUtil.h">
@@ -85,10 +103,10 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="App.h">
-      <Filter>Header Files\APP</Filter>
+      <Filter>Header Files\ObsoleteAPP</Filter>
     </ClInclude>
     <ClInclude Include="WindowsApp.h">
-      <Filter>Header Files\APP</Filter>
+      <Filter>Header Files\ObsoleteAPP</Filter>
     </ClInclude>
     <ClInclude Include="d3dApp.h">
       <Filter>Header Files\ObsoleteD3DApp</Filter>
@@ -99,17 +117,11 @@
     <ClInclude Include="MeshGeometry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ActorsInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SceneManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Launch.h">
       <Filter>Header Files\Launch</Filter>
-    </ClInclude>
-    <ClInclude Include="Asset.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Engine.h">
       <Filter>Header Files\Engine</Filter>
@@ -126,12 +138,30 @@
     <ClInclude Include="MyStruct.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Asset.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="ActorsInfo.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticMesh.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TopAPP.h">
+      <Filter>Header Files\TopAPP</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsTopApp.h">
+      <Filter>Header Files\TopAPP\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="FSingleton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StaticMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
@@ -150,22 +180,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WindowsApp.cpp">
-      <Filter>Source Files\APP</Filter>
+      <Filter>Source Files\ObsoleteAPP</Filter>
     </ClCompile>
     <ClCompile Include="App.cpp">
-      <Filter>Source Files\APP</Filter>
+      <Filter>Source Files\ObsoleteAPP</Filter>
     </ClCompile>
     <ClCompile Include="BoxApp.cpp">
       <Filter>Source Files\ObsoleteD3DApp</Filter>
     </ClCompile>
     <ClCompile Include="d3dApp.cpp">
       <Filter>Source Files\ObsoleteD3DApp</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshGeometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ActorsInfo.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SceneManager.cpp">
       <Filter>Source Files</Filter>
@@ -175,9 +199,6 @@
     </ClCompile>
     <ClCompile Include="LaunchWindows.cpp">
       <Filter>Source Files\Launch\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="Asset.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Engine.cpp">
       <Filter>Source Files\Engine</Filter>
@@ -190,6 +211,24 @@
     </ClCompile>
     <ClCompile Include="Win32Window.cpp">
       <Filter>Source Files\Window\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorsInfo.cpp">
+      <Filter>Source Files\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="Asset.cpp">
+      <Filter>Source Files\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticMesh.cpp">
+      <Filter>Source Files\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLogic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TopAPP.cpp">
+      <Filter>Source Files\TopAPP</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsTopApp.cpp">
+      <Filter>Source Files\TopAPP\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

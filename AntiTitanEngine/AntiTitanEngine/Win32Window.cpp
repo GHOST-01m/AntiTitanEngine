@@ -20,7 +20,11 @@ HWND Win32Window::GetHWND() {
 };
 
 LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+	if (!mWin32Window)
+	{
+		return DefWindowProc(hwnd, msg, wParam, lParam);
 
+	}
 	switch (msg)
 	{
 		// WM_ACTIVATE is sent when the window is activated or deactivated.  
@@ -31,7 +35,6 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 		{
 			Engine::Get()->mAppPaused = true;
 			Engine::Get()->GetGameTimer()->Stop();
-
 		}
 		else
 		{
@@ -46,6 +49,8 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 		mClientWidth = LOWORD(lParam);
 		mClientHeight = HIWORD(lParam);
 		if (Engine::Get()->GetRenderer()->Getd3dDevice())
+		//if (Engine::Get()->GetRenderer()->IsDeviceValid())
+		//if (true)
 		{
 			if (wParam == SIZE_MINIMIZED)
 			{
@@ -165,19 +170,19 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 
 };
 
+Win32Window::Win32Window()
+{
+
+}
+
 bool Win32Window::InitWindow(HINSTANCE hInstance) {
-	mhAppInst = hInstance;
-	if (mWin32Window==nullptr)
-	{
-		mWin32Window = new Win32Window;
-	}
 
 	WNDCLASS wc;
 	wc.style = CS_HREDRAW | CS_VREDRAW;
 	wc.lpfnWndProc = Main_WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
-	wc.hInstance = mhAppInst;
+	wc.hInstance = hInstance;
 	wc.hIcon = LoadIcon(0, IDI_APPLICATION);
 	wc.hCursor = LoadCursor(0, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
@@ -207,6 +212,42 @@ bool Win32Window::InitWindow(HINSTANCE hInstance) {
 	ShowWindow(mhMainWnd, SW_SHOW);
 	UpdateWindow(mhMainWnd);
 
-	return true;
 
+	if (mWin32Window == nullptr)
+	{
+		mWin32Window = new Win32Window;
+	}
+	mWin32Window->mhAppInst = hInstance;
+
+	return true;
+}
+
+
+bool Win32Window::Run()
+{
+	bool quit = false;
+
+	MSG msg = { 0 };
+
+	Engine::Get()->GetGameTimer()->Reset();
+
+	// If there are Window messages then process them.
+	while (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		if (msg.hwnd== mhMainWnd)
+		{
+			Main_WndProc(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+		}
+		else 
+		{
+			DispatchMessage(&msg);
+		}
+
+		if (msg.message == WM_QUIT)
+		{
+			quit = true;
+		}
+	}
+	return !quit;
 }

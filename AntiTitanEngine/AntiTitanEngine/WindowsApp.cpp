@@ -596,6 +596,7 @@ void WindowsApp::CalculateFrameStats() {
 		std::wstring mCameraX = std::to_wstring(mCamera.mPosition.x);
 		std::wstring mCameraY = std::to_wstring(mCamera.mPosition.y);
 		std::wstring mCameraZ = std::to_wstring(mCamera.mPosition.z);
+		std::wstring totaltime = std::to_wstring(mTimer.TotalTime());
 
 		std::wstring windowText = mMainWndCaption +
 			L"    fps: " + fpsStr +
@@ -603,7 +604,8 @@ void WindowsApp::CalculateFrameStats() {
 			L"   Location: " + 
 			L"   x: " + mCameraX +
 			L"   y: " + mCameraY +
-			L"   z: " + mCameraZ 
+			L"   z: " + mCameraZ +
+			L"  --totaltime:" + totaltime
 
 			;
 

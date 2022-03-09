@@ -26,7 +26,6 @@ glm::vec3 Camera::GetPositionVec3()const {
 	return mPositionVec3;
 };
 
-
 void Camera::SetPosition(float x, float y, float z)
 {
 	mPosition = XMFLOAT3(x, y, z);
