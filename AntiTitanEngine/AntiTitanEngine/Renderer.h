@@ -34,6 +34,7 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12Device>* Getd3dDevice();
 	//std::shared_ptr<Camera> GetCamera();
 	bool IsDeviceValid();
+	float AspectRatio();
 public:
 	int mCurrBackBuffer = 0;
 
@@ -84,6 +85,8 @@ public:
 public:
 	int mClientWidth = 1920;
 	int mClientHeight = 1080;
+	//int mClientWidth = Engine::Get()->GetWindow()->mClientWidth;
+	//int mClientHeight = Engine::Get()->GetWindow()->mClientHeight;
 
 public:
 	bool InitRenderer();

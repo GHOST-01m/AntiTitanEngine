@@ -112,7 +112,6 @@ bool Renderer::InitRenderer() {
 	InitDX_CreateRtvAndDsvDescriptorHeaps();
 	//--------------------------------------------------------------------------------
 
-
 	OnResize();
 
 	// Reset the command list to prep for initialization commands.
@@ -229,10 +228,12 @@ void Renderer::OnResize()
 		mSwapChainBuffer[i].Reset();
 	mDepthStencilBuffer.Reset();
 
+		
 	// Resize the swap chain.
 	ThrowIfFailed(mSwapChain->ResizeBuffers(
 		SwapChainBufferCount,
-		mClientWidth, mClientHeight,
+		Engine::Get()->GetWindow()->mClientWidth, 
+		Engine::Get()->GetWindow()->mClientHeight,
 		mBackBufferFormat,
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
@@ -250,8 +251,8 @@ void Renderer::OnResize()
 	D3D12_RESOURCE_DESC depthStencilDesc;
 	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = mClientWidth;
-	depthStencilDesc.Height = mClientHeight;
+	depthStencilDesc.Width = Engine::Get()->GetWindow()->mClientWidth;
+	depthStencilDesc.Height = Engine::Get()->GetWindow()->mClientHeight;
 	depthStencilDesc.DepthOrArraySize = 1;
 	depthStencilDesc.MipLevels = 1;
 
@@ -302,14 +303,20 @@ void Renderer::OnResize()
 	// Update the viewport transform to cover the client area.
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(mClientWidth);
-	mScreenViewport.Height = static_cast<float>(mClientHeight);
+	mScreenViewport.Width = static_cast<float>(Engine::Get()->GetWindow()->mClientWidth);
+	mScreenViewport.Height = static_cast<float>(Engine::Get()->GetWindow()->mClientHeight);
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 
-	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
+	mScissorRect = { 0, 0, Engine::Get()->GetWindow()->mClientWidth, Engine::Get()->GetWindow()->mClientHeight };
+
+	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 100000.0f);
 
 }
+
+float Renderer::AspectRatio(){
+	return static_cast<float>(mClientWidth) / mClientHeight;
+};
 
 void Renderer::Update()
 {
