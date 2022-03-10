@@ -6,7 +6,7 @@
 #include "FSingleton.h"
 
 
-class Engine
+class Engine : public Singleton<Engine>
 {	
 	Engine();
 public:
@@ -37,8 +37,10 @@ private:
 	static std::shared_ptr<Renderer>    mRenderer;
 	static std::shared_ptr<Window>      mWindow;
 	static std::shared_ptr<Asset>       mAsset;
+
 public:
 	GameTimer  gt;
+
 public:
 	float mTotalTime;
 

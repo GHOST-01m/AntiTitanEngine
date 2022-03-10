@@ -9,7 +9,7 @@ WindowsTopApp::WindowsTopApp()
 void WindowsTopApp::Init(HINSTANCE hInstance)
 {
 
-	//mGameLogic->LoadMap("MapActorInfo / MapActorInfo.bat");
+	mGameLogic->LoadMap("MapActorInfo/MapActorInfo.bat");
 	//Engine 
 
 	if (!Engine::Get()->InitEngine(hInstance))

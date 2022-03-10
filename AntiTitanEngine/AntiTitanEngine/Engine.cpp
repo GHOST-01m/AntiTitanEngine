@@ -6,7 +6,6 @@ std::shared_ptr<Window>      Engine::mWindow = nullptr;
 std::shared_ptr<Renderer>    Engine::mRenderer = nullptr;
 std::shared_ptr<Asset>       Engine::mAsset = nullptr;
 
-
 Engine::Engine()
 {
 	mEngine = this;
