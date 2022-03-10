@@ -19,6 +19,7 @@ public:
 	static Engine* Get();
 
 	std::shared_ptr<GameTimer> GetGameTimer();
+	//GameTimer* GetGameTimer();
 	std::shared_ptr<Window> GetWindow();
 	std::shared_ptr<Asset> GetAsset();
 	std::shared_ptr <Renderer> GetRenderer();

@@ -24,10 +24,6 @@ void WindowsTopApp::Init(HINSTANCE hInstance)
 
 void WindowsTopApp::Run()
 {
-	auto t0 = Engine::Get();
-	auto t = Engine::Get()->GetWindow();
-	auto t1 = Engine::Get()->mAppPaused;
-
 	while (Engine::Get()->mAppPaused && std::dynamic_pointer_cast<Win32Window>(Engine::Get()->GetWindow())->Run())
 	{
 		Engine::Get()->Tick();

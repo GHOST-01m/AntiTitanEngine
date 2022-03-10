@@ -523,7 +523,7 @@ void Renderer::CalculateFrameStats()
 	frameCnt++;
 
 	// Compute averages over one second period.
-	if ((Engine::Get()->GetGameTimer()->TotalTime() - timeElapsed) >= 1.0f)
+	if ((Engine::Get()->gt.TotalTime() - timeElapsed) >= 1.0f)
 	{
 		float fps = (float)frameCnt; // fps = frameCnt / 1
 		float mspf = 1000.0f / fps;
@@ -539,7 +539,7 @@ void Renderer::CalculateFrameStats()
 		std::wstring mCameraX = std::to_wstring(mCamera->mPosition.x);
 		std::wstring mCameraY = std::to_wstring(mCamera->mPosition.y);
 		std::wstring mCameraZ = std::to_wstring(mCamera->mPosition.z);
-		std::wstring totaltime = std::to_wstring(Engine::Get()->GetGameTimer()->TotalTime());
+		std::wstring totaltime = std::to_wstring(Engine::Get()->gt.TotalTime());
 
 		std::wstring windowText = Engine::Get()->GetWindow()->mMainWndCaption +
 			L"    fps: " + fpsStr +
