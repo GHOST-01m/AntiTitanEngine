@@ -376,9 +376,10 @@ void Renderer::Update()
 		//XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
 		//glm::mat4 worldViewProjMat4 = mCamera.GetProjMat4() * mCamera.GetViewMat4() * worldMat4;
 
-		
 		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 		objConstants.WorldViewProjMat4 = glm::transpose(worldViewProjMat4);
+
+		objConstants.mTime = Engine::Get()->gt.TotalTime();
 
 		mObjectCB->CopyData(i, objConstants);
 	}

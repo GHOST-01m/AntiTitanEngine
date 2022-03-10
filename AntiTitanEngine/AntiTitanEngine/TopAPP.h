@@ -3,12 +3,9 @@
 #include "GameLogic.h"
 class TopAPP
 {
-	
 public:
 	void Init();
 	void Run();
 	void Destroy();
 
-
-	//GameLogic mGameLogic;
 };

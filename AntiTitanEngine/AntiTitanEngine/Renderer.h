@@ -85,8 +85,6 @@ public:
 public:
 	int mClientWidth = 1920;
 	int mClientHeight = 1080;
-	//int mClientWidth = Engine::Get()->GetWindow()->mClientWidth;
-	//int mClientHeight = Engine::Get()->GetWindow()->mClientHeight;
 
 public:
 	bool InitRenderer();

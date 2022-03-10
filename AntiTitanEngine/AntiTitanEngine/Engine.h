@@ -17,32 +17,30 @@ public:
 public:
 	static Engine* mEngine;
 	static Engine* Get();
+
 	std::shared_ptr<GameTimer> GetGameTimer();
 	std::shared_ptr<Window> GetWindow();
 	std::shared_ptr<Asset> GetAsset();
-	//Renderer* GetRenderer();
 	std::shared_ptr <Renderer> GetRenderer();
 
 	bool InitEngine(HINSTANCE hInstance);	//InitEngine内使用到的函数
 		bool InitWindow(HINSTANCE hInstance);
 		bool InitDX();
-
 	void EngineLoop();	//EngineLoop内的函数
-		//bool AppRun();
 		void Tick();
-			//void GameTick();
-			//void RenderTick();
-
 	void EngineDestroy();
-
 	void GuardedMain(HINSTANCE hInstance);
 
-public:
-
+private:
 	static std::shared_ptr<GameTimer>   mTimer;
 	static std::shared_ptr<Renderer>    mRenderer;
 	static std::shared_ptr<Window>      mWindow;
 	static std::shared_ptr<Asset>       mAsset;
+public:
+	GameTimer  gt;
+public:
+	float mTotalTime;
+
 public:
 	bool      mAppPaused = true;  // is the application paused?
 	bool      mMinimized = false;  // is the application minimized?

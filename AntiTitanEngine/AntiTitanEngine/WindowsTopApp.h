@@ -11,7 +11,6 @@ public:
 	void Destroy();
 
 public:
-	//std::unique_ptr<Engine> mEngine;
 	std::shared_ptr<GameLogic> mGameLogic;
 
 };

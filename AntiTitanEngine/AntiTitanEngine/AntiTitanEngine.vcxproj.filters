@@ -64,9 +64,6 @@
     <Filter Include="Source Files\ObsoleteAPP">
       <UniqueIdentifier>{b63604f6-b797-4da6-b595-a6a05c99f407}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\NewFilter1">
-      <UniqueIdentifier>{b7270fdd-eec3-4a69-b8ad-eca14a39c86d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\TopAPP">
       <UniqueIdentifier>{467815f6-1a05-47ba-8039-eefc72342a97}</UniqueIdentifier>
     </Filter>

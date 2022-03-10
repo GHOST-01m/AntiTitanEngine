@@ -8,6 +8,7 @@ cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorldViewProj; 
 	float4x4 gWorldViewProjMat4;
+	float  Time;
 };
 
 struct VertexIn
@@ -26,14 +27,25 @@ struct VertexOut
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
-	
+	float QuickSpeed = 15;
+	float MidSpeed   = 10;
+	float SlowSpeed  = 5;
+
+	float3 PosW;
+
+	PosW.x = vin.PosL.x + sin(Time * 2)*80;
+	PosW.y = vin.PosL.y + sin(Time * MidSpeed);
+	PosW.z = vin.PosL.z + sin(Time * SlowSpeed);
+
 	// Transform to homogeneous clip space.
-	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+	//vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+	vout.PosH = mul(float4(PosW, 1.0f), gWorldViewProj);
+
+
 	//vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProjMat4);
 
 	// Just pass vertex color into the pixel shader.
-    vout.Color = (vin.Normal*0.5f+0.5f);
-    
+	vout.Color = (vin.Normal * 0.5f + 0.5f);
     return vout;
 }
 

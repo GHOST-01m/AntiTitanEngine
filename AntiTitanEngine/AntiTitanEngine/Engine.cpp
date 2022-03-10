@@ -54,17 +54,16 @@ bool Engine::InitEngine(HINSTANCE hInstance) {
 	{
 		return false;
 	}
-	/*std::shared_ptr<Renderer> test = std::make_shared<Renderer>();
-	bool cool = (test == nullptr);*/
+
 	mTimer = std::make_shared<GameTimer>();
 	mRenderer = std::make_shared<Renderer>();
 	mAsset = std::make_shared<Asset>();
+	mTimer->Reset();
+	gt.Reset();
 	if (!InitDX())
 	{
 		return false;
 	}
-
-	mTimer->Reset();
 
 	return true;
 };
@@ -79,10 +78,13 @@ void Engine::EngineLoop() {
 
 void Engine::Tick()
 {
+	gt.Tick();
 	mTimer->Tick();
 	mRenderer->Update();
 	mRenderer->Draw();
 	mRenderer->CalculateFrameStats();
+
+	mTotalTime = mTimer->TotalTime();
 	//mRenderer.Update();
 	//mRenderer.Draw();
 	//mRenderer.CalculateFrameStats();
@@ -90,7 +92,11 @@ void Engine::Tick()
 
 void Engine::EngineDestroy() {
 	mRenderer = nullptr;
+	mWindow = nullptr;
+	mTimer = nullptr;
 	mEngine = nullptr;
+
+	Sleep(100);
 };
 
 void Engine::GuardedMain(HINSTANCE hInstance)
@@ -107,25 +113,15 @@ void Engine::GuardedMain(HINSTANCE hInstance)
 //InitEngine
 bool Engine::InitDX() {
 
-	//Renderer r;
-	//GameTimer gt;
-	//mTimer = gt;
-	//mRenderer = new Renderer;
 	return 	mRenderer->InitRenderer();
 
 };
 
 
 bool Engine::InitWindow(HINSTANCE hInstance) {
-
-	//Win32Window a;
-	//a.InitWindow(hInstance);
-	
 	auto Window = std::make_shared<Win32Window>();
 	mWindow = Window;
 	return Window->InitWindow(hInstance);
-
-	//return dynamic_cast<Win32Window*>(&mWindow)->InitWindow();
 };
 
 
