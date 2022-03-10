@@ -33,7 +33,7 @@ VertexOut VS(VertexIn vin)
 
 	float3 PosW;
 
-	PosW.x = vin.PosL.x + sin(Time * 2)*80;
+	PosW.x = vin.PosL.x + sin(Time * 1.5)* 75;
 	PosW.y = vin.PosL.y + sin(Time * MidSpeed);
 	PosW.z = vin.PosL.z + sin(Time * SlowSpeed);
 

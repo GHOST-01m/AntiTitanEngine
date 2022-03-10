@@ -131,10 +131,10 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 	//	return MAKELRESULT(0, MNC_CLOSE);
 
 		// Catch this message so to prevent the window from becoming too small.
-	//case WM_GETMINMAXINFO:
-	//	((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
-	//	((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
-	//	return 0;
+	case WM_GETMINMAXINFO:
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+		return 0;
 
 	case WM_LBUTTONDOWN:
 	case WM_MBUTTONDOWN:
