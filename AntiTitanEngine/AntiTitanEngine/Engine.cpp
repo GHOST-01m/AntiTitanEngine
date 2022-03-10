@@ -69,11 +69,12 @@ bool Engine::InitEngine(HINSTANCE hInstance) {
 };
 
 void Engine::EngineLoop() {
-
+	//ÒÑ·ÏÆú
 	//while (mAppPaused && std::dynamic_pointer_cast<Win32Window>(mWindow)->Run())
 	//{
 	//	Tick();
 	//}
+
 };
 
 void Engine::Tick()
@@ -83,8 +84,6 @@ void Engine::Tick()
 	mRenderer->Update();
 	mRenderer->Draw();
 	mRenderer->CalculateFrameStats();
-
-	mTotalTime = mTimer->TotalTime();
 	//mRenderer.Update();
 	//mRenderer.Draw();
 	//mRenderer.CalculateFrameStats();
