@@ -21,7 +21,7 @@ void StaticMesh::SetStaticMeshFromBat(const std::string& StaticMeshPath) {
 
 	BatFile.read((char*)&DataLength, sizeof(int32_t));//MeshNormal³¤¶È
 	MeshInfo.MeshVertexNormalInfo.resize(DataLength);
-	BatFile.read((char*)MeshInfo.MeshVertexNormalInfo.data(), sizeof(FVector) * DataLength);//MeshNormal
+	BatFile.read((char*)MeshInfo.MeshVertexNormalInfo.data(), sizeof(FVector4) * DataLength);//MeshNormal
 
 	BatFile.close();
 }

@@ -34,5 +34,4 @@ void WindowsTopApp::Run()
 void WindowsTopApp::Destroy()
 {
 	Engine::Get()->EngineDestroy();
-
 }
