@@ -1,10 +1,11 @@
 #include "stdafx.h"
 
 Engine* Engine::mEngine = new Engine();
-std::shared_ptr<GameTimer>   Engine::mTimer = nullptr;
-std::shared_ptr<Window>      Engine::mWindow = nullptr;
-std::shared_ptr<Renderer>    Engine::mRenderer = nullptr;
-std::shared_ptr<Asset>       Engine::mAsset = nullptr;
+std::shared_ptr<GameTimer>          Engine::mTimer = nullptr;
+std::shared_ptr<Window>             Engine::mWindow = nullptr;
+std::shared_ptr<Renderer>           Engine::mRenderer = nullptr;
+std::shared_ptr<AssetManager>       Engine::mAssetManager = nullptr;
+std::shared_ptr<MaterialSystem>     Engine::mMaterialSystem = nullptr;
 
 Engine::Engine()
 {
@@ -29,9 +30,9 @@ std::shared_ptr<Window> Engine::GetWindow() {
 	return mWindow;
 };
 
-std::shared_ptr<Asset> Engine::GetAsset()
+std::shared_ptr<AssetManager> Engine::GetAssetManager()
 {
-	return mAsset;
+	return mAssetManager;
 }
 
 //Window* Engine::GetWindow() {
@@ -41,6 +42,11 @@ std::shared_ptr<Asset> Engine::GetAsset()
 std::shared_ptr<Renderer> Engine::GetRenderer() {
 	return mRenderer;
 };
+
+std::shared_ptr<MaterialSystem> Engine::GetMaterialSystem()
+{
+	return mMaterialSystem;
+}
 
 //Renderer* Engine::GetRenderer() {
 //	return mRenderer;
@@ -54,9 +60,11 @@ bool Engine::InitEngine(HINSTANCE hInstance) {
 		return false;
 	}
 
-	mTimer = std::make_shared<GameTimer>();
-	mRenderer = std::make_shared<Renderer>();
-	mAsset = std::make_shared<Asset>();
+	mTimer              = std::make_shared<GameTimer>();
+	mRenderer           = std::make_shared<Renderer>();
+	mAssetManager       = std::make_shared<AssetManager>();
+	mMaterialSystem     = std::make_shared<MaterialSystem>();
+
 	mTimer->Reset();
 	gt.Reset();
 	if (!InitDX())
@@ -112,7 +120,6 @@ void Engine::GuardedMain(HINSTANCE hInstance)
 bool Engine::InitDX() {
 
 	return 	mRenderer->InitRenderer();
-
 };
 
 
@@ -121,5 +128,3 @@ bool Engine::InitWindow(HINSTANCE hInstance) {
 	mWindow = Window;
 	return Window->InitWindow(hInstance);
 };
-
-

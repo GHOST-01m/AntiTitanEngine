@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <wrl.h>
 #include <dxgi1_4.h>
 #include <d3d12.h>
@@ -23,7 +22,7 @@
 #include "Common/DDSTextureLoader.h"
 #include "MathHelper.h"
 #include "MyStruct.h"
-#include "Asset.h"
+#include "AssetManager.h"
 
 class Renderer
 {
@@ -32,9 +31,11 @@ public:
 	~Renderer();
 public:
 	Microsoft::WRL::ComPtr<ID3D12Device>* Getd3dDevice();
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
 	//std::shared_ptr<Camera> GetCamera();
 	bool IsDeviceValid();
 	float AspectRatio();
+
 public:
 	int mCurrBackBuffer = 0;
 
@@ -94,12 +95,12 @@ public:
 
 public:
 	void OnResize();
-	void Update() ;
-	void Draw() ;
+	void Update();
+	void Draw();
 
 	void FlushCommandQueue();
 	void CreateSwapChain();
-
+	void LoadAsset();
 	void CalculateFrameStats();
 
 public:
@@ -116,21 +117,17 @@ public:
 
 public:
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
-	
 	ComPtr<ID3D12PipelineState> mPSO = nullptr;
 
-
-public://这一部分应该写到Game里，先放在这
+public://这一部分应该写到Game里
 	void OnMouseDown(WPARAM btnState, int x, int y);
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
 	//void OnKeyboardInput(const GameTimer& gt);
 
 public:
-	//Asset mAsset;
 	POINT mLastMousePos;
 	std::string MapLoadPath= "MapActorInfo/MapActorInfo.bat";
-	//Camera mCamera;
 	static std::shared_ptr<Camera> mCamera;
 	std::shared_ptr<Camera> GetCamera();
 };

@@ -4,24 +4,26 @@
 #include "Camera.h"
 #include "MeshGeometry.h"
 #include "WindowsApp.h"
+#include "MyStruct.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 using namespace DirectX::PackedVector;
 
-struct Vertex
-{
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-	XMFLOAT4 Normal;
-
-	Vertex SetValueFromFVector(FVector& a) {
-		Pos.x = a.X;
-		Pos.y = a.Y;
-		Pos.z = a.Z;
-		Color = { 1.0f, 0.8f, 0.0f, 1.0f };
-	}
-};
+//struct Vertex
+//{
+//	XMFLOAT3 Pos;
+//	XMFLOAT4 Color;
+//	XMFLOAT4 Normal;
+//	
+//
+//	Vertex SetValueFromFVector(FVector& a) {
+//		Pos.x = a.X;
+//		Pos.y = a.Y;
+//		Pos.z = a.Z;
+//		Color = { 1.0f, 0.8f, 0.0f, 1.0f };
+//	}
+//};
 
 class BoxApp : public D3DApp
 {

@@ -118,12 +118,12 @@ bool Renderer::InitRenderer() {
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 	
 	//mAsset.LoadExternalMapActor(MapLoadPath);//要先从外部导入地图数据才能绘制//这个应该放在游戏里
-	Engine::Get()->GetAsset()->LoadExternalMapActor(MapLoadPath);
+	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapLoadPath);
+	Engine::Get()->GetMaterialSystem()->LoadTexture();
 	BuildDescriptorHeaps();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
-	Engine::Get()->GetAsset()->LoadAsset(md3dDevice, mCommandList);
-
+	LoadAsset();
 	BuildPSO();
 
 	// Execute the initialization commands.
@@ -213,7 +213,6 @@ void Renderer::InitDX_CreateRtvAndDsvDescriptorHeaps() {
 
 void Renderer::OnResize()
 {
-
 	assert(md3dDevice);
 	assert(mSwapChain);
 	assert(mDirectCmdListAlloc);
@@ -324,51 +323,58 @@ void Renderer::Update()
 
 	ObjectConstants objConstants;
 
-	for (int i = 0; i < Engine::Get()->GetAsset()->MapActor.Size(); i++)
+	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
 	{
 		//auto world = MathHelper::Identity4x4();
 		auto location = XMMatrixTranslation(
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.x,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.y,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.z
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.z
 		);
 		auto Scale = XMMatrixScaling(
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.x,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.y,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.z
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
+		);
+		auto Rotator = XMMatrixScaling(
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Pitch,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Yaw,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Roll
 		);
 
 		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
-				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].X,
-				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Y,
-				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Z,
-				Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].W
+				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].X,
+				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Y,
+				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Z,
+				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].W
 			} } };
 
 		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
 
 		glm::mat4 translateMat4 = glm::translate(glm::identity<glm::mat4>(), glm::vec3(
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.x,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.y,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].translation.z
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.z
 		));
 
 		glm::mat4 scaleMat4 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.x,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.y,
-			Engine::Get()->GetAsset()->MapActor.ActorsTransformArray[i].scale3D.z
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
 		));
 
 		glm::quat rotationQuat(
-			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].X,
-			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Y,
-			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].Z,
-			Engine::Get()->GetAsset()->MapActor.ActorsQuatArray[i].W
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].X,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Y,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Z,
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].W
 		);
 		glm::mat4 rotationMat4 = glm::toMat4(rotationQuat);
 
 		auto world = Scale * mrotation * location;
 		glm::mat4 worldMat4 = scaleMat4 * rotationMat4 * translateMat4;
+		//!!!旋转矩阵好像有问题，用glm的rotator传给Shader，mul(Normal,rotator)的值不对，表现出来的颜色不是正确的。
+		//!!!要看正确的颜色可以乘XMMATRIX的rotation，XMMATRIX还要转化为FLOAT4X4
 
 		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4((&mCamera->GetProj4x4f()));
 		glm::mat4 worldViewProjMat4 = mCamera->GetProjMat4() * mCamera->GetViewMat4() * worldMat4;
@@ -378,8 +384,24 @@ void Renderer::Update()
 
 		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 		objConstants.WorldViewProjMat4 = glm::transpose(worldViewProjMat4);
-
 		objConstants.mTime = Engine::Get()->gt.TotalTime();
+		XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
+		//objConstants.rotation = rotationMat4;
+
+		//objConstants.CanMove = 1;
+		// 
+		//设定只有指定名字的mesh可以动
+		//auto name = Engine::Get()->GetAsset()->GetMapActorInfo()->MeshNameArray[i];
+		//std::string MoveMeshName = "Shape_Cube";
+		// MoveMeshName = name;
+
+		//if (name == MoveMeshName)
+		//{
+		//	objConstants.CanMove = true;
+		//}
+		//else {
+		//	objConstants.CanMove = false;
+		//}
 
 		mObjectCB->CopyData(i, objConstants);
 	}
@@ -414,25 +436,51 @@ void Renderer::Draw()
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	for (int i = 0; i < Engine::Get()->GetAsset()->MapActor.Size(); i++)//绘制每一个Actor
+	//for (int i = 0; i < Engine::Get()->GetAsset()->GetMapActorInfo()->Size(); i++)//绘制每一个Actor
+	//{
+	//	for (auto it = Engine::Get()->GetAsset()->GetMapofGeosMesh().begin(); it != Engine::Get()->GetAsset()->GetMapofGeosMesh().end(); it++)
+	//	{
+	//		//MapofGeosMesh通过映射找到MapActor的名字对应的Geos中的key
+	//		if (it->second == Engine::Get()->GetAsset()->GetMapActorInfo()->MeshNameArray[i]) {
+
+	//			auto a = Engine::Get()->GetAsset()->GetGeometryLibrary();
+	//			mCommandList->IASetVertexBuffers(0, 1, &Engine::Get()->GetAsset()->Geos[it->first]->VertexBufferView());
+	//			mCommandList->IASetIndexBuffer(&Engine::Get()->GetAsset()->Geos[it->first]->IndexBufferView());
+	//			mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//			auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+	//			heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	//			mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
+
+	//			mCommandList->DrawIndexedInstanced(Engine::Get()->GetAsset()->Geos[it->first]->DrawArgs[Engine::Get()->GetAsset()->mMapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
+	//			break;
+	//		}
+	//	}
+	//}
+
+	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)//绘制每一个Actor
 	{
-		for (auto it = Engine::Get()->GetAsset()->MapofGeosMesh.begin(); it != Engine::Get()->GetAsset()->MapofGeosMesh.end(); it++)
-		{
-			//MapofGeosMesh通过映射找到MapActor的名字对应的Geos中的key
-			if (it->second == Engine::Get()->GetAsset()->MapActor.MeshNameArray[i]) {
-				mCommandList->IASetVertexBuffers(0, 1, &Engine::Get()->GetAsset()->Geos[it->first]->VertexBufferView());
-				mCommandList->IASetIndexBuffer(&Engine::Get()->GetAsset()->Geos[it->first]->IndexBufferView());
-				mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		auto GeoIndex = Engine::Get()->GetAssetManager()->GetGeoKeyByName(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
 
-				auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
-				heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-				mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
+		mCommandList->IASetVertexBuffers(0, 1, &Engine::Get()->GetAssetManager()->Geos[GeoIndex]->VertexBufferView());
+		mCommandList->IASetIndexBuffer(&Engine::Get()->GetAssetManager()->Geos[GeoIndex]->IndexBufferView());
+		mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-				mCommandList->DrawIndexedInstanced(Engine::Get()->GetAsset()->Geos[it->first]->DrawArgs[Engine::Get()->GetAsset()->MapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
-				break;
-			}
-		}
+		auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+		heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+		mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
+
+
+		//贴图的Size要记得改下面的Offset
+		auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+		GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(), md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+		mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
+
+		mCommandList->DrawIndexedInstanced(Engine::Get()->GetAssetManager()->Geos[GeoIndex]->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
 	}
+
+	mCommandList->SetGraphicsRoot32BitConstants(2, 3, &mCamera->GetPosition(), 0);
+
 	// Indicate a state transition on the resource usage.
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -510,6 +558,93 @@ void Renderer::CreateSwapChain()
 
 }
 
+void Renderer::LoadAsset()//将外部导入的Actor信息赋给VS
+{
+	std::string StaticMeshPath;
+	std::set<std::string> StaticMeshs;//用于去重
+
+	StaticMesh mesh;
+
+	Engine::Get()->GetAssetManager()->GetGeometryLibrary()->resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
+
+	Vertex vertice;
+
+	UINT vbByteSize;
+	UINT ibByteSize;
+
+	//循环加入MeshGeometry
+	for (int i = 0; i < Engine::Get()->GetAssetManager()->Geos.size(); i++)
+	{
+		std::vector<Vertex> vertices;
+		std::vector<int32_t> indices;
+		//相同的StaticMesh不用重复建立
+		auto check = StaticMeshs.find(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
+		if (check == StaticMeshs.end()) {
+			StaticMeshs.insert(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
+			Engine::Get()->GetAssetManager()->GetMapofGeosMesh()->insert(std::pair<int, std::string>(i, Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]));
+		}
+		else { continue; }
+
+		//读取mesh信息
+		StaticMeshPath = "SplitMesh/" + Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
+		//StaticMeshPath = "SplitMesh/SM_MatPreviewMesh_02";
+		StaticMeshPath.erase(StaticMeshPath.length() - 1);
+		StaticMeshPath += ".bat";
+		mesh.LoadStaticMeshFromBat(StaticMeshPath);
+
+		if (mesh.MeshInfo.MeshVertexInfo.size() < 3) { continue; }//没有StaticMesh就不读取
+		//--------------------------------------------------------------------------------
+
+		for (int j = 0; j < mesh.MeshInfo.MeshVertexInfo.size(); j++)
+		{
+			vertice.Pos = mesh.MeshInfo.MeshVertexInfo[j];
+			vertice.Color = {
+				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+				1 };//初始化赋值为黑白色
+			vertice.Normal = mesh.MeshInfo.MeshVertexNormalInfo[j];
+			vertice.TexCoord = mesh.MeshInfo.MeshTexCoord[j];
+
+			vertices.push_back(vertice);
+		}
+
+		indices = mesh.MeshInfo.MeshIndexInfo;
+
+		vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+		ibByteSize = (UINT)indices.size() * sizeof(std::uint32_t);
+
+		Engine::Get()->GetAssetManager()->Geos[i] = std::make_unique<MeshGeometry>();
+		Engine::Get()->GetAssetManager()->Geos[i]->Name = mesh.getMeshName();
+
+		ThrowIfFailed(D3DCreateBlob(vbByteSize, &Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferCPU));
+		CopyMemory(Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+		ThrowIfFailed(D3DCreateBlob(ibByteSize, &Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferCPU));
+		CopyMemory(Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+		Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+			mCommandList.Get(), vertices.data(), vbByteSize, Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferUploader);
+
+		Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+			mCommandList.Get(), indices.data(), ibByteSize, Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferUploader);
+
+		Engine::Get()->GetAssetManager()->Geos[i]->VertexByteStride = sizeof(Vertex);
+		Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferByteSize = vbByteSize;
+		Engine::Get()->GetAssetManager()->Geos[i]->IndexFormat = DXGI_FORMAT_R32_UINT;
+		Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferByteSize = ibByteSize;
+
+		SubmeshGeometry submesh;
+		submesh.IndexCount = (UINT)indices.size();
+		submesh.StartIndexLocation = 0;
+		submesh.BaseVertexLocation = 0;
+
+		//Geos[i]->DrawArgs["box"] = submesh;
+		Engine::Get()->GetAssetManager()->Geos[i]->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]] = submesh;
+		//--------------------------------------------------------------------------------
+	}
+}
+
 void Renderer::CalculateFrameStats()
 {
 
@@ -562,14 +697,15 @@ void Renderer::CalculateFrameStats()
 
 void Renderer::BuildDescriptorHeaps()
 {
-
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	if (!Engine::Get()->GetAsset()->MapActor.Size())
+	if (!Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size())
 	{
 		cbvHeapDesc.NumDescriptors = 1;
 	}
 	else {
-		cbvHeapDesc.NumDescriptors = Engine::Get()->GetAsset()->MapActor.Size();
+		cbvHeapDesc.NumDescriptors = 
+			Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size() + 
+			Engine::Get()->GetMaterialSystem()->GetTextureNum();//Actor数量加材质数量
 	}
 
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -583,33 +719,57 @@ void Renderer::BuildDescriptorHeaps()
 
 void Renderer::SetDescriptorHeaps()
 {
-	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), Engine::Get()->GetAsset()->MapActor.Size(), true);
+	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(),Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(),true);
+
 
 	UINT DescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	UINT ConstantbufferSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
+	UINT ShaderResourceSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	// Offset to the ith object constant buffer in the buffer.
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 
+
 	//循环开辟Heap空间
-	for (int i = 0; i < Engine::Get()->GetAsset()->MapActor.Size(); i++)
+	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
 	{
-		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 		auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
+
+		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 		heapCPUHandle.Offset(i, DescriptorSize);
 		cbAddress += i * ConstantbufferSize;
-		//cbAddress=uploadBuffer[i]->GetGPUVirtualAddress();
 		cbvDesc.BufferLocation = cbAddress;
 		cbvDesc.SizeInBytes = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 		md3dDevice->CreateConstantBufferView(&cbvDesc, heapCPUHandle);
+	}
+
+
+	for (int srvIndex=0; srvIndex<Engine::Get()->GetMaterialSystem()->GetTextureNum(); srvIndex++)
+	{
+		auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
+
+		UINT HandleOffsetNum = srvIndex + Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size();//因为是在偏移了上面的CBV地址之后再做的偏移，所以这里要加上之前CBV已经偏移过的数量
+		heapCPUHandle.Offset(HandleOffsetNum, ShaderResourceSize);
+
+		auto testTextureResource = Engine::Get()->GetMaterialSystem()->GetTexture()->Resource;
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = testTextureResource->GetDesc().Format;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = testTextureResource->GetDesc().MipLevels;
+		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+		md3dDevice->CreateShaderResourceView(testTextureResource.Get(), &srvDesc, heapCPUHandle);
 
 	}
+
 }
 
 void Renderer::BuildRootSignature()
 {
-
 	// Shader programs typically require resources as input (constant buffers,
 	// textures, samplers).  The root signature defines the resources the shader
 	// programs expect.  If we think of the shader programs as a function, and
@@ -617,15 +777,25 @@ void Renderer::BuildRootSignature()
 	// thought of as defining the function signature.  
 
 	// Root parameter can be a table, root descriptor or root constants.
-	CD3DX12_ROOT_PARAMETER slotRootParameter[1];
+
+	CD3DX12_ROOT_PARAMETER slotRootParameter[3];
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
+	CD3DX12_DESCRIPTOR_RANGE srvTable;
 	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
 	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
+	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+	slotRootParameter[1].InitAsDescriptorTable(1, &srvTable);
+
+	slotRootParameter[2].InitAsConstants(1,1);
+
+	auto staticSamplers = GetStaticSamplers();	//获得静态采样器集合
+
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(1, slotRootParameter, 0, nullptr,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter, 
+		(UINT)staticSamplers.size(),staticSamplers.data(),
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
@@ -661,7 +831,8 @@ void Renderer::BuildShadersAndInputLayout()
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
 
@@ -746,6 +917,62 @@ void Renderer::OnMouseMove(WPARAM btnState, int x, int y)
 	mLastMousePos.y = y;
 }
 
+std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> Renderer::GetStaticSamplers()
+{
+	// Applications usually only need a handful of samplers.  So just define them all up front
+	// and keep them available as part of the root signature.  
+
+	const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
+		0, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC pointClamp(
+		1, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC linearWrap(
+		2, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC linearClamp(
+		3, // shaderRegister
+		D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
+
+	const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
+		4, // shaderRegister
+		D3D12_FILTER_ANISOTROPIC, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_WRAP,  // addressW
+		0.0f,                             // mipLODBias
+		8);                               // maxAnisotropy
+
+	const CD3DX12_STATIC_SAMPLER_DESC anisotropicClamp(
+		5, // shaderRegister
+		D3D12_FILTER_ANISOTROPIC, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // addressW
+		0.0f,                              // mipLODBias
+		8);                                // maxAnisotropy
+
+	return {
+		pointWrap, pointClamp,
+		linearWrap, linearClamp,
+		anisotropicWrap, anisotropicClamp };
+}
 //void Renderer::OnKeyboardInput(const GameTimer& gt)
 //{
 //	//const float dt = gt.DeltaTime();

@@ -5,7 +5,7 @@
 #include "vector"
 #include "ActorsInfo.h"
 #include "map"
-#include "Asset.h"
+#include "AssetManager.h"
 #include "MyStruct.h"
 
 class WindowsApp : public App {
@@ -86,6 +86,6 @@ private:
 POINT mLastMousePos;
 //Camera mCamera;
 
-Asset mAsset;
+AssetManager mAsset;
 
 };

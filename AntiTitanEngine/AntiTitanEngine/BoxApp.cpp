@@ -218,8 +218,8 @@ void BoxApp::BuildConstantBuffers()
     mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), 1, true);
 
     UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
-
     D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
+
     // Offset to the ith object constant buffer in the buffer.
     int boxCBufIndex = 0;
     cbAddress += boxCBufIndex * objCBByteSize;
@@ -335,7 +335,7 @@ void BoxApp::BuildBoxGeometry()
     //ртиоря╥офЗ
 
     StaticMesh mesh;
-    mesh.SetStaticMeshFromBat("StaticMesh\\SM_Chair.bat");
+    mesh.LoadStaticMeshFromBat("StaticMesh\\SM_Chair.bat");
 	if (mesh.MeshInfo.MeshVertexInfo.size() < 3) { return; }
 
     std::vector<Vertex> vertices;

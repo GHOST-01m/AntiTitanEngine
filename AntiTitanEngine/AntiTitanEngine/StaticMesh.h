@@ -19,6 +19,14 @@ struct FVector
 	//	return { X,Y,Z };
 	//}
 };
+
+
+struct FVector2D
+{
+	float X;
+	float Y;
+};
+
 struct FVector4
 {
 	float X;
@@ -45,6 +53,7 @@ public:
 	std::vector<FVector> MeshVertexInfo;
 	std::vector<int32_t> MeshIndexInfo;
 	std::vector<FVector4> MeshVertexNormalInfo;
+	std::vector<FVector2D> MeshTexCoord;
 };
 
 
@@ -55,7 +64,7 @@ public:
 	StaticMeshInfo MeshInfo;
 
 public:
-	void SetStaticMeshFromBat(const std::string& filepath);
+	void LoadStaticMeshFromBat(const std::string& filepath);
 
 public:
 	std::string getMeshName();

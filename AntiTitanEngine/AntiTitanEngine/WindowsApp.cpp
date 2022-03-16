@@ -117,25 +117,25 @@ void WindowsApp::Update(const GameTimer& gt) {
 
 	ObjectConstants objConstants;
 
-	for (int i =0;i<mAsset.MapActor.Size();i++)
+	for (int i =0;i<mAsset.GetMapActorInfo()->Size();i++)
 	{
 		//auto world = MathHelper::Identity4x4();
 		auto location=XMMatrixTranslation(
-			mAsset.MapActor.ActorsTransformArray[i].translation.x,
-			mAsset.MapActor.ActorsTransformArray[i].translation.y,
-			mAsset.MapActor.ActorsTransformArray[i].translation.z
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].translation.x,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].translation.y,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].translation.z
 			);
 		auto Scale = XMMatrixScaling(
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.x,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.y,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.z
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
 		);
 
 		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
-				mAsset.MapActor.ActorsQuatArray[i].X,
-				mAsset.MapActor.ActorsQuatArray[i].Y,
-				mAsset.MapActor.ActorsQuatArray[i].Z,
-				mAsset.MapActor.ActorsQuatArray[i].W
+				mAsset.GetMapActorInfo()->ActorsQuatArray[i].X,
+				mAsset.GetMapActorInfo()->ActorsQuatArray[i].Y,
+				mAsset.GetMapActorInfo()->ActorsQuatArray[i].Z,
+				mAsset.GetMapActorInfo()->ActorsQuatArray[i].W
 			} } };
 		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
 
@@ -146,22 +146,22 @@ void WindowsApp::Update(const GameTimer& gt) {
 		//);//直接用虚幻的角度是不对的
 
 		glm::mat4 translateMat4 = glm::translate(glm::identity<glm::mat4>(), glm::vec3(
-			mAsset.MapActor.ActorsTransformArray[i].translation.x,
-			mAsset.MapActor.ActorsTransformArray[i].translation.y,
-			mAsset.MapActor.ActorsTransformArray[i].translation.z
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].translation.x,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].translation.y,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].translation.z
 		));
 
 		glm::mat4 scaleMat4 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.x,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.y,
-			mAsset.MapActor.ActorsTransformArray[i].scale3D.z
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
+			mAsset.GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
 		));
 
 		glm::quat rotationQuat(
-			mAsset.MapActor.ActorsQuatArray[i].X,
-			mAsset.MapActor.ActorsQuatArray[i].Y,
-			mAsset.MapActor.ActorsQuatArray[i].Z,
-			mAsset.MapActor.ActorsQuatArray[i].W
+			mAsset.GetMapActorInfo()->ActorsQuatArray[i].X,
+			mAsset.GetMapActorInfo()->ActorsQuatArray[i].Y,
+			mAsset.GetMapActorInfo()->ActorsQuatArray[i].Z,
+			mAsset.GetMapActorInfo()->ActorsQuatArray[i].W
 		);
 		glm::mat4 rotationMat4 = glm::toMat4(rotationQuat);
 
@@ -207,12 +207,12 @@ void WindowsApp::Draw(const GameTimer& gt) {
 
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
-	for (int i=0;i< mAsset.MapActor.Size();i++)//绘制每一个Actor
+	for (int i=0;i< mAsset.GetMapActorInfo()->Size();i++)//绘制每一个Actor
 	{
-		for (auto it = mAsset.MapofGeosMesh.begin(); it != mAsset.MapofGeosMesh.end(); it++)
+		for (auto it = mAsset.GetMapofGeosMesh()->begin(); it != mAsset.GetMapofGeosMesh()->end(); it++)
 		{
 			//MapofGeosMesh通过映射找到MapActor的名字对应的Geos中的key
-			if (it->second == mAsset.MapActor.MeshNameArray[i]){
+			if (it->second == mAsset.GetMapActorInfo()->MeshNameArray[i]){
 			mCommandList->IASetVertexBuffers(0, 1, &mAsset.Geos[it->first]->VertexBufferView());
 			mCommandList->IASetIndexBuffer(&mAsset.Geos[it->first]->IndexBufferView());
 			mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -221,7 +221,7 @@ void WindowsApp::Draw(const GameTimer& gt) {
 			heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 			mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
-			mCommandList->DrawIndexedInstanced(mAsset.Geos[it->first]->DrawArgs[mAsset.MapActor.MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
+			mCommandList->DrawIndexedInstanced(mAsset.Geos[it->first]->DrawArgs[mAsset.GetMapActorInfo()->MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
 			break;
 			}
 		}
@@ -621,12 +621,12 @@ void WindowsApp::CalculateFrameStats() {
 void WindowsApp::BuildDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	if (!mAsset.MapActor.Size())
+	if (!mAsset.GetMapActorInfo()->Size())
 	{
 		cbvHeapDesc.NumDescriptors = 1;
 	}
 	else {
-		cbvHeapDesc.NumDescriptors = mAsset.MapActor.Size();
+		cbvHeapDesc.NumDescriptors = mAsset.GetMapActorInfo()->Size();
 	}
 
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -640,7 +640,7 @@ void WindowsApp::BuildDescriptorHeaps()
 
 void WindowsApp::SetDescriptorHeaps() {//给Heap开辟空间
 
-	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), mAsset.MapActor.Size(), true);
+	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), mAsset.GetMapActorInfo()->Size(), true);
 
 	UINT DescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	UINT ConstantbufferSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -650,7 +650,7 @@ void WindowsApp::SetDescriptorHeaps() {//给Heap开辟空间
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
 
 	//循环开辟Heap空间
-	for (int i=0;i< mAsset.MapActor.Size();i++)
+	for (int i=0;i< mAsset.GetMapActorInfo()->Size();i++)
 	{
 		D3D12_GPU_VIRTUAL_ADDRESS cbAddress = mObjectCB->Resource()->GetGPUVirtualAddress();
 		auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());

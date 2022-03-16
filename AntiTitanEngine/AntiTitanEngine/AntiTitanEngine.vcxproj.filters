@@ -76,6 +76,15 @@
     <Filter Include="Source Files\TopAPP\Windows">
       <UniqueIdentifier>{cd71728c-fd80-4b54-9592-4407f5f60376}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Other">
+      <UniqueIdentifier>{5c041193-2059-42dd-80fd-ee519cc4efab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\RHI">
+      <UniqueIdentifier>{308738bb-05b8-4bda-997d-94f847afd3e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RHI">
+      <UniqueIdentifier>{fef76344-aef6-4cc4-8702-b4f5380b2e0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -96,9 +105,6 @@
     <ClInclude Include="UploadBuffer.h">
       <Filter>Header Files\D3D</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="App.h">
       <Filter>Header Files\ObsoleteAPP</Filter>
     </ClInclude>
@@ -110,12 +116,6 @@
     </ClInclude>
     <ClInclude Include="BoxApp.h">
       <Filter>Header Files\ObsoleteD3DApp</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshGeometry.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneManager.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Launch.h">
       <Filter>Header Files\Launch</Filter>
@@ -132,10 +132,7 @@
     <ClInclude Include="Win32Window.h">
       <Filter>Header Files\Window\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="MyStruct.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Asset.h">
+    <ClInclude Include="AssetManager.h">
       <Filter>Header Files\Asset</Filter>
     </ClInclude>
     <ClInclude Include="ActorsInfo.h">
@@ -144,9 +141,6 @@
     <ClInclude Include="StaticMesh.h">
       <Filter>Header Files\Asset</Filter>
     </ClInclude>
-    <ClInclude Include="GameLogic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TopAPP.h">
       <Filter>Header Files\TopAPP</Filter>
     </ClInclude>
@@ -154,10 +148,28 @@
       <Filter>Header Files\TopAPP\Windows</Filter>
     </ClInclude>
     <ClInclude Include="FSingleton.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Other</Filter>
     </ClInclude>
-    <ClInclude Include="InputGameLogic.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="MeshGeometry.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLogic.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="MyStruct.h">
+      <Filter>Header Files\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialSystem.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DDSTextureLoader.h">
+      <Filter>Header Files\D3D</Filter>
+    </ClInclude>
+    <ClInclude Include="RHI.h">
+      <Filter>Header Files\RHI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -176,9 +188,6 @@
     <ClCompile Include="MathHelper.cpp">
       <Filter>Source Files\D3D</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WindowsApp.cpp">
       <Filter>Source Files\ObsoleteAPP</Filter>
     </ClCompile>
@@ -190,9 +199,6 @@
     </ClCompile>
     <ClCompile Include="d3dApp.cpp">
       <Filter>Source Files\ObsoleteD3DApp</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneManager.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Launch.cpp">
       <Filter>Source Files\Launch</Filter>
@@ -215,14 +221,11 @@
     <ClCompile Include="ActorsInfo.cpp">
       <Filter>Source Files\Asset</Filter>
     </ClCompile>
-    <ClCompile Include="Asset.cpp">
+    <ClCompile Include="AssetManager.cpp">
       <Filter>Source Files\Asset</Filter>
     </ClCompile>
     <ClCompile Include="StaticMesh.cpp">
       <Filter>Source Files\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLogic.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TopAPP.cpp">
       <Filter>Source Files\TopAPP</Filter>
@@ -230,8 +233,20 @@
     <ClCompile Include="WindowsTopApp.cpp">
       <Filter>Source Files\TopAPP\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="InputGameLogic.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GameLogic.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialSystem.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DDSTextureLoader.cpp">
+      <Filter>Source Files\D3D</Filter>
+    </ClCompile>
+    <ClCompile Include="RHI.cpp">
+      <Filter>Source Files\RHI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

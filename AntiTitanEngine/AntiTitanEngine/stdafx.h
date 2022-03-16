@@ -63,13 +63,14 @@
 #include "App.h"
 #include "WindowsApp.h"
 #include "ActorsInfo.h"
-#include "Asset.h"
+#include "AssetManager.h"
 #include "Renderer.h"
 #include "Engine.h"
 #include "Window.h"
 #include "Win32Window.h"
 #include "TopAPP.h"
 #include "WindowsTopApp.h"
+#include "MaterialSystem.h"
 
 
 
