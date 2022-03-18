@@ -35,10 +35,6 @@ std::shared_ptr<AssetManager> Engine::GetAssetManager()
 	return mAssetManager;
 }
 
-//Window* Engine::GetWindow() {
-//	return &mWindow;
-//};
-
 std::shared_ptr<Renderer> Engine::GetRenderer() {
 	return mRenderer;
 };
@@ -54,9 +50,7 @@ std::shared_ptr<MaterialSystem> Engine::GetMaterialSystem()
 
 bool Engine::InitEngine(HINSTANCE hInstance) {
 
-
-	if (!InitWindow( hInstance))
-	{
+	if (!InitWindow( hInstance)){
 		return false;
 	}
 
@@ -67,8 +61,7 @@ bool Engine::InitEngine(HINSTANCE hInstance) {
 
 	mTimer->Reset();
 	gt.Reset();
-	if (!InitDX())
-	{
+	if (!InitDX()){
 		return false;
 	}
 
@@ -81,7 +74,6 @@ void Engine::EngineLoop() {
 	//{
 	//	Tick();
 	//}
-
 };
 
 void Engine::Tick()
@@ -90,7 +82,7 @@ void Engine::Tick()
 	mTimer->Tick();
 	mRenderer->Update();
 	mRenderer->Draw();
-	mRenderer->CalculateFrameStats();
+	mRenderer->CalculateFrameStats();//这玩意其实应该放到Game里，但是这一行代码用不用无所谓，只是在窗口最上面显示一些信息
 	//mRenderer.Update();
 	//mRenderer.Draw();
 	//mRenderer.CalculateFrameStats();
@@ -119,7 +111,7 @@ void Engine::GuardedMain(HINSTANCE hInstance)
 //InitEngine
 bool Engine::InitDX() {
 
-	return 	mRenderer->InitRenderer();
+	return 	mRenderer->Init();
 };
 
 

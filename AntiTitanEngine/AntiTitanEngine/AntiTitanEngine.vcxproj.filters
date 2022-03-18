@@ -85,6 +85,24 @@
     <Filter Include="Source Files\RHI">
       <UniqueIdentifier>{fef76344-aef6-4cc4-8702-b4f5380b2e0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\RHI\DX">
+      <UniqueIdentifier>{a22386f1-9081-403d-b9be-39a3a8ff3726}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\RHI\OpenGL">
+      <UniqueIdentifier>{cb4627f9-fc64-4ea5-baab-d963fbde7a4e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RHI\DX">
+      <UniqueIdentifier>{1f05387f-1733-4f8c-a4bd-c81c16070388}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RHI\OpenGL">
+      <UniqueIdentifier>{059e8bea-3c75-4c63-b9d7-dca27ffff0a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\RHIResource">
+      <UniqueIdentifier>{1f44bcf0-7dd1-4c52-a45d-42177b93b620}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RHIResource">
+      <UniqueIdentifier>{400962fd-503e-4605-aab5-8ec01fa9010b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -171,6 +189,18 @@
     <ClInclude Include="RHI.h">
       <Filter>Header Files\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="DXRHI.h">
+      <Filter>Header Files\RHI\DX</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGLRHI.h">
+      <Filter>Header Files\RHI\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="RHIResource.h">
+      <Filter>Header Files\RHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="DXRHIResource.h">
+      <Filter>Header Files\RHIResource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -247,6 +277,18 @@
     </ClCompile>
     <ClCompile Include="RHI.cpp">
       <Filter>Source Files\RHI</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRHI.cpp">
+      <Filter>Source Files\RHI\DX</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGLRHI.cpp">
+      <Filter>Source Files\RHI\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRHIResource.cpp">
+      <Filter>Source Files\RHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="RHIResource.cpp">
+      <Filter>Source Files\RHIResource</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,6 +1,32 @@
 #pragma once
 #include "stdafx.h"
 
+struct Color
+{
+	float r;
+	float g;
+	float b;
+	float a;
+};
+
+struct ScissorRect
+{
+	long    left;
+	long    top;
+	long    right;
+	long     bottom;
+};
+
+struct ScreenViewport 
+{
+	float TopLeftX;
+	float TopLeftY;
+	float Width;
+	float Height;
+	float MinDepth;
+	float MaxDepth;
+};
+
 struct Location
 {
 	float x;
