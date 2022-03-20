@@ -99,6 +99,7 @@ struct ObjectConstants
 
 struct Texture
 {
+public:
 	// Unique material name for lookup.
 	std::string Name;
 

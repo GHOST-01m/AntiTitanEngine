@@ -5,7 +5,7 @@
 //***************************************************************************************
 
 Texture2D    gDiffuseMap : register(t0);
-//Texture2D    gNormalMap : register(t1);
+Texture2D    gNormalMap : register(t1);
 
 SamplerState gsamPointWrap        : register(s0);
 SamplerState gsamPointClamp       : register(s1);

@@ -1,7 +1,7 @@
 #pragma once
 #include "RHI.h"
-#include "RHIResource.h"
-#include "DXRHIResource.h"
+#include "RHIResourceManager.h"
+#include "DXRHIResourceManager.h"
 
 #include <wrl.h>
 #include <dxgi1_4.h>
@@ -26,11 +26,13 @@
 #include "MathHelper.h"
 #include "MyStruct.h"
 #include "AssetManager.h"
+#include "RHI.h"
+#include "DXRHIResourceManager.h"
 
 class DXRHI :public RHI
 {
 public:
-	std::shared_ptr<RHIResource> GetResource()override;
+	std::shared_ptr<RHIResourceManager> GetResource()override;
 	std::shared_ptr<Camera> GetCamera()override;
 
 public:
@@ -92,12 +94,41 @@ public:
 
 public:
 	bool Init() override;
+		void InitMember() override;
+		void LoadExternalMapActor(std::string Path)override;
+		void LoadTexture(std::wstring Path)override;
+		void BuildTexture(std::string Name,std::wstring Path)override;
+		void BuildMember()override;
+		void SetShader(std::wstring ShaderPath)override;
+		void InitPSO()override;
+		void LoadMeshAndSetBuffer()override;
+		void CreateVBIB()override;
+		void Execute()override;
+		//std::shared_ptr<RHIFactory> CreateFactory(std::shared_ptr<RenderResource_Factory> mFactory);
+		//void SetFactory(std::shared_ptr<RHIFactory> mFactory) override;
+		//std::shared_ptr<RHIDevice> CreateDevice(std::shared_ptr<RenderResource_Device> mDevice)override;
+		//void SetDevice(std::shared_ptr<RHIDevice> mDevice)override;
+		//std::shared_ptr<RHIFence> CreateFence(std::shared_ptr<RenderResource_Fence> mFence)override;
+		//void SetFence(std::shared_ptr<RHIFence> mFence)override;
+		//void SetRtvSize() override;
+		//void SetDsvSize() override;
+		//void SetCbvSrvUavSize() override;
+		//void SetMultisampleQualityLevels(int SampleCount, int NumQualityLevels)override;
+		//void SetCommandObjects()override;
+		////void SetSwapChain(bool m4xMsaaState, int m4xMsaaQuality, int Width, int Height, int RefreshNumerator, int RefreshDenominator, int SwapChainBufferCount)override;
+		//void SetRtvAndDsvDescriptorHeaps()override;
+		//void OnNewResize()override;
+		//void ResetCommandList()override;
+
+		//void FinalInit() override;
+
 	void InitDX_CreateCommandObjects();
 	void InitDX_CreateSwapChain();
 	void InitDX_CreateRtvAndDsvDescriptorHeaps();
 
 public:
 	void OnResize();
+
 	void Update() override;
 		 void UpdateMVP(int Index, ObjectConstants& objConstants) override;
 		 void UpdateTime(ObjectConstants& objConstants) override;
@@ -114,9 +145,8 @@ public:
 		void DrawActor(int ActorIndex)override;
 		void DrawFinal()override;
 
-
 	void FlushCommandQueue();
-	void CreateSwapChain();
+	void SetSwapChain();
 	void LoadAsset();
 	void CalculateFrameStats();
 

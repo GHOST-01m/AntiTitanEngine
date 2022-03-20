@@ -25,11 +25,6 @@ void MaterialSystem::LoadTexture()
 	auto device=std::dynamic_pointer_cast<DXRHI>(Engine::Get()->GetRenderer()->GetRHI())->Getd3dDevice();
 	auto commandlist = std::dynamic_pointer_cast<DXRHI>(Engine::Get()->GetRenderer()->GetRHI())->GetCommandList();
 
-	
-		//xie dao RHI li mian!!!!!!!!!!!!!!!!!!!!!!!!!
-		//xie dao RHI li mian!!!!!!!!!!!!!!!!!!!!!!!!!
-		//xie dao RHI li mian!!!!!!!!!!!!!!!!!!!!!!!!!
-		//xie dao RHI li mian!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(device.Get(),
 		commandlist.Get(), mTexture->Filename.c_str(),

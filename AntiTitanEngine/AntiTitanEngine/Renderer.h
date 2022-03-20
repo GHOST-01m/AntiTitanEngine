@@ -1,8 +1,9 @@
 #pragma once
 #include "RHI.h"
 #include "DXRHI.h"
-#include "RHIResource.h"
+#include "RHIResourceManager.h"
 #include "MyStruct.h"
+#include "RenderResourceManager.h"
 class Renderer
 {
 public:
@@ -13,6 +14,9 @@ private:
 	std::shared_ptr<RHI> mRHI;
 
 public:
+//没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
+//没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
+//没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
 	bool Init();
 	void Update();
 	void Draw();
@@ -24,8 +28,10 @@ public:
 
 	void CalculateFrameStats();
 	void Set4xMsaaState(bool value);
+	bool m4xMsaaState = false;
+private:
+	std::shared_ptr<RenderResourceManager> mRenderResourceManager;
 
-public:
 	ObjectConstants objConstants;
 	ScreenViewport mViewport{
 		0,
@@ -37,5 +43,12 @@ public:
 	};
 	ScissorRect mScissorRect{ 0, 0, 1920, 1080 };//这俩的初始化还没有做！
 	Color mClearColor = { 0,0,0,0 };
-	bool m4xMsaaState = false;
+
+	int m4xMsaaQuality = 0;
+	int mClientWidth = 1920;
+	int mClientHeight = 1080;
+	static const int SwapChainBufferCount = 2;
+	std::string MapActorLoadPath = "MapActorInfo/MapActorInfo.bat";
+	std::wstring TextureLoadPath = L"Texture/SkyShpere.dds";
+	std::wstring ShaderPath = L"Shaders\\color.hlsl";
 };

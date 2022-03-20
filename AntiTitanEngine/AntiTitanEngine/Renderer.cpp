@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Renderer.h"
-#include "DXRHIResource.h"
+#include "DXRHIResourceManager.h"
 
 Renderer::Renderer()
 {
@@ -13,17 +13,31 @@ Renderer::~Renderer()
 bool Renderer::Init()
 {
 	mRHI = std::make_shared<DXRHI>();
-	return mRHI->Init();
+	//mRenderResourceManager = std::make_shared<RenderResourceManager>();
+	//mRenderResourceManager->mFactory = std::make_shared<RenderResource_Factory>();
+	//mRenderResourceManager->mDevice = std::make_shared<RenderResource_Device>();
+	//mRenderResourceManager->mFence = std::make_shared<RenderResource_Fence>();
+
+	mRHI->InitMember();
+	mRHI->LoadExternalMapActor(MapActorLoadPath);
+	mRHI->LoadTexture(TextureLoadPath);
+	//mRHI->BuildTexture("SkySphere", TextureLoadPath);
+	mRHI->BuildMember();
+	mRHI->SetShader(ShaderPath) ;
+	//mRHI->BuildPSO();
+	mRHI->InitPSO() ;
+	mRHI->LoadMeshAndSetBuffer();
+	mRHI->CreateVBIB();
+	mRHI->Execute();
+
+	return true;
+	//return mRHI->Init();
+
 }
 
 void Renderer::Update()
 {
-	//mRHI->Update();
-	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++) {
-		mRHI->UpdateMVP(i,objConstants);
-		mRHI->UpdateTime(objConstants);
-		mRHI->UploadConstant(i,objConstants);
-	}
+	mRHI->Update();
 }
 
 void Renderer::Draw()
