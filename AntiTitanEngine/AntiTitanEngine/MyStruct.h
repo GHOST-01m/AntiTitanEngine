@@ -1,6 +1,13 @@
 #pragma once
 #include "stdafx.h"
 
+struct Float3 
+{
+	float x;
+	float y;
+	float z;
+};
+
 struct Color
 {
 	float r;
@@ -8,6 +15,14 @@ struct Color
 	float b;
 	float a;
 };
+//struct Material
+//{
+//	Color BaseColor;
+//	float Metallic;
+//	float DiffuseAlbedo;
+//	Float3 FresnelR0;
+//	float Roughness;
+//};
 
 struct ScissorRect
 {

@@ -530,12 +530,8 @@ void DXRHI::LoadTexture(std::wstring Path)
 void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
 {
 	mRHIResourceManager->mTextures.resize(100);
-	auto a = Engine::Get()->GetMaterialSystem()->mTextureNum;
 	mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum] = std::make_shared<DXRHIResource_Texture>();
 	auto Textures=std::dynamic_pointer_cast<DXRHIResource_Texture>(mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum]);
-
-	//std::shared_ptr<DXRHIResource_Texture> mTexture = std::make_shared<DXRHIResource_Texture>();
-	//mTexture =std::make_shared<DXRHIResource_Texture>();
 
 	Textures->Name = Name;
 	Textures->Filename = Path;
@@ -546,7 +542,6 @@ void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
 	mRHIResourceManager->TextureMap.insert(std::make_pair(Engine::Get()->GetMaterialSystem()->mTextureNum, Name));
 
 	Engine::Get()->GetMaterialSystem()->mTextureNum++;
-
 }
 
 void DXRHI::BuildMember()
@@ -1090,15 +1085,12 @@ void DXRHI::ClearDepthStencilView()
 void DXRHI::OMSetRenderTargets()
 {
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
-}
-
-void DXRHI::SetDescriptorHeapsAndGraphicsRootSignature()
-{
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 }
+
+
 
 void DXRHI::DrawActor(int ActorIndex)
 {
@@ -1116,16 +1108,15 @@ void DXRHI::DrawActor(int ActorIndex)
 	heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
-	//贴图的Size要记得改下面的Offset
-	auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
-	GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(), md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
-
-	auto xx = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-	auto testa= mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount;
+	for (int TextureIndex=0; TextureIndex< Engine::Get()->GetMaterialSystem()->GetTextureNum(); TextureIndex++)
+	{
+		//贴图的Size要记得改下面的Offset
+		auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+		GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+ TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+		mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
+	}
 
 	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
-
 }
 
 void DXRHI::DrawFinal()
@@ -1371,8 +1362,8 @@ void DXRHI::BuildDescriptorHeaps()
 	else {
 		cbvHeapDesc.NumDescriptors =
 			Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size() +
-			100;
-			//Engine::Get()->GetMaterialSystem()->GetTextureNum();//Actor数量加材质数量
+			//100;
+			Engine::Get()->GetMaterialSystem()->GetTextureNum();//Actor数量加材质数量
 	}
 
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -1396,7 +1387,6 @@ void DXRHI::SetDescriptorHeaps()
 	// Offset to the ith object constant buffer in the buffer.
 
 	D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
-
 
 	//循环开辟Heap空间
 	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
@@ -1466,7 +1456,7 @@ void DXRHI::BuildRootSignature()
 	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 	slotRootParameter[1].InitAsDescriptorTable(1, &srvTable);
 
-	slotRootParameter[2].InitAsConstants(1, 1);
+	slotRootParameter[2].InitAsConstants(3, 1);
 
 	//srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	//slotRootParameter[3].InitAsDescriptorTable(1, &srvTable);

@@ -15,4 +15,5 @@ public:
 
 	std::shared_ptr<Texture> mTexture;
 	int mTextureNum = 1;
+	std::shared_ptr<Material> mMaterial;
 };

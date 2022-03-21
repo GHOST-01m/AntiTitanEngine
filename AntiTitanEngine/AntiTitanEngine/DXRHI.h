@@ -119,7 +119,6 @@ public:
 		//void SetRtvAndDsvDescriptorHeaps()override;
 		//void OnNewResize()override;
 		//void ResetCommandList()override;
-
 		//void FinalInit() override;
 
 	void InitDX_CreateCommandObjects();
@@ -141,7 +140,6 @@ public:
 		void ClearRenderTargetView(Color mClearColor, int NumRects) override;
 		void ClearDepthStencilView() override;
 		void OMSetRenderTargets()override;
-		void SetDescriptorHeapsAndGraphicsRootSignature()override;
 		void DrawActor(int ActorIndex)override;
 		void DrawFinal()override;
 

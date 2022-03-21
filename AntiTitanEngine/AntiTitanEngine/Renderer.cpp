@@ -50,7 +50,6 @@ void Renderer::Draw()
 	mRHI->ClearRenderTargetView(mClearColor, 0);
 	mRHI->ClearDepthStencilView();
 	mRHI->OMSetRenderTargets();
-	mRHI->SetDescriptorHeapsAndGraphicsRootSignature();
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
 		mRHI->DrawActor(ActorIndex);

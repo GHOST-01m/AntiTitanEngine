@@ -51,8 +51,7 @@ public:
 		virtual void ClearRenderTargetView(Color mClearColor,int NumRects) = 0;
 		virtual void ClearDepthStencilView() = 0;
 		virtual void OMSetRenderTargets() = 0;
-		virtual void SetDescriptorHeapsAndGraphicsRootSignature() = 0;
-		virtual void DrawActor(int ActorIndex) = 0;//这个还能拆
+		virtual void DrawActor(int ActorIndex) = 0;
 		virtual void DrawFinal() = 0;
 
 public:
