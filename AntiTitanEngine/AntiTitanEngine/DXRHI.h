@@ -140,7 +140,7 @@ public:
 		void ClearRenderTargetView(Color mClearColor, int NumRects) override;
 		void ClearDepthStencilView() override;
 		void OMSetRenderTargets()override;
-		void DrawActor(int ActorIndex)override;
+		void DrawActor(int ActorIndex, int TextureIndex)override;
 		void DrawFinal()override;
 
 	void FlushCommandQueue();

@@ -1092,9 +1092,8 @@ void DXRHI::OMSetRenderTargets()
 
 
 
-void DXRHI::DrawActor(int ActorIndex)
+void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 {
-
 	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
 	DrawMeshName.erase(DrawMeshName.size() - 1, 1);
 	auto testGeoIndex = mRHIResourceManager->GetKeyByName(DrawMeshName);
@@ -1108,13 +1107,12 @@ void DXRHI::DrawActor(int ActorIndex)
 	heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
-	for (int TextureIndex=0; TextureIndex< Engine::Get()->GetMaterialSystem()->GetTextureNum(); TextureIndex++)
-	{
-		//贴图的Size要记得改下面的Offset
-		auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
-		GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+ TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-		mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
-	}
+
+	//贴图的Size要记得改下面的Offset
+	auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+	GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+ TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
+
 
 	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
 }

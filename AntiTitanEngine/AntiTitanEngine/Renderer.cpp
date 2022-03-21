@@ -23,7 +23,7 @@ bool Renderer::Init()
 	mRHI->LoadTexture(TextureLoadPath);
 	//mRHI->BuildTexture("SkySphere", TextureLoadPath);
 	mRHI->BuildMember();
-	mRHI->SetShader(ShaderPath) ;
+	mRHI->SetShader(ShaderPath);
 	//mRHI->BuildPSO();
 	mRHI->InitPSO() ;
 	mRHI->LoadMeshAndSetBuffer();
@@ -52,7 +52,7 @@ void Renderer::Draw()
 	mRHI->OMSetRenderTargets();
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
-		mRHI->DrawActor(ActorIndex);
+		mRHI->DrawActor(ActorIndex,0);
 	}
 	mRHI->DrawFinal();
 }

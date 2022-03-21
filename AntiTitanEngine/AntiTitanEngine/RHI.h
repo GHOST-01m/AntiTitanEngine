@@ -51,7 +51,7 @@ public:
 		virtual void ClearRenderTargetView(Color mClearColor,int NumRects) = 0;
 		virtual void ClearDepthStencilView() = 0;
 		virtual void OMSetRenderTargets() = 0;
-		virtual void DrawActor(int ActorIndex) = 0;
+		virtual void DrawActor(int ActorIndex,int TextureIndex) = 0;
 		virtual void DrawFinal() = 0;
 
 public:
