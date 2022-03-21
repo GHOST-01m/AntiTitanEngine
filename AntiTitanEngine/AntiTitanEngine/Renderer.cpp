@@ -20,7 +20,7 @@ bool Renderer::Init()
 
 	mRHI->InitMember();
 	mRHI->LoadExternalMapActor(MapActorLoadPath);
-	mRHI->LoadTexture(TextureLoadPath);
+	mRHI->LoadTexture(TextureLoadPath,0);
 	//mRHI->BuildTexture("SkySphere", TextureLoadPath);
 	mRHI->BuildMember();
 	mRHI->SetShader(ShaderPath);

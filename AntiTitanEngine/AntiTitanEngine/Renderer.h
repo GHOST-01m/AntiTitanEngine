@@ -49,6 +49,7 @@ private:
 	int mClientHeight = 1080;
 	static const int SwapChainBufferCount = 2;
 	std::string MapActorLoadPath = "MapActorInfo/MapActorInfo.bat";
-	std::wstring TextureLoadPath = L"Texture/SkyShpere.dds";
+	std::wstring TextureLoadPath = L"Texture/Stone_Texture.dds";
+	std::wstring NormalLoadPath = L"Texture/Stone_Normal.dds";
 	std::wstring ShaderPath = L"Shaders\\color.hlsl";
 };

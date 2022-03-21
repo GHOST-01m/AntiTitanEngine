@@ -51,11 +51,11 @@ bool DXRHI::Init() {
 
 #if defined(DEBUG) || defined(_DEBUG) 
 	// Enable the D3D12 debug layer.
-	{
-		ComPtr<ID3D12Debug> debugController;
-		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-		debugController->EnableDebugLayer();
-	}
+	//{
+	//	ComPtr<ID3D12Debug> debugController;
+	//	ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+	//	debugController->EnableDebugLayer();
+	//}
 #endif
 
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
@@ -514,7 +514,7 @@ void DXRHI::LoadExternalMapActor(std::string MapActorLoadPath)
 	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
 }
 
-void DXRHI::LoadTexture(std::wstring Path)
+void DXRHI::LoadTexture(std::wstring Path, int TextureIndex)
 {
 	Engine::Get()->GetMaterialSystem()->mTexture = std::make_shared<Texture>();
 	Engine::Get()->GetMaterialSystem()->mTexture->Name = "TestTexture";
@@ -523,8 +523,18 @@ void DXRHI::LoadTexture(std::wstring Path)
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), 
 		Engine::Get()->GetMaterialSystem()->mTexture->Filename.c_str(),
-		Engine::Get()->GetMaterialSystem()->mTexture->Resource, 
+		Engine::Get()->GetMaterialSystem()->mTexture->Resource,
 		Engine::Get()->GetMaterialSystem()->mTexture->UploadHeap));
+	//------------------------------------------------------
+	Engine::Get()->GetMaterialSystem()->mTextureNormal = std::make_shared<Texture>();
+	Engine::Get()->GetMaterialSystem()->mTextureNormal->Name = "TestNormal";
+	Engine::Get()->GetMaterialSystem()->mTextureNormal->Filename = L"Texture/Stone_Normal.dds";
+
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(),
+		Engine::Get()->GetMaterialSystem()->mTextureNormal->Filename.c_str(),
+		Engine::Get()->GetMaterialSystem()->mTextureNormal->Resource,
+		Engine::Get()->GetMaterialSystem()->mTextureNormal->UploadHeap));
 }
 
 void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
@@ -1005,6 +1015,7 @@ void DXRHI::Draw()
 		mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
 
 		mCommandList->DrawIndexedInstanced(Engine::Get()->GetAssetManager()->Geos[GeoIndex]->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
+	
 	}
 
 	mCommandList->SetGraphicsRoot32BitConstants(2, 3, &mCamera->GetPosition(), 0);
@@ -1113,7 +1124,9 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+ TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
 
-
+	auto TextureHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
+	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
 }
 
@@ -1358,10 +1371,11 @@ void DXRHI::BuildDescriptorHeaps()
 		cbvHeapDesc.NumDescriptors = 1;
 	}
 	else {
-		cbvHeapDesc.NumDescriptors =
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size() +
-			//100;
-			Engine::Get()->GetMaterialSystem()->GetTextureNum();//Actor数量加材质数量
+		cbvHeapDesc.NumDescriptors = 10000;
+
+			//Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size() +
+			////100;
+			//Engine::Get()->GetMaterialSystem()->GetTextureNum();//Actor数量加材质数量
 	}
 
 	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -1369,6 +1383,9 @@ void DXRHI::BuildDescriptorHeaps()
 	cbvHeapDesc.NodeMask = 0;
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
 		IID_PPV_ARGS(&mCbvHeap)));
+
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
+		IID_PPV_ARGS(&mTextureHeap)));
 
 	SetDescriptorHeaps();
 }
@@ -1418,6 +1435,19 @@ void DXRHI::SetDescriptorHeaps()
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 		md3dDevice->CreateShaderResourceView(testTextureResource.Get(), &srvDesc, heapCPUHandle);
 
+		auto TextureHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->GetCPUDescriptorHandleForHeapStart());
+		auto testNromalTexture = Engine::Get()->GetMaterialSystem()->mTextureNormal->Resource;
+		TextureHandle.Offset(1000, ShaderResourceSize);
+
+		D3D12_SHADER_RESOURCE_VIEW_DESC srv2Desc = {};
+		srv2Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srv2Desc.Format = testNromalTexture->GetDesc().Format;
+		srv2Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srv2Desc.Texture2D.MostDetailedMip = 0;
+		srv2Desc.Texture2D.MipLevels = testNromalTexture->GetDesc().MipLevels;
+		srv2Desc.Texture2D.ResourceMinLODClamp = 0.0f;
+		md3dDevice->CreateShaderResourceView(testNromalTexture.Get(), &srv2Desc, TextureHandle);
+
 		//auto mTextureRes = std::dynamic_pointer_cast<DXRHIResource_Texture>(mRHIResourceManager->mTextures[srvIndex]);
 
 		//D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -1443,11 +1473,12 @@ void DXRHI::BuildRootSignature()
 
 	// Root parameter can be a table, root descriptor or root constants.
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[3];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
 	CD3DX12_DESCRIPTOR_RANGE srvTable;
+	CD3DX12_DESCRIPTOR_RANGE srvTable2;
 	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
 	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
@@ -1456,13 +1487,13 @@ void DXRHI::BuildRootSignature()
 
 	slotRootParameter[2].InitAsConstants(3, 1);
 
-	//srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
-	//slotRootParameter[3].InitAsDescriptorTable(1, &srvTable);
+	srvTable2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
+	slotRootParameter[3].InitAsDescriptorTable(1, &srvTable2);
 
 	auto staticSamplers = GetStaticSamplers();	//获得静态采样器集合
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(3, slotRootParameter,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter,
 		(UINT)staticSamplers.size(), staticSamplers.data(),
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 

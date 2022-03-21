@@ -74,6 +74,8 @@ public:
 
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> mTextureHeap = nullptr;
+
 
 	D3D12_VIEWPORT mScreenViewport;
 	D3D12_RECT mScissorRect;
@@ -96,7 +98,7 @@ public:
 	bool Init() override;
 		void InitMember() override;
 		void LoadExternalMapActor(std::string Path)override;
-		void LoadTexture(std::wstring Path)override;
+		void LoadTexture(std::wstring Path, int TextureIndex)override;
 		void BuildTexture(std::string Name,std::wstring Path)override;
 		void BuildMember()override;
 		void SetShader(std::wstring ShaderPath)override;

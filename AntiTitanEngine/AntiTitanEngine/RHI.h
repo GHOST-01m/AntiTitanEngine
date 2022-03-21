@@ -11,7 +11,7 @@ public:
 	virtual bool Init()=0;
 		virtual void InitMember() = 0;
 		virtual void LoadExternalMapActor(std::string Path) = 0;
-		virtual void LoadTexture(std::wstring Path) = 0;
+		virtual void LoadTexture(std::wstring Path,int TextureIndex) = 0;
 		virtual void BuildTexture(std::string Name,std::wstring Path) = 0;
 		virtual void BuildMember() = 0;
 		virtual void SetShader(std::wstring ShaderPath) = 0;
