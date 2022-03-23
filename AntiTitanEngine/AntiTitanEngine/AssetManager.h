@@ -2,7 +2,7 @@
 #include "ActorsInfo.h"
 #include "map"
 #include "vector"
-
+#include "FLight.h"
 class AssetManager
 {
 public:
@@ -15,6 +15,7 @@ public:
 
 public:
 	ActorsInfo mMapActor;
+	std::shared_ptr<FLight> mLight;
 	std::map<int, std::string> MapofGeosMesh;//通过Mesh名字找到Geos数组里对应的MeshGeometry
 
 public:

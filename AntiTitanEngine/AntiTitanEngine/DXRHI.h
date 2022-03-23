@@ -75,6 +75,9 @@ public:
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
 	ComPtr<ID3D12DescriptorHeap> mTextureHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> mShadowSrvDescriptorHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> mShadowDsvDescriptorHeap = nullptr;
+
 
 
 	D3D12_VIEWPORT mScreenViewport;
@@ -98,30 +101,16 @@ public:
 	bool Init() override;
 		void InitMember() override;
 		void LoadExternalMapActor(std::string Path)override;
+		void LoadLightInfo(std::string Path);
 		void LoadTexture(std::wstring Path, int TextureIndex)override;
 		void BuildTexture(std::string Name,std::wstring Path)override;
 		void BuildMember()override;
 		void SetShader(std::wstring ShaderPath)override;
 		void InitPSO()override;
+		void BuildShadow()override;//ShadowMap的管线重新建了一个，没有用原来的管线赋值构造，龙书实例代码是把sMapPSO直接赋值构造了原来的管线一个；
 		void LoadMeshAndSetBuffer()override;
 		void CreateVBIB()override;
 		void Execute()override;
-		//std::shared_ptr<RHIFactory> CreateFactory(std::shared_ptr<RenderResource_Factory> mFactory);
-		//void SetFactory(std::shared_ptr<RHIFactory> mFactory) override;
-		//std::shared_ptr<RHIDevice> CreateDevice(std::shared_ptr<RenderResource_Device> mDevice)override;
-		//void SetDevice(std::shared_ptr<RHIDevice> mDevice)override;
-		//std::shared_ptr<RHIFence> CreateFence(std::shared_ptr<RenderResource_Fence> mFence)override;
-		//void SetFence(std::shared_ptr<RHIFence> mFence)override;
-		//void SetRtvSize() override;
-		//void SetDsvSize() override;
-		//void SetCbvSrvUavSize() override;
-		//void SetMultisampleQualityLevels(int SampleCount, int NumQualityLevels)override;
-		//void SetCommandObjects()override;
-		////void SetSwapChain(bool m4xMsaaState, int m4xMsaaQuality, int Width, int Height, int RefreshNumerator, int RefreshDenominator, int SwapChainBufferCount)override;
-		//void SetRtvAndDsvDescriptorHeaps()override;
-		//void OnNewResize()override;
-		//void ResetCommandList()override;
-		//void FinalInit() override;
 
 	void InitDX_CreateCommandObjects();
 	void InitDX_CreateSwapChain();
@@ -136,6 +125,7 @@ public:
 		 void UploadConstant(int offset, ObjectConstants& objConstants) override;
 	void Draw() override;
 		void DrawReset() override;
+		void DrawSceneToShadowMap() override;//这个函数的位置还要考虑一下,参考龙书Draw()里这个函数的位置
 		void ResetViewports(int NumViewport, ScreenViewport& vp) override;
 		void ResetScissorRects(int NumRects,ScissorRect& sr)override;
 		void ResourceBarrier()override;
@@ -148,7 +138,7 @@ public:
 	void FlushCommandQueue();
 	void SetSwapChain();
 	void LoadAsset();
-	void CalculateFrameStats();
+	void CalculateFrameStats()override;
 
 public:
 	void BuildDescriptorHeaps();
@@ -165,6 +155,7 @@ public:
 public:
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
 	ComPtr<ID3D12PipelineState> mPSO = nullptr;
+	ComPtr<ID3D12PipelineState> mShadowMapPSO = nullptr;
 
 public://这一部分应该写到Game里
 	void OnMouseDown(WPARAM btnState, int x, int y);

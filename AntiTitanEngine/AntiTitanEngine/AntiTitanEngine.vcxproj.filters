@@ -255,6 +255,15 @@
     <ClInclude Include="DXRHIResource_Texture.h">
       <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
     </ClInclude>
+    <ClInclude Include="RHIResource_ShadowMap.h">
+      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="DXRHIResource_ShadowMap.h">
+      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="FLight.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -367,6 +376,15 @@
     </ClCompile>
     <ClCompile Include="DXRHIResource_Texture.cpp">
       <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="RHIResource_ShadowMap.cpp">
+      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRHIResource_ShadowMap.cpp">
+      <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="FLight.cpp">
+      <Filter>Source Files\Asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -48,7 +48,11 @@ private:
 	int mClientWidth = 1920;
 	int mClientHeight = 1080;
 	static const int SwapChainBufferCount = 2;
+
 	std::string MapActorLoadPath = "MapActorInfo/MapActorInfo.bat";
+	std::string MapLightLoadPath = "MapLightInfo/MapLightInfo.bat";
+	//std::string MapLightLoadPath = "E:/DX12Homework/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/MapLightInfo/MapLightInfo.bat";
+
 	std::wstring TextureLoadPath = L"Texture/Stone_Texture.dds";
 	std::wstring NormalLoadPath = L"Texture/Stone_Normal.dds";
 	std::wstring ShaderPath = L"Shaders\\color.hlsl";

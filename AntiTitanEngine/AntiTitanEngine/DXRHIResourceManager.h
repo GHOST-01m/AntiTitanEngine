@@ -5,6 +5,7 @@
 #include "DXRHIFactory.h"
 #include "DXRHIResource_Shader.h"
 #include "DXRHIResource_Texture.h"
+#include "DXRHIResource_ShadowMap.h"
 
 class DXRHIResourceManager :public RHIResourceManager
 {

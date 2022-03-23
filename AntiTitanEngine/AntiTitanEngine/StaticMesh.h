@@ -56,7 +56,6 @@ public:
 	std::vector<FVector2D> MeshTexCoord;
 };
 
-
 class StaticMesh 
 {
 //New

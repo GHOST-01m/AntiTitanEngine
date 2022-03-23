@@ -20,9 +20,11 @@ bool Renderer::Init()
 
 	mRHI->InitMember();
 	mRHI->LoadExternalMapActor(MapActorLoadPath);
+	mRHI->LoadLightInfo(MapLightLoadPath);
 	mRHI->LoadTexture(TextureLoadPath,0);
 	//mRHI->BuildTexture("SkySphere", TextureLoadPath);
 	mRHI->BuildMember();
+	mRHI->BuildShadow();
 	mRHI->SetShader(ShaderPath);
 	//mRHI->BuildPSO();
 	mRHI->InitPSO() ;
@@ -38,12 +40,14 @@ bool Renderer::Init()
 void Renderer::Update()
 {
 	mRHI->Update();
+	mRHI->CalculateFrameStats();
 }
 
 void Renderer::Draw()
 {
 	//mRHI->Draw();
 	mRHI->DrawReset();
+	mRHI->DrawSceneToShadowMap();
 	mRHI->ResetViewports(1, mViewport);
 	mRHI->ResetScissorRects(1, mScissorRect);
 	mRHI->ResourceBarrier();

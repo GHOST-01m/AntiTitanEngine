@@ -106,6 +106,7 @@ struct ObjectConstants
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 	glm::mat4 WorldViewProjMat4 = glm::identity<glm::mat4>();
 	XMFLOAT4X4 rotation;
+	XMFLOAT4X4 LightMVP= MathHelper::Identity4x4();
 	//glm::mat4 rotation;
 	//int CanMove;
 
@@ -122,4 +123,14 @@ public:
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
+};
+
+struct LightInfo {
+public:
+	std::string ActorName;
+	Transform mTransform;
+	Float3 Rotation;
+	float Intensity;
+	FVector Direction;
+	Color LinearColor;
 };
