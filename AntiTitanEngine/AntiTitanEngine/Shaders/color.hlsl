@@ -146,9 +146,10 @@ float4 PS(VertexOut pin) : SV_Target
 	//// Common convention to take alpha from diffuse albedo.
 	//litColor.a = diffuseAlbedo.a;
 
-	float FinalColor = gAmbientLight + (shadowFactor + 0.1) * (pin.Color);;
+	float4 FinalColor = gAmbientLight + (shadowFactor + 0.1) * (pin.Color);;
 	//pow(FinalColor, 1 / 2.2f)
 	return pow(FinalColor, 1 / 2.2f);
+	//return FinalColor;
 	//return pow(pin.Color, 1 / 2.2f);
 	//return diffuseAlbedo+ NormalMap;
 }
