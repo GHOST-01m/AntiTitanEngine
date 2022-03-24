@@ -38,7 +38,7 @@ public:
 public:
 	Microsoft::WRL::ComPtr<ID3D12Device> Getd3dDevice();
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList();
-	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> GetStaticSamplers();
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 	float AspectRatio();
 
 public:

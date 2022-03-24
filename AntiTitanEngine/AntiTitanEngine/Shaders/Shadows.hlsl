@@ -6,6 +6,7 @@
 
 Texture2D    gDiffuseMap : register(t0);
 Texture2D    gNormalMap : register(t1);
+Texture2D    gShadowMap : register(t2);
 
 SamplerState gsamPointWrap        : register(s0);
 SamplerState gsamPointClamp       : register(s1);
@@ -13,6 +14,7 @@ SamplerState gsamLinearWrap       : register(s2);
 SamplerState gsamLinearClamp      : register(s3);
 SamplerState gsamAnisotropicWrap  : register(s4);
 SamplerState gsamAnisotropicClamp : register(s5);
+SamplerComparisonState gsamShadow : register(s6);
 
 float4 CameraLoc:register(b1);
 
@@ -22,9 +24,9 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gWorldViewProjMat4;
 	float4x4 Rotator;
 	float4x4 gWorld;
-	float4x4 gLightProj;
-	float4x4 gLightViewProj;
-	//int CanMove;
+	float4x4 gLightVP;
+	float4x4 gShadowTransform;
+	float4x4 gLightMVP;
 	float    Time;
 };
 
@@ -55,7 +57,7 @@ VertexOut VS(VertexIn vin)
 
 	//float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
 	//vout.PosH = mul(posW, gLightViewProj);
-	vout.PosH = mul(float4(vin.PosL, 1.0f), gLightViewProj);
+	vout.PosH = mul(float4(vin.PosL, 1.0f), gLightMVP);
 
 	//vout.PosH = mul(float4(PosW, 1.0f), gLightWorldViewProj);
 
@@ -64,10 +66,7 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-
-	//return pin.Color;
 	return 0;
-	//return diffuseAlbedo+ NormalMap;
 }
 
 

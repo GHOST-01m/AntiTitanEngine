@@ -388,14 +388,8 @@ void DXRHI::BuildShadow()
 
 	//一根shadowMap的管线
 		//ShadowMapPSO有自己的Shader
-		//const D3D_SHADER_MACRO alphaTestDefines[] =
-		//{
-		//	"ALPHA_TEST", "1",
-		//	NULL, NULL
-		//};
 		DXShader->mvsShadowMapCode = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", nullptr, "VS", "vs_5_1");
 		DXShader->mpsShadowMapCode = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", nullptr, "PS", "ps_5_1");
-		//DXShader->mpsShadowMapCode_AlphaTested = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", alphaTestDefines, "PS", "ps_5_1");
 		DXShader->mInputLayout =
 		{
 			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -850,13 +844,14 @@ void DXRHI::Update()
 			0.5f, 0.5f, 0.0f, 1.0f);
 		XMMATRIX VP = lightView * lightProj;
 		XMMATRIX S  = lightView * lightProj * T;
+
 		//XMMATRIX LightworldViewProj = lightWorld * lightView * lightProj;
 		XMMATRIX LightworldViewProj = world * lightView * lightProj;
 
-		//光的正交矩阵有问题
 		XMStoreFloat4x4(&objConstants.gWorld, world);
-		XMStoreFloat4x4(&objConstants.LightProj, XMMatrixTranspose(lightProj));
-		XMStoreFloat4x4(&objConstants.LightVP, XMMatrixTranspose(LightworldViewProj));
+		XMStoreFloat4x4(&objConstants.gLightVP, XMMatrixTranspose(VP));
+		XMStoreFloat4x4(&objConstants.gShadowTransform, XMMatrixTranspose(S));
+		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
 
 		mObjectCB->CopyData(i, objConstants);
 	}
@@ -944,7 +939,7 @@ void DXRHI::UpdateMVP(int Index, ObjectConstants& objConstants)
 		XMMATRIX LightworldViewProj = lightWorld * lightView * lightProj;
 		//光的正交矩阵有问题
 
-		XMStoreFloat4x4(&objConstants.LightVP, XMMatrixTranspose(LightworldViewProj));
+		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
 }
 
 void DXRHI::UpdateTime(ObjectConstants& objConstants)
@@ -1153,9 +1148,16 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+ TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
 
+	//单独的Nromal图
 	auto TextureHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
+
+	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
+	auto ShadowHandle = shadowResource->mhGpuSrv;
+	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
+
 	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
 }
 
@@ -1513,12 +1515,13 @@ void DXRHI::BuildRootSignature()
 
 	// Root parameter can be a table, root descriptor or root constants.
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[4];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[5];
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
 	CD3DX12_DESCRIPTOR_RANGE srvTable;
 	CD3DX12_DESCRIPTOR_RANGE srvTable2;
+	CD3DX12_DESCRIPTOR_RANGE srvTable3;
 	cbvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
 	slotRootParameter[0].InitAsDescriptorTable(1, &cbvTable);
 
@@ -1530,10 +1533,13 @@ void DXRHI::BuildRootSignature()
 	srvTable2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	slotRootParameter[3].InitAsDescriptorTable(1, &srvTable2);
 
+	srvTable3.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);
+	slotRootParameter[4].InitAsDescriptorTable(1, &srvTable3);
+
 	auto staticSamplers = GetStaticSamplers();	//获得静态采样器集合
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(4, slotRootParameter,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(5, slotRootParameter,
 		(UINT)staticSamplers.size(), staticSamplers.data(),
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -1652,7 +1658,7 @@ void DXRHI::OnMouseMove(WPARAM btnState, int x, int y)
 	mLastMousePos.y = y;
 }
 
-std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> DXRHI::GetStaticSamplers()
+std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> DXRHI::GetStaticSamplers()
 {
 	// Applications usually only need a handful of samplers.  So just define them all up front
 	// and keep them available as part of the root signature.  
@@ -1703,8 +1709,20 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> DXRHI::GetStaticSamplers()
 		0.0f,                              // mipLODBias
 		8);                                // maxAnisotropy
 
+	const CD3DX12_STATIC_SAMPLER_DESC shadow(
+		6, // shaderRegister
+		D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, // filter
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressU
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressV
+		D3D12_TEXTURE_ADDRESS_MODE_BORDER,  // addressW
+		0.0f,                               // mipLODBias
+		16,                                 // maxAnisotropy
+		D3D12_COMPARISON_FUNC_LESS_EQUAL,
+		D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK);
+
 	return {
 		pointWrap, pointClamp,
 		linearWrap, linearClamp,
-		anisotropicWrap, anisotropicClamp };
+		anisotropicWrap, anisotropicClamp,
+		shadow };
 }

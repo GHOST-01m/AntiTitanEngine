@@ -3,8 +3,9 @@
 
 FLight::FLight()
 {
-	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	mSceneBounds.Radius = sqrtf(1000.0f * 1000.0f + 500.0f * 500.0f);
+	mSceneBounds.Center = XMFLOAT3(-955.0f, -335.0f, 158.0f);
+	//mSceneBounds.Radius = sqrtf(10.0f* 10.0f+ 15.0f* 15.0f);
+	mSceneBounds.Radius = sqrtf(3000000);
 }
 
 void FLight::LoadLightFromBat(const std::string& filepath)

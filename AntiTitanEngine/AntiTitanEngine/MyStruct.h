@@ -107,8 +107,9 @@ struct ObjectConstants
 	glm::mat4  WorldViewProjMat4 = glm::identity<glm::mat4>();
 	XMFLOAT4X4 rotation;
 	XMFLOAT4X4 gWorld = MathHelper::Identity4x4();
-	XMFLOAT4X4 LightProj = MathHelper::Identity4x4();
-	XMFLOAT4X4 LightVP= MathHelper::Identity4x4();
+	XMFLOAT4X4 gLightVP = MathHelper::Identity4x4();
+	XMFLOAT4X4 gShadowTransform = MathHelper::Identity4x4();
+	XMFLOAT4X4 gLightMVP= MathHelper::Identity4x4();
 	//glm::mat4 rotation;
 	//int CanMove;
 
