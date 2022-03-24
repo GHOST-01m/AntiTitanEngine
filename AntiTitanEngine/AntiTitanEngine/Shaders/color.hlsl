@@ -21,8 +21,9 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gWorldViewProj; 
 	float4x4 gWorldViewProjMat4;
 	float4x4 Rotator;
+	float4x4 gWorld;
+	float4x4 gLightProj;
 	float4x4 gLightWorldViewProj;
-	//int CanMove;
 	float    Time;
 };
 
@@ -60,7 +61,7 @@ VertexOut VS(VertexIn vin)
 	//	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 	//}
 	//else {
-		vout.PosH = mul(float4(PosW, 1.0f), gWorldViewProj);
+	//	vout.PosH = mul(float4(PosW, 1.0f), gWorldViewProj);
 	//}
 
 	//vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProjMat4);

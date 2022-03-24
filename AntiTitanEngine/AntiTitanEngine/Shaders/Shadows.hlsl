@@ -21,7 +21,9 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gWorldViewProj;
 	float4x4 gWorldViewProjMat4;
 	float4x4 Rotator;
-	float4x4 gLightWorldViewProj;
+	float4x4 gWorld;
+	float4x4 gLightProj;
+	float4x4 gLightViewProj;
 	//int CanMove;
 	float    Time;
 };
@@ -42,19 +44,20 @@ struct VertexOut
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
-	float QuickSpeed = 15;
-	float MidSpeed = 10;
-	float SlowSpeed = 5;
+	//float QuickSpeed = 15;
+	//float MidSpeed = 10;
+	//float SlowSpeed = 5;
 
-	float3 PosW;
-	PosW.x = vin.PosL.x + sin(Time * 1.5) * 75;
-	PosW.y = vin.PosL.y + sin(Time * MidSpeed);
-	PosW.z = vin.PosL.z + sin(Time * SlowSpeed);
+	//float3 PosW;
+	//PosW.x = vin.PosL.x + sin(Time * 1.5) * 75;
+	//PosW.y = vin.PosL.y + sin(Time * MidSpeed);
+	//PosW.z = vin.PosL.z + sin(Time * SlowSpeed);
 
-	//Transform to homogeneous clip space.
-	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+	//float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
+	//vout.PosH = mul(posW, gLightViewProj);
+	vout.PosH = mul(float4(vin.PosL, 1.0f), gLightViewProj);
 
-	vout.PosH = mul(float4(PosW, 1.0f), gWorldViewProj);
+	//vout.PosH = mul(float4(PosW, 1.0f), gLightWorldViewProj);
 
 	return vout;
 }

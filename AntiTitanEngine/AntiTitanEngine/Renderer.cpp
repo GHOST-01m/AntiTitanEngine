@@ -40,6 +40,7 @@ bool Renderer::Init()
 void Renderer::Update()
 {
 	mRHI->Update();
+
 	mRHI->CalculateFrameStats();
 }
 

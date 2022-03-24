@@ -1,6 +1,12 @@
 #include "stdafx.h"
 #include "FLight.h"
 
+FLight::FLight()
+{
+	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	mSceneBounds.Radius = sqrtf(1000.0f * 1000.0f + 500.0f * 500.0f);
+}
+
 void FLight::LoadLightFromBat(const std::string& filepath)
 {
 	std::ifstream BatFile(filepath, std::ios::in | std::ios::binary);

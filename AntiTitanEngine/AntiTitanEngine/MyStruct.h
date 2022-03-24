@@ -104,9 +104,11 @@ struct Vertex
 struct ObjectConstants
 {
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
-	glm::mat4 WorldViewProjMat4 = glm::identity<glm::mat4>();
+	glm::mat4  WorldViewProjMat4 = glm::identity<glm::mat4>();
 	XMFLOAT4X4 rotation;
-	XMFLOAT4X4 LightMVP= MathHelper::Identity4x4();
+	XMFLOAT4X4 gWorld = MathHelper::Identity4x4();
+	XMFLOAT4X4 LightProj = MathHelper::Identity4x4();
+	XMFLOAT4X4 LightVP= MathHelper::Identity4x4();
 	//glm::mat4 rotation;
 	//int CanMove;
 

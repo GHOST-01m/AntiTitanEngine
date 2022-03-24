@@ -192,9 +192,6 @@
     <ClInclude Include="GameLogic.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="MyStruct.h">
       <Filter>Header Files\Other</Filter>
     </ClInclude>
@@ -263,6 +260,9 @@
     </ClInclude>
     <ClInclude Include="FLight.h">
       <Filter>Header Files\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
