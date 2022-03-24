@@ -51,33 +51,42 @@ struct VertexOut
 
 float CalcShadowFactor(float4 shadowPosH)
 {
-	// Complete projection by doing division by w.
+	//// Complete projection by doing division by w.
+	//shadowPosH.xyz /= shadowPosH.w;
+
+	//// Depth in NDC space.
+	//float depth = shadowPosH.z;
+
+	//uint width, height, numMips;
+	//gShadowMap.GetDimensions(0, width, height, numMips);
+
+	//// Texel size.
+	//float dx = 1.0f / (float)width;
+
+	//float percentLit = 0.0f;
+	//const float2 offsets[9] =
+	//{
+	//	float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
+	//	float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+	//	float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
+	//};
+
+	//[unroll]
+	//for (int i = 0; i < 9; ++i)
+	//{
+	//	percentLit += gShadowMap.SampleCmpLevelZero(gsamShadow,
+	//		shadowPosH.xy + offsets[i], depth).r;
+	//}
+	//return percentLit / 9.0f;
+
+	//---------------------------------------------
 	shadowPosH.xyz /= shadowPosH.w;
-
-	// Depth in NDC space.
-	float depth = shadowPosH.z;
-
-	uint width, height, numMips;
-	gShadowMap.GetDimensions(0, width, height, numMips);
-
-	// Texel size.
-	float dx = 1.0f / (float)width;
-
-	float percentLit = 0.0f;
-	const float2 offsets[9] =
-	{
-		float2(-dx,  -dx), float2(0.0f,  -dx), float2(dx,  -dx),
-		float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
-		float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
-	};
-
-	[unroll]
-	for (int i = 0; i < 9; ++i)
-	{
-		percentLit += gShadowMap.SampleCmpLevelZero(gsamShadow,
-			shadowPosH.xy + offsets[i], depth).r;
-	}
-	return percentLit / 9.0f;
+	float cDepth = shadowPosH.z;
+	uint w, h, n;
+	gShadowMap.GetDimensions(0, w, h, n);
+	float2 PiexlPos = shadowPosH.xy * w;
+	float depthInMap = gShadowMap.Load(int3(PiexlPos, 0)).r;
+	return cDepth > depthInMap ? 0 : 1;
 }
 
 VertexOut VS(VertexIn vin)
@@ -146,10 +155,10 @@ float4 PS(VertexOut pin) : SV_Target
 	//// Common convention to take alpha from diffuse albedo.
 	//litColor.a = diffuseAlbedo.a;
 
-	float4 FinalColor = gAmbientLight + (shadowFactor + 0.1) * (pin.Color);;
+	float4 FinalColor = gAmbientLight + (shadowFactor + 0.1) * (pin.Color);
 	//pow(FinalColor, 1 / 2.2f)
-	return pow(FinalColor, 1 / 2.2f);
-	//return FinalColor;
+	//return pow(FinalColor, 1 / 2.2f);
+	return FinalColor;
 	//return pow(pin.Color, 1 / 2.2f);
 	//return diffuseAlbedo+ NormalMap;
 }

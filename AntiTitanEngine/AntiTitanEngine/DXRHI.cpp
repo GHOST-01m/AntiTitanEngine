@@ -820,7 +820,7 @@ void DXRHI::Update()
 		XMVECTOR lightDir = XMLoadFloat3(&lightF3);
 		XMVECTOR lightPos = -2.0f * Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius * lightDir;
 		XMVECTOR targetPos = XMLoadFloat3(&Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Center);
-		XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		XMVECTOR lightUp = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
 		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);//V
 		
 		XMFLOAT3 sphereCenterLS;
