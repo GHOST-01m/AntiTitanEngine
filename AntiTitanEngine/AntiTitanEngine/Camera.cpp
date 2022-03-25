@@ -201,7 +201,7 @@ void Camera::LookAt(glm::vec3 pos, glm::vec3 target, glm::vec3 up) {
 
 XMMATRIX Camera::GetView()const
 {
-	assert(!mViewDirty);
+	//assert(!mViewDirty);
 	return XMLoadFloat4x4(&mView);
 }
 

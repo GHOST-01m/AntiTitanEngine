@@ -50,12 +50,12 @@ bool DXRHI::Init() {
 	mRHIResourceManager = std::make_shared<DXRHIResourceManager>();
 
 #if defined(DEBUG) || defined(_DEBUG) 
-	// Enable the D3D12 debug layer.
-	//{
-	//	ComPtr<ID3D12Debug> debugController;
-	//	ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-	//	debugController->EnableDebugLayer();
-	//}
+	//Enable the D3D12 debug layer.
+	{
+		ComPtr<ID3D12Debug> debugController;
+		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+		debugController->EnableDebugLayer();
+	}
 #endif
 
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
@@ -728,10 +728,13 @@ float DXRHI::AspectRatio() {
 
 void DXRHI::Update()
 {
-	ObjectConstants objConstants;
 
 	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
 	{
+		ObjectConstants objConstants;
+
+		//UPDate Actor--------------------------------------------------------------------------------
+
 		//auto world = MathHelper::Identity4x4();
 		auto location = XMMatrixTranslation(
 			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
@@ -794,13 +797,15 @@ void DXRHI::Update()
 		objConstants.mTime = Engine::Get()->gt.TotalTime();
 		XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
 
-		//LIGHT--------------------------------------------------------------------------------
-		auto lightLocation = XMMatrixTranslation(1500, 0, 1500);
-		//auto lightLocation = XMMatrixTranslation(
-		//	Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.x,
-		//	Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.y,
-		//	Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.z
-		//);
+
+		//UPDate LIGHT--------------------------------------------------------------------------------
+
+		//auto lightLocation = XMMatrixTranslation(1500, 0, 1500);
+		auto lightLocation = XMMatrixTranslation(
+			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.x,
+			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.y,
+			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.z
+		);
 		auto lightScale = XMMatrixScaling(
 			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.x,
 			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.y,
@@ -816,11 +821,18 @@ void DXRHI::Update()
 		auto lightRotation = DirectX::XMMatrixRotationQuaternion(g_LightXMIdentityR3);
 		auto lightWorld = lightScale * lightRotation * lightLocation;
 
-		XMFLOAT3 lightF3 = Engine::Get()->GetAssetManager()->mLight->mLightInfo.Direction;
-		XMVECTOR lightDir = XMLoadFloat3(&lightF3);
-		XMVECTOR lightPos = -2.0f * Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius * lightDir;
+		//XMFLOAT3 lightF3Dir ={0,0,0};
+		XMFLOAT3 lightF3Dir = Engine::Get()->GetAssetManager()->mLight->mLightInfo.Direction;
+		XMVECTOR lightDir = XMLoadFloat3(&lightF3Dir);
+
+		//XMVECTOR lightPos = XMVectorSet(
+		//	Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.x,
+		//	Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.y,
+		//	Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.z,
+		//	0);
+		XMVECTOR lightPos  = -2.0f * Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius * lightDir;
 		XMVECTOR targetPos = XMLoadFloat3(&Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Center);
-		XMVECTOR lightUp = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
+		XMVECTOR lightUp   = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
 		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);//V
 		
 		XMFLOAT3 sphereCenterLS;
@@ -835,18 +847,38 @@ void DXRHI::Update()
 		Engine::Get()->GetAssetManager()->mLight->mLightFarZ = f;
 		XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);//P
 		
-		//XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(-200, 200, -200, 200, -200, 200);//P
+		//XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(-100, 100, -100, 100, -50, 10000);//P
 		
+		//测试VP-用的相机VP
+		XMMATRIX testV = Engine::Get()->GetRenderer()->GetCamera()->GetView();
+		XMMATRIX testP = XMMatrixOrthographicOffCenterLH(
+			-Engine::Get()->GetRenderer()->GetCamera()->GetNearWindowHeight(),
+			Engine::Get()->GetRenderer()->GetCamera()->GetNearWindowHeight(),
+			-Engine::Get()->GetRenderer()->GetCamera()->GetNearWindowWidth(),
+			Engine::Get()->GetRenderer()->GetCamera()->GetNearWindowWidth(),
+			-Engine::Get()->GetRenderer()->GetCamera()->GetNearZ(),
+			Engine::Get()->GetRenderer()->GetCamera()->GetFarZ());//P
+
+		//测试VP
+		auto TestVV = Engine::Get()->GetAssetManager()->mLight->GetView();
+		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj();
+
 		XMMATRIX T(
 			0.5f, 0.0f, 0.0f, 0.0f,
-			0.0f, -0.5f, 0.0f, 0.0f,
+			0.0f,-0.5f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 1.0f);
+			0.0f, 0.0f, 0.0f, 1.0f);
 		XMMATRIX VP = lightView * lightProj;
-		XMMATRIX S  = lightView * lightProj * T;
-
-		//XMMATRIX LightworldViewProj = lightWorld * lightView * lightProj;
+		XMMATRIX S = lightView * lightProj * T;
 		XMMATRIX LightworldViewProj = world * lightView * lightProj;
+
+		//XMMATRIX VP = testV * testP;
+		//XMMATRIX S = testV * testP * T;
+		//XMMATRIX LightworldViewProj = world * testV * testP;
+
+		//XMMATRIX VP = TestVV * TestPP;
+		//XMMATRIX S = TestVV * TestPP * T;
+		//XMMATRIX LightworldViewProj = world * TestVV * TestPP;
 
 		XMStoreFloat4x4(&objConstants.gWorld, world);
 		XMStoreFloat4x4(&objConstants.gLightVP, XMMatrixTranspose(VP));

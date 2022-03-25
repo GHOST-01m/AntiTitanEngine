@@ -62,7 +62,7 @@ float CalcShadowFactor(float4 shadowPosH)
 
 	//// Texel size.
 	//float dx = 1.0f / (float)width;
-
+	                                
 	//float percentLit = 0.0f;
 	//const float2 offsets[9] =
 	//{
@@ -81,12 +81,12 @@ float CalcShadowFactor(float4 shadowPosH)
 
 	//---------------------------------------------
 	shadowPosH.xyz /= shadowPosH.w;
-	float cDepth = shadowPosH.z;
-	uint w, h, n;
-	gShadowMap.GetDimensions(0, w, h, n);
-	float2 PiexlPos = shadowPosH.xy * w;
+	float currentDepth = shadowPosH.z;
+	uint width, height, numMips;
+	gShadowMap.GetDimensions(0, width, height, numMips);
+	float2 PiexlPos = shadowPosH.xy * width;
 	float depthInMap = gShadowMap.Load(int3(PiexlPos, 0)).r;
-	return cDepth > depthInMap ? 0 : 1;
+	return currentDepth > depthInMap ? 0 : 1;
 }
 
 VertexOut VS(VertexIn vin)
@@ -122,8 +122,9 @@ VertexOut VS(VertexIn vin)
 	vout.Color = (vin.Normal * 0.5f + 0.5f);
 	vout.TexCoord = vin.TexCoord;
 	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
-	vout.PosW = mul(float4(vin.PosL, 1.0f), gWorld);
-	vout.ShadowPosH = mul(vout.PosW, gShadowTransform);
+	float4 posw= mul(float4(vin.PosL, 1.0f), gWorld);
+	vout.PosW = posw.xyz;
+	vout.ShadowPosH = mul(float4(vout.PosW, 1.0f), gShadowTransform);
 	vout.NormalW = vin.Normal;
     return vout;
 }
@@ -154,11 +155,11 @@ float4 PS(VertexOut pin) : SV_Target
 
 	//// Common convention to take alpha from diffuse albedo.
 	//litColor.a = diffuseAlbedo.a;
-
-	float4 FinalColor = gAmbientLight + (shadowFactor + 0.1) * (pin.Color);
+	//float4 FinalColor = gAmbientLight + (shadowFactor + 0.1) * (pin.Color);
+	float4 FinalColor =  (shadowFactor + 0.1) * (pin.Color);
 	//pow(FinalColor, 1 / 2.2f)
-	//return pow(FinalColor, 1 / 2.2f);
-	return FinalColor;
+	return pow(FinalColor, 1 / 2.2f);
+	//return FinalColor;
 	//return pow(pin.Color, 1 / 2.2f);
 	//return diffuseAlbedo+ NormalMap;
 }

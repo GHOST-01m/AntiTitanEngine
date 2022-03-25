@@ -53,7 +53,7 @@ public:
 	void LookAt(const DirectX::XMFLOAT3& pos, const DirectX::XMFLOAT3& target, const DirectX::XMFLOAT3& up);
 	void LookAt(glm::vec3 pos, glm::vec3 target, glm::vec3 up);
 
-	//获取观察矩阵和投影矩阵
+	//获取观察矩阵或投影矩阵
 	DirectX::XMMATRIX GetView()const;
 	DirectX::XMMATRIX GetProj()const;
 	DirectX::XMFLOAT4X4 GetView4x4f()const;
@@ -81,12 +81,16 @@ public:
 	DirectX::XMFLOAT3 mPosition = { 0.0f, 0.0f, 0.0f };
 	glm::vec3 mPositionVec3 = { 0 , 0 , 0 };//转换成glm版的同款数据
 
-
 private:
 	//摄像机坐标系（三个轴的基向量）在世界空间下的坐标
 	DirectX::XMFLOAT3 mRight = { -1.0f, 0.0f, 0.0f };
 	DirectX::XMFLOAT3 mUp = { 0.0f, 0.0f, 1.0f };
 	DirectX::XMFLOAT3 mLook = { 0.0f, 1.0f, 0.0f };
+
+	//DirectX::XMFLOAT3 mRight = { 1.0f, 0.0f, 0.0f };
+	//DirectX::XMFLOAT3 mUp    = { 0.0f, 1.0f, 0.0f };
+	//DirectX::XMFLOAT3 mLook  = { 0.0f, 0.0f, 1.0f };
+
 	//转换成glm版的同款数据
 	glm::vec3 mRightVec3 = { -1.0f, 0.0f, 0.0f };
 	glm::vec3 mUpVec3 = { 0.0f, 0.0f, 1.0f };
