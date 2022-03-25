@@ -85,16 +85,7 @@ float CalcShadowFactor(float4 shadowPosH)//йтве╪с╦Ж: SV_Position?
 	uint width, height, numMips;
 	gShadowMap.GetDimensions(0, width, height, numMips);
 
-	float testa = width;
-	float testb = height;
-	float testc = numMips;
-
 	float2 PiexlPos = shadowPosH.xy * width;
-
-	//float2 PiexlPos;
-	//PiexlPos.x = shadowPosH.x * width;
-	//PiexlPos.y = shadowPosH.y * width;
-
 
 	float depthInMap = gShadowMap.Load(int3(PiexlPos, 0)).r;
 	return currentDepth > depthInMap ? 0 : 1;
