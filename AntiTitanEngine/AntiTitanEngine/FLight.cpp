@@ -3,10 +3,10 @@
 
 FLight::FLight()
 {
-	mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	//mSceneBounds.Center = XMFLOAT3(-955.0f, -335.0f, 158.0f);
-	mSceneBounds.Radius = sqrtf(10.0f* 10.0f+ 15.0f* 15.0f);
-	//mSceneBounds.Radius = sqrtf(3000000);
+	//mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	mSceneBounds.Center = XMFLOAT3(-1100.0f, -360.0f, 158.0f);
+	//mSceneBounds.Radius = sqrtf(10.0f* 10.0f+ 15.0f* 15.0f);
+	mSceneBounds.Radius = 2400;
 }
 
 void FLight::LoadLightFromBat(const std::string& filepath)
@@ -76,8 +76,18 @@ XMMATRIX FLight::GetView()
 	return XMLoadFloat4x4(&mView);
 }
 
-XMMATRIX FLight::GetProj()
+XMMATRIX FLight::GetProj(XMVECTOR targetPos)
 {
-	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(-1080, 1080, -1920, 1920, 0, 200000);//P
+	XMFLOAT3 sphereCenterLS;
+	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, XMLoadFloat4x4(&mView)));
+	float l = sphereCenterLS.x - mSceneBounds.Radius;
+	float b = sphereCenterLS.y - mSceneBounds.Radius;
+	float n = sphereCenterLS.z - mSceneBounds.Radius;
+	float r = sphereCenterLS.x + mSceneBounds.Radius;
+	float t = sphereCenterLS.y + mSceneBounds.Radius;
+	float f = sphereCenterLS.z + mSceneBounds.Radius;
+	Engine::Get()->GetAssetManager()->mLight->mLightNearZ = n;
+	Engine::Get()->GetAssetManager()->mLight->mLightFarZ = f;
+	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);//P
 	return lightProj;
 }

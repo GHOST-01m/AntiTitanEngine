@@ -115,7 +115,7 @@ private:
 
 public:
 	//相机移动速度
-	float MoveSpeed=100.0;
+	float MoveSpeed=1000.0;
 };
 
 #endif // !CAMERA_H

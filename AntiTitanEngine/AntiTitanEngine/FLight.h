@@ -21,6 +21,6 @@ public:
 public:
 	void LoadLightFromBat(const std::string& filepath);
 	XMMATRIX GetView();
-	XMMATRIX GetProj();
+	XMMATRIX GetProj(XMVECTOR targetPos);
 };
 

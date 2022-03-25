@@ -797,7 +797,6 @@ void DXRHI::Update()
 		objConstants.mTime = Engine::Get()->gt.TotalTime();
 		XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
 
-
 		//UPDate LIGHT--------------------------------------------------------------------------------
 
 		//auto lightLocation = XMMatrixTranslation(1500, 0, 1500);
@@ -821,7 +820,10 @@ void DXRHI::Update()
 		auto lightRotation = DirectX::XMMatrixRotationQuaternion(g_LightXMIdentityR3);
 		auto lightWorld = lightScale * lightRotation * lightLocation;
 
-		//XMFLOAT3 lightF3Dir ={0,0,0};
+		//XMFLOAT3 lightF3Dir ={
+			//Engine::Get()->GetAssetManager()->mLight->mLightInfo.Rotation.x,
+			//Engine::Get()->GetAssetManager()->mLight->mLightInfo.Rotation.y,
+			//Engine::Get()->GetAssetManager()->mLight->mLightInfo.Rotation.z};
 		XMFLOAT3 lightF3Dir = Engine::Get()->GetAssetManager()->mLight->mLightInfo.Direction;
 		XMVECTOR lightDir = XMLoadFloat3(&lightF3Dir);
 
@@ -832,7 +834,7 @@ void DXRHI::Update()
 		//	0);
 		XMVECTOR lightPos  = -2.0f * Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius * lightDir;
 		XMVECTOR targetPos = XMLoadFloat3(&Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Center);
-		XMVECTOR lightUp   = XMVectorSet(-1.0f, 0.0f, 0.0f, 0.0f);
+		XMVECTOR lightUp   = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);//V
 		
 		XMFLOAT3 sphereCenterLS;
@@ -861,13 +863,13 @@ void DXRHI::Update()
 
 		//²âÊÔVP
 		auto TestVV = Engine::Get()->GetAssetManager()->mLight->GetView();
-		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj();
+		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj(targetPos);
 
 		XMMATRIX T(
 			0.5f, 0.0f, 0.0f, 0.0f,
 			0.0f,-0.5f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f);
+			0.5f, 0.5f, 0.0f, 1.0f);
 		XMMATRIX VP = lightView * lightProj;
 		XMMATRIX S = lightView * lightProj * T;
 		XMMATRIX LightworldViewProj = world * lightView * lightProj;
