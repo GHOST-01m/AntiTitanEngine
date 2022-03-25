@@ -35,7 +35,6 @@ XMMATRIX FLight::GetView()
 	XMFLOAT3 Pf3 = { mLightInfo.mTransform.translation.x,mLightInfo.mTransform.translation.y, mLightInfo.mTransform.translation .z};
 	XMVECTOR P = XMLoadFloat3(&Pf3);
 
-
 	// Keep camera's axes orthogonal to each other and of unit length.
 	L = XMVector3Normalize(L);
 	U = XMVector3Normalize(XMVector3Cross(L, R));
@@ -76,10 +75,10 @@ XMMATRIX FLight::GetView()
 	return XMLoadFloat4x4(&mView);
 }
 
-XMMATRIX FLight::GetProj(XMVECTOR targetPos)
+XMMATRIX FLight::GetProj()
 {
 	XMFLOAT3 sphereCenterLS;
-	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, XMLoadFloat4x4(&mView)));
+	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(XMLoadFloat3(&mSceneBounds.Center), XMLoadFloat4x4(&mView)));
 	float l = sphereCenterLS.x - mSceneBounds.Radius;
 	float b = sphereCenterLS.y - mSceneBounds.Radius;
 	float n = sphereCenterLS.z - mSceneBounds.Radius;

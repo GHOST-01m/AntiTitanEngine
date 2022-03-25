@@ -398,7 +398,6 @@ void DXRHI::BuildShadow()
 			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 		};
 
-
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC shadowMapPsoDesc;
 	ZeroMemory(&shadowMapPsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	shadowMapPsoDesc.InputLayout = { DXShader->mInputLayout.data(), (UINT)DXShader->mInputLayout.size() };
@@ -431,7 +430,6 @@ void DXRHI::BuildShadow()
 	shadowMapPsoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;//
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowMapPsoDesc, IID_PPV_ARGS(&mShadowMapPSO)));
 
-	
 }
 
 void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
@@ -786,7 +784,7 @@ void DXRHI::Update()
 		//!!!旋转矩阵好像有问题，用glm的rotator传给Shader，mul(Normal,rotator)的值不对，表现出来的颜色不是正确的。
 		//!!!要看正确的颜色可以乘XMMATRIX的rotation，XMMATRIX还要转化为FLOAT4X4
 
-		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4((&mCamera->GetProj4x4f()));
+		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4(&mCamera->GetProj4x4f());
 		glm::mat4 worldViewProjMat4 = mCamera->GetProjMat4() * mCamera->GetViewMat4() * worldMat4;
 
 		//XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
@@ -862,27 +860,27 @@ void DXRHI::Update()
 			Engine::Get()->GetRenderer()->GetCamera()->GetFarZ());//P
 
 		//测试VP
-		auto TestVV = Engine::Get()->GetAssetManager()->mLight->GetView();
-		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj(targetPos);
+		auto TestVV = Engine::Get()->GetAssetManager()->mLight->GetView();//重新创建的V矩阵
+		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj();//重新创建的P矩阵
 
 		XMMATRIX T(
 			0.5f, 0.0f, 0.0f, 0.0f,
 			0.0f,-0.5f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 1.0f);
-		XMMATRIX VP = lightView * lightProj;
-		XMMATRIX S = lightView * lightProj * T;
-		XMMATRIX LightworldViewProj = world * lightView * lightProj;
+			0.50f, 0.50f, 0.0f, 1.0f);
+		//XMMATRIX VP = lightView * lightProj;
+		//XMMATRIX S = lightView * lightProj * T;
+		//XMMATRIX LightworldViewProj = world * lightView * lightProj;
 
 		//XMMATRIX VP = testV * testP;
 		//XMMATRIX S = testV * testP * T;
 		//XMMATRIX LightworldViewProj = world * testV * testP;
 
-		//XMMATRIX VP = TestVV * TestPP;
-		//XMMATRIX S = TestVV * TestPP * T;
-		//XMMATRIX LightworldViewProj = world * TestVV * TestPP;
+		XMMATRIX VP = TestVV * TestPP;
+		XMMATRIX S = TestVV * TestPP * T;
+		XMMATRIX LightworldViewProj = world * TestVV * TestPP;
 
-		XMStoreFloat4x4(&objConstants.gWorld, world);
+		XMStoreFloat4x4(&objConstants.gWorld, XMMatrixTranspose(world));
 		XMStoreFloat4x4(&objConstants.gLightVP, XMMatrixTranspose(VP));
 		XMStoreFloat4x4(&objConstants.gShadowTransform, XMMatrixTranspose(S));
 		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
