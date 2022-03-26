@@ -867,7 +867,7 @@ void DXRHI::Update()
 			0.5f, 0.0f, 0.0f, 0.0f,
 			0.0f,-0.5f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f);
+			0.5f, 0.5f, 0.0f, 1.0f);
 		////龙书原来用的VP
 		//XMMATRIX VP = lightView * lightProj;
 		//XMMATRIX S = lightView * lightProj * T;
@@ -1184,8 +1184,8 @@ void DXRHI::CommitShadowMap()
 	auto ShadowHandle = shadowResource->mhGpuSrv;
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mShadowSrvDescriptorHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-	//mCommandList->SetPipelineState(mShadowMapPSO.Get());
-	//mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+	mCommandList->SetPipelineState(mShadowMapPSO.Get());
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	//Shader Texture gShadowMap
 	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
