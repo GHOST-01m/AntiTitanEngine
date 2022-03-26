@@ -425,7 +425,7 @@ void DXRHI::BuildShadow()
 	shadowMapPsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
 	shadowMapPsoDesc.DSVFormat = mDepthStencilFormat;
 
-	shadowMapPsoDesc.RasterizerState.DepthBias = 10000;//
+	shadowMapPsoDesc.RasterizerState.DepthBias = 400000;//
 	shadowMapPsoDesc.RasterizerState.DepthBiasClamp = 0.0f;//
 	shadowMapPsoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;//
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowMapPsoDesc, IID_PPV_ARGS(&mShadowMapPSO)));
