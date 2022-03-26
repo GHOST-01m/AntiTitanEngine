@@ -792,7 +792,7 @@ void DXRHI::Update()
 
 		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
 		objConstants.WorldViewProjMat4 = glm::transpose(worldViewProjMat4);
-		objConstants.mTime = Engine::Get()->gt.TotalTime();
+		//objConstants.mTime = Engine::Get()->gt.TotalTime();
 		XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
 
 		//UPDate LIGHT--------------------------------------------------------------------------------
@@ -867,122 +867,130 @@ void DXRHI::Update()
 			0.5f, 0.0f, 0.0f, 0.0f,
 			0.0f,-0.5f, 0.0f, 0.0f,
 			0.0f, 0.0f, 1.0f, 0.0f,
-			0.50f, 0.50f, 0.0f, 1.0f);
+			0.0f, 0.0f, 0.0f, 1.0f);
+		////龙书原来用的VP
 		//XMMATRIX VP = lightView * lightProj;
 		//XMMATRIX S = lightView * lightProj * T;
 		//XMMATRIX LightworldViewProj = world * lightView * lightProj;
+		//XMMATRIX LightworldViewProjT = world * lightView * lightProj * T;
 
+		////相机用的VP，P重新做了一个正交矩阵
 		//XMMATRIX VP = testV * testP;
 		//XMMATRIX S = testV * testP * T;
 		//XMMATRIX LightworldViewProj = world * testV * testP;
+		//XMMATRIX LightworldViewProjT = world * TestV * TestP * T;
 
+		////重新造的VP
 		XMMATRIX VP = TestVV * TestPP;
-		XMMATRIX S = TestVV * TestPP * T;
+		XMMATRIX S  =  TestVV * TestPP * T;
 		XMMATRIX LightworldViewProj = world * TestVV * TestPP;
+		XMMATRIX LightworldViewProjT = world * TestVV * TestPP * T;
 
 		XMStoreFloat4x4(&objConstants.gWorld, XMMatrixTranspose(world));
 		XMStoreFloat4x4(&objConstants.gLightVP, XMMatrixTranspose(VP));
 		XMStoreFloat4x4(&objConstants.gShadowTransform, XMMatrixTranspose(S));
 		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
+		XMStoreFloat4x4(&objConstants.gLightMVPT, XMMatrixTranspose(LightworldViewProjT));
 
 		mObjectCB->CopyData(i, objConstants);
 	}
+
 }
-
-void DXRHI::UpdateMVP(int Index, ObjectConstants& objConstants)
-{
-		//auto world = MathHelper::Identity4x4();
-		auto location = XMMatrixTranslation(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].translation.x,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].translation.y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].translation.z
-		);
-		auto Scale = XMMatrixScaling(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].scale3D.x,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].scale3D.y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].scale3D.z
-		);
-		auto Rotator = XMMatrixScaling(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].rotation.Pitch,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].rotation.Yaw,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].rotation.Roll
-		);
-
-		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].X,
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].Y,
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].Z,
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].W
-			} } };
-
-		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
-		auto world = Scale * mrotation * location;
-		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4((&mCamera->GetProj4x4f()));
-		mCamera->GetView4x4f();
-		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
-
-
-		auto lightLocation = XMMatrixTranslation(
-			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.x,
-			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.y,
-			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.z
-		);
-		auto lightScale = XMMatrixScaling(
-			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.x,
-			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.y,
-			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.z
-		);
-		DirectX::XMVECTORF32 g_LightXMIdentityR3 = { { {
-		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.Roll,
-		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.Pitch,
-		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.Yaw,
-		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.w
-	} } };
-
-		auto lightRotation = DirectX::XMMatrixRotationQuaternion(g_LightXMIdentityR3);
-		auto lightWorld = lightScale * lightRotation * lightLocation;
-
-		XMFLOAT3 lightF3 = Engine::Get()->GetAssetManager()->mLight->mLightInfo.Direction;
-		XMVECTOR lightDir = XMLoadFloat3(&lightF3);
-		XMVECTOR lightPos = -2.0f * Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius * lightDir;
-		XMVECTOR targetPos = XMLoadFloat3(&Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Center);
-		XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);//V
-		
-		XMFLOAT3 sphereCenterLS;
-		XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
-		float l = sphereCenterLS.x - Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
-		float b = sphereCenterLS.y - Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
-		float n = sphereCenterLS.z - Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
-		float r = sphereCenterLS.x + Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
-		float t = sphereCenterLS.y + Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
-		float f = sphereCenterLS.z + Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
-		Engine::Get()->GetAssetManager()->mLight->mLightNearZ = n;
-		Engine::Get()->GetAssetManager()->mLight->mLightFarZ = f;
-		XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);//P
-		
-		XMMATRIX T(
-			0.5f, 0.0f, 0.0f, 0.0f,
-			0.0f, -0.5f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 1.0f);
-		XMMATRIX S = lightView * lightProj * T;
-
-		XMMATRIX LightworldViewProj = lightWorld * lightView * lightProj;
-		//光的正交矩阵有问题
-
-		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
-}
-
-void DXRHI::UpdateTime(ObjectConstants& objConstants)
-{
-	objConstants.mTime = Engine::Get()->gt.TotalTime();
-}
-
-void DXRHI::UploadConstant(int offset, ObjectConstants& objConstants)
-{
-	mObjectCB->CopyData(offset, objConstants);
-}
+//
+//void DXRHI::UpdateMVP(int Index, ObjectConstants& objConstants)
+//{
+//		//auto world = MathHelper::Identity4x4();
+//		auto location = XMMatrixTranslation(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].translation.x,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].translation.y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].translation.z
+//		);
+//		auto Scale = XMMatrixScaling(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].scale3D.x,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].scale3D.y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].scale3D.z
+//		);
+//		auto Rotator = XMMatrixScaling(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].rotation.Pitch,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].rotation.Yaw,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[Index].rotation.Roll
+//		);
+//
+//		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].X,
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].Y,
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].Z,
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[Index].W
+//			} } };
+//
+//		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
+//		auto world = Scale * mrotation * location;
+//		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4((&mCamera->GetProj4x4f()));
+//		mCamera->GetView4x4f();
+//		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+//
+//
+//		auto lightLocation = XMMatrixTranslation(
+//			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.x,
+//			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.y,
+//			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.translation.z
+//		);
+//		auto lightScale = XMMatrixScaling(
+//			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.x,
+//			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.y,
+//			Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.scale3D.z
+//		);
+//		DirectX::XMVECTORF32 g_LightXMIdentityR3 = { { {
+//		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.Roll,
+//		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.Pitch,
+//		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.Yaw,
+//		Engine::Get()->GetAssetManager()->mLight->mLightInfo.mTransform.rotation.w
+//	} } };
+//
+//		auto lightRotation = DirectX::XMMatrixRotationQuaternion(g_LightXMIdentityR3);
+//		auto lightWorld = lightScale * lightRotation * lightLocation;
+//
+//		XMFLOAT3 lightF3 = Engine::Get()->GetAssetManager()->mLight->mLightInfo.Direction;
+//		XMVECTOR lightDir = XMLoadFloat3(&lightF3);
+//		XMVECTOR lightPos = -2.0f * Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius * lightDir;
+//		XMVECTOR targetPos = XMLoadFloat3(&Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Center);
+//		XMVECTOR lightUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+//		XMMATRIX lightView = XMMatrixLookAtLH(lightPos, targetPos, lightUp);//V
+//		
+//		XMFLOAT3 sphereCenterLS;
+//		XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(targetPos, lightView));
+//		float l = sphereCenterLS.x - Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
+//		float b = sphereCenterLS.y - Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
+//		float n = sphereCenterLS.z - Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
+//		float r = sphereCenterLS.x + Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
+//		float t = sphereCenterLS.y + Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
+//		float f = sphereCenterLS.z + Engine::Get()->GetAssetManager()->mLight->mSceneBounds.Radius;
+//		Engine::Get()->GetAssetManager()->mLight->mLightNearZ = n;
+//		Engine::Get()->GetAssetManager()->mLight->mLightFarZ = f;
+//		XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);//P
+//		
+//		XMMATRIX T(
+//			0.5f, 0.0f, 0.0f, 0.0f,
+//			0.0f, -0.5f, 0.0f, 0.0f,
+//			0.0f, 0.0f, 1.0f, 0.0f,
+//			0.0f, 0.0f, 0.0f, 1.0f);
+//		XMMATRIX S = lightView * lightProj * T;
+//
+//		XMMATRIX LightworldViewProj = lightWorld * lightView * lightProj;
+//		//光的正交矩阵有问题
+//
+//		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
+//}
+//
+//void DXRHI::UpdateTime(ObjectConstants& objConstants)
+//{
+//	//objConstants.mTime = Engine::Get()->gt.TotalTime();
+//}
+//
+//void DXRHI::UploadConstant(int offset, ObjectConstants& objConstants)
+//{
+//	mObjectCB->CopyData(offset, objConstants);
+//}
 
 void DXRHI::Draw()
 {
@@ -1067,6 +1075,9 @@ void DXRHI::DrawSceneToShadowMap()
 	//切换到Depth-Write
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
 		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
+	//	D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+
 	mCommandList->ClearDepthStencilView(shadowMap->mhCpuDsv,
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
@@ -1098,6 +1109,10 @@ void DXRHI::DrawSceneToShadowMap()
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
 		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
+
+	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
+	//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
+
 }
 
 void DXRHI::DrawReset()
@@ -1185,16 +1200,30 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
-	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
-	auto ShadowHandle = shadowResource->mhGpuSrv;
-	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
+	////Shader Texture gShadowMap
+	//auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
+	//auto ShadowHandle = shadowResource->mhGpuSrv;
+	////TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	//mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
 
 	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
+	
 }
 
 void DXRHI::DrawFinal()
 {
+	//-------------------------------------------------------------------------------
+	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
+	auto ShadowHandle = shadowResource->mhGpuSrv;
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mShadowSrvDescriptorHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+	mCommandList->SetPipelineState(mShadowMapPSO.Get());
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+	//Shader Texture gShadowMap
+	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
+	//-------------------------------------------------------------------------------
+
 	mCommandList->SetGraphicsRoot32BitConstants(2, 3, &mCamera->GetPosition(), 0);
 
 	// Indicate a state transition on the resource usage.

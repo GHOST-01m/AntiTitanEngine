@@ -106,14 +106,16 @@ struct ObjectConstants
 	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 	glm::mat4  WorldViewProjMat4 = glm::identity<glm::mat4>();
 	XMFLOAT4X4 rotation;
-	XMFLOAT4X4 gWorld = MathHelper::Identity4x4();
-	XMFLOAT4X4 gLightVP = MathHelper::Identity4x4();
-	XMFLOAT4X4 gShadowTransform = MathHelper::Identity4x4();
-	XMFLOAT4X4 gLightMVP= MathHelper::Identity4x4();
+	XMFLOAT4X4 gWorld = MathHelper::Identity4x4();            //转置（世界矩阵）
+	XMFLOAT4X4 gLightVP = MathHelper::Identity4x4();          //转置            (光的V矩阵 * 光的P矩阵)
+	XMFLOAT4X4 gShadowTransform = MathHelper::Identity4x4();  //转置            (光的V矩阵 * 光的P矩阵 * T矩阵）
+	XMFLOAT4X4 gLightMVP= MathHelper::Identity4x4();          //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵)
+	XMFLOAT4X4 gLightMVPT = MathHelper::Identity4x4();        //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵 * T矩阵）
+
 	//glm::mat4 rotation;
 	//int CanMove;
 
-	float mTime;
+	//float mTime;
 };
 
 struct Texture

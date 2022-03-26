@@ -23,9 +23,9 @@ public:
 		virtual void Execute() = 0;
 
 	virtual void Update()=0;
-		virtual void UpdateMVP(int Index, ObjectConstants& objConstants) = 0;
-		virtual void UpdateTime(ObjectConstants& objConstants) = 0;
-		virtual void UploadConstant(int offset, ObjectConstants& objConstants) = 0;
+		//virtual void UpdateMVP(int Index, ObjectConstants& objConstants) = 0;
+		//virtual void UpdateTime(ObjectConstants& objConstants) = 0;
+		//virtual void UploadConstant(int offset, ObjectConstants& objConstants) = 0;
 		virtual void CalculateFrameStats()=0;
 	virtual void Draw() = 0;
 		virtual void DrawSceneToShadowMap() = 0;

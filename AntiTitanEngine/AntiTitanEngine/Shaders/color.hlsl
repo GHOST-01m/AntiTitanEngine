@@ -23,11 +23,12 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gWorldViewProj; 
 	float4x4 gWorldViewProjMat4;
 	float4x4 Rotator;
-	float4x4 gWorld;
-	float4x4 gLightVP;
-	float4x4 gShadowTransform;
-	float4x4 gLightWorldViewProj;
-	float    Time;
+	float4x4 gWorld;                  //转置（世界矩阵）
+	float4x4 gLightVP;                //转置            (光的V矩阵 * 光的P矩阵)
+	float4x4 gShadowTransform;        //转置            (光的V矩阵 * 光的P矩阵 * T矩阵）
+	float4x4 gLightWorldViewProj;     //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵)
+	float4x4 gLightWorldViewProjT;    //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵 * T矩阵）
+	//float    Time;
 };
 
 struct VertexIn
@@ -42,9 +43,9 @@ struct VertexOut
 {
 	float4 PosH  : SV_POSITION;//顶点做了MVP变换
     float4 Color : COLOR;
-	float2 TexCoord  : TEXCOORD;
 	float4 ShadowPosH : POSITION0;//顶点做了阴影变换
 	float3 PosW    : POSITION1;//顶点做了M变换
+	float2 TexCoord  : TEXCOORD;
 	float3 NormalW : NORMAL;//Nromal做了M变换
 };
 
@@ -88,6 +89,7 @@ float CalcShadowFactor(float4 shadowPosH)//试着加个: SV_Position?
 	float2 PiexlPos = shadowPosH.xy * width;
 
 	float depthInMap = gShadowMap.Load(int3(PiexlPos, 0)).r;
+
 	return currentDepth > depthInMap ? 0 : 1;
 }
 
@@ -108,13 +110,13 @@ VertexOut VS(VertexIn vin)
 
 	//vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProjMat4);
 
-	float4 ColorChange;
-	float frequency=2;
+	//float4 ColorChange;
+	//float frequency=2;
 
-	ColorChange.x = vin.Normal.x * sin(Time*20)+0.5;
-	ColorChange.y = vin.Normal.y ;
-	ColorChange.z = vin.Normal.z ;
-	ColorChange.w = vin.Normal.w ;
+	//ColorChange.x = vin.Normal.x * sin(Time*20)+0.5;
+	//ColorChange.y = vin.Normal.y ;
+	//ColorChange.z = vin.Normal.z ;
+	//ColorChange.w = vin.Normal.w ;
 
 	//对normal做正确的旋转处理
 	vin.Normal = mul(vin.Normal, Rotator);
@@ -124,9 +126,10 @@ VertexOut VS(VertexIn vin)
 	vout.Color = (vin.Normal * 0.5f + 0.5f);
 	vout.TexCoord = vin.TexCoord;
 	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
-	float4 posw= mul(float4(vin.PosL, 1.0f), gWorld);
+	float4 posw = mul(float4(vin.PosL, 1.0f), gWorld);
 	vout.PosW = posw.xyz;
-	vout.ShadowPosH = mul(posw, gShadowTransform);
+	vout.ShadowPosH = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
+	//vout.ShadowPosH = mul(posw,gShadowTransform);
 	vout.NormalW = vin.Normal;
     return vout;
 }

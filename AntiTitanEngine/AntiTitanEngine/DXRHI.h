@@ -120,9 +120,9 @@ public:
 	void OnResize();
 
 	void Update() override;
-		 void UpdateMVP(int Index, ObjectConstants& objConstants) override;
-		 void UpdateTime(ObjectConstants& objConstants) override;
-		 void UploadConstant(int offset, ObjectConstants& objConstants) override;
+		 //void UpdateMVP(int Index, ObjectConstants& objConstants) override;
+		 //void UpdateTime(ObjectConstants& objConstants) override;
+		 //void UploadConstant(int offset, ObjectConstants& objConstants) override;
 	void Draw() override;
 		void DrawReset() override;
 		void DrawSceneToShadowMap() override;//这个函数的位置还要考虑一下,参考龙书Draw()里这个函数的位置
