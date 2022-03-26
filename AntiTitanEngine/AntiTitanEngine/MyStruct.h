@@ -114,7 +114,6 @@ struct ObjectConstants
 
 	//glm::mat4 rotation;
 	//int CanMove;
-
 	//float mTime;
 };
 

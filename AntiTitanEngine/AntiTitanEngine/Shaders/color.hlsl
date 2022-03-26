@@ -85,9 +85,7 @@ float CalcShadowFactor(float4 shadowPosH)//试着加个: SV_Position?
 	float currentDepth = shadowPosH.z;
 	uint width, height, numMips;
 	gShadowMap.GetDimensions(0, width, height, numMips);
-
 	float2 PiexlPos = shadowPosH.xy * width;
-
 	float depthInMap = gShadowMap.Load(int3(PiexlPos, 0)).r;
 
 	return currentDepth > depthInMap ? 0 : 1;
@@ -119,18 +117,17 @@ VertexOut VS(VertexIn vin)
 	//ColorChange.w = vin.Normal.w ;
 
 	//对normal做正确的旋转处理
-	vin.Normal = mul(vin.Normal, Rotator);
+	vin.Normal            = mul(vin.Normal, Rotator);
 	//vin.Normal = normalize(vin.Normal);
 
 	//vout.Color = (ColorChange * 0.5f + 0.5f);//动颜色
-	vout.Color = (vin.Normal * 0.5f + 0.5f);
-	vout.TexCoord = vin.TexCoord;
-	vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+	vout.Color            = (vin.Normal * 0.5f + 0.5f);
+	vout.TexCoord         = vin.TexCoord;
+	vout.PosH             = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 	float4 posw = mul(float4(vin.PosL, 1.0f), gWorld);
-	vout.PosW = posw.xyz;
-	vout.ShadowPosH = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
-	//vout.ShadowPosH = mul(posw,gShadowTransform);
-	vout.NormalW = vin.Normal;
+	vout.PosW             = posw.xyz;
+	vout.ShadowPosH       = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
+	vout.NormalW          = vin.Normal;
     return vout;
 }
 

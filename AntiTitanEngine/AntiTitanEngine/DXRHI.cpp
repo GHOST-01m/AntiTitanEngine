@@ -1168,6 +1168,8 @@ void DXRHI::ClearDepthStencilView()
 
 void DXRHI::OMSetRenderTargets()
 {
+	CommitShadowMap();
+
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
@@ -1175,8 +1177,24 @@ void DXRHI::OMSetRenderTargets()
 	mCommandList->SetPipelineState(mPSO.Get());
 }
 
+void DXRHI::CommitShadowMap()
+{
+	//-------------------------------------------------------------------------------
+	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
+	auto ShadowHandle = shadowResource->mhGpuSrv;
+	ID3D12DescriptorHeap* descriptorHeaps[] = { mShadowSrvDescriptorHeap.Get() };
+	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+	//mCommandList->SetPipelineState(mShadowMapPSO.Get());
+	//mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+	//Shader Texture gShadowMap
+	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
+	//-------------------------------------------------------------------------------
+}
+
 void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 {
+
 	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
 	DrawMeshName.erase(DrawMeshName.size() - 1, 1);
 	auto testGeoIndex = mRHIResourceManager->GetKeyByName(DrawMeshName);
@@ -1200,6 +1218,8 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
+
+
 	////Shader Texture gShadowMap
 	//auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
 	//auto ShadowHandle = shadowResource->mhGpuSrv;
@@ -1212,17 +1232,6 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 
 void DXRHI::DrawFinal()
 {
-	//-------------------------------------------------------------------------------
-	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
-	auto ShadowHandle = shadowResource->mhGpuSrv;
-	ID3D12DescriptorHeap* descriptorHeaps[] = { mShadowSrvDescriptorHeap.Get() };
-	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-	mCommandList->SetPipelineState(mShadowMapPSO.Get());
-	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-	//Shader Texture gShadowMap
-	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
-	//-------------------------------------------------------------------------------
 
 	mCommandList->SetGraphicsRoot32BitConstants(2, 3, &mCamera->GetPosition(), 0);
 
