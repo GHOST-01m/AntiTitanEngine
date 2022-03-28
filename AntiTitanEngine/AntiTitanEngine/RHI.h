@@ -10,6 +10,9 @@ class RHI
 public:
 	virtual bool Init()=0;
 		virtual void InitMember() = 0;
+		virtual std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors,int HeapType, int Flag) = 0;
+		virtual void InsertHeapToHeapLib(std::string heapName, std::shared_ptr<RHIResource_Heap> heap) = 0;
+		virtual void ResetCommandList() = 0;
 		virtual void LoadExternalMapActor(std::string Path) = 0;
 		virtual void LoadLightInfo(std::string Path) = 0;
 		virtual void LoadTexture(std::wstring Path,int TextureIndex) = 0;
@@ -47,5 +50,7 @@ public:
 
 public:
 	std::shared_ptr<RHIResourceManager> mRHIResourceManager;
+	std::shared_ptr<RHIResourceManager> GetRHIResourceManager();
+
 };
 

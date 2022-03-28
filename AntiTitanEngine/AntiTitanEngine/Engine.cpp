@@ -14,12 +14,17 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-	delete mEngine;
 	OutputDebugStringA("Engine::~Engine()\n");
 }
 
 Engine* Engine::Get() {
 	return mEngine;
+}
+
+void Engine::ReleaseEngine()
+{
+	delete mEngine;
+	mEngine = nullptr;
 }
 
 std::shared_ptr<GameTimer> Engine::GetGameTimer() {
@@ -92,7 +97,7 @@ void Engine::EngineDestroy() {
 	mRenderer = nullptr;
 	mWindow = nullptr;
 	mTimer = nullptr;
-	mEngine = nullptr;
+	ReleaseEngine();
 
 	Sleep(100);
 };

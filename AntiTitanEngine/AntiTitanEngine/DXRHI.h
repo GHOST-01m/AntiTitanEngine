@@ -69,16 +69,14 @@ public:
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
 
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
-	ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> mTextureHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> mShadowSrvDescriptorHeap = nullptr;
-	ComPtr<ID3D12DescriptorHeap> mShadowDsvDescriptorHeap = nullptr;
-
-
+	//ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
+	//ComPtr<ID3D12DescriptorHeap> mTextureHeap = nullptr;
+	//ComPtr<ID3D12DescriptorHeap> mShadowSrvDescriptorHeap = nullptr;
+	//ComPtr<ID3D12DescriptorHeap> mShadowDsvDescriptorHeap = nullptr;
 
 	D3D12_VIEWPORT mScreenViewport;
 	D3D12_RECT mScissorRect;
@@ -100,6 +98,9 @@ public:
 public:
 	bool Init() override;
 		void InitMember() override;
+		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
+		void InsertHeapToHeapLib(std::string heapName, std::shared_ptr<RHIResource_Heap> heap)override;
+		void ResetCommandList() override;
 		void LoadExternalMapActor(std::string Path)override;
 		void LoadLightInfo(std::string Path);
 		void LoadTexture(std::wstring Path, int TextureIndex)override;
@@ -114,7 +115,6 @@ public:
 
 	void InitDX_CreateCommandObjects();
 	void InitDX_CreateSwapChain();
-	void InitDX_CreateRtvAndDsvDescriptorHeaps();
 
 public:
 	void OnResize();

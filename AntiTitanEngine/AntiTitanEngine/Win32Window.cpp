@@ -15,6 +15,12 @@ Win32Window* Win32Window::Get() {
 	return mWin32Window;
 }
 
+void Win32Window::ReleaseWindow()
+{
+	delete mWin32Window;
+	mWin32Window = NULL;
+}
+
 HWND Win32Window::GetHWND() {
 	return mhMainWnd;
 };
@@ -172,6 +178,11 @@ LRESULT Win32Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 };
 
 Win32Window::Win32Window()
+{
+
+}
+
+Win32Window::~Win32Window()
 {
 
 }

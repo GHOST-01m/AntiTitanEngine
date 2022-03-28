@@ -145,24 +145,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ActorsInfo.h" />
-    <ClInclude Include="App.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="AssetManager.h" />
-    <ClInclude Include="BoxApp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Common\DDSTextureLoader.h" />
-    <ClInclude Include="d3dApp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DXRHI.h" />
     <ClInclude Include="DXRHIDevice.h" />
     <ClInclude Include="DXRHIFactory.h" />
     <ClInclude Include="DXRHIResourceManager.h" />
+    <ClInclude Include="DXRHIResource_Heap.h" />
     <ClInclude Include="DXRHIResource_Shader.h" />
     <ClInclude Include="DXRHIResource_ShadowMap.h" />
     <ClInclude Include="DXRHIResource_Texture.h" />
@@ -170,6 +162,8 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FSingleton.h" />
     <ClInclude Include="FLight.h" />
+    <ClInclude Include="RenderResource.h" />
+    <ClInclude Include="RHIResource_Heap.h" />
     <ClInclude Include="RHIResource_Shader.h" />
     <ClInclude Include="RHIResource_ShadowMap.h" />
     <ClInclude Include="RHIResource_Texture.h" />
@@ -195,27 +189,16 @@
     <ClInclude Include="UploadBuffer.h" />
     <ClInclude Include="Win32Window.h" />
     <ClInclude Include="Window.h" />
-    <ClInclude Include="WindowsApp.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ActorsInfo.cpp" />
-    <ClCompile Include="App.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="AssetManager.cpp" />
-    <ClCompile Include="BoxApp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Common\DDSTextureLoader.cpp" />
-    <ClCompile Include="d3dApp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DXRHI.cpp" />
     <ClCompile Include="DXRHIResourceManager.cpp" />
+    <ClCompile Include="DXRHIResource_Heap.cpp" />
     <ClCompile Include="DXRHIResource_Shader.cpp" />
     <ClCompile Include="DXRHIResource_ShadowMap.cpp" />
     <ClCompile Include="DXRHIResource_Texture.cpp" />
@@ -223,11 +206,13 @@
     <ClCompile Include="FLight.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="OpenGLRHI.cpp" />
+    <ClCompile Include="RenderResource.cpp" />
     <ClCompile Include="RenderResourceManager.cpp" />
     <ClCompile Include="RHI.cpp" />
     <ClCompile Include="RHIDevice.cpp" />
     <ClCompile Include="RHIFctory.cpp" />
     <ClCompile Include="RHIResourceManager.cpp" />
+    <ClCompile Include="RHIResource_Heap.cpp" />
     <ClCompile Include="RHIResource_Shader.cpp" />
     <ClCompile Include="RHIResource_ShadowMap.cpp" />
     <ClCompile Include="RHIResource_Texture.cpp" />
@@ -247,9 +232,6 @@
     <ClCompile Include="WindowsTopApp.cpp" />
     <ClCompile Include="Win32Window.cpp" />
     <ClCompile Include="Window.cpp" />
-    <ClCompile Include="WindowsApp.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

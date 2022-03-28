@@ -68,5 +68,3 @@ float4 PS(VertexOut pin) : SV_Target
 {
 	return 0;
 }
-
-

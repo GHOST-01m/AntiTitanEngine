@@ -1,4 +1,5 @@
 #pragma once
+#include "RenderResource.h"
 typedef
 enum Resource_DIMENSION
 {
@@ -168,15 +169,15 @@ enum RESOURCE_FLAGS
 } 	RESOURCE_FLAGS;
 
 
-class RenderResource_Factory {
+class RenderResource_Factory:public RenderResource {
 
 };
 
-class RenderResource_Device {
+class RenderResource_Device :public RenderResource {
 
 };
 
-class RenderResource_Fence {
+class RenderResource_Fence :public RenderResource {
 
 };
 

@@ -7,6 +7,7 @@
 #include "RHIResource_Shader.h"
 #include "RHIResource_Texture.h"
 #include "RHIResource_ShadowMap.h"
+#include "RHIResource_Heap.h"
 
 class RHIResourceManager
 {
@@ -21,7 +22,9 @@ public:
 	std::map<int, std::string> TextureMap;
 	std::shared_ptr<RHIResource_Shader> mShader;
 	std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
+	std::map<std::string,std::shared_ptr<RHIResource_Heap>> mHeapsLib;
 
 public:
 	int GetKeyByName(std::string name);
+	std::shared_ptr<RHIResource_Heap> GetHeapByName(std::string name);
 };

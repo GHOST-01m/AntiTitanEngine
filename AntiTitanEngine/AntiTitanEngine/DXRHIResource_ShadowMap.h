@@ -7,8 +7,8 @@ public:
     ~DXRHIResource_ShadowMap();
 
 public:
-	UINT mWidth = 2048;//SRVµÄÏñËØ??
-	UINT mHeight = 2048;
+	UINT mWidth = 4096;//SRVµÄÏñËØ??
+	UINT mHeight = 4096;
 
 	D3D12_VIEWPORT mViewport;
 	D3D12_RECT mScissorRect;

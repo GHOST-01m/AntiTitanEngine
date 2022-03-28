@@ -12,13 +12,18 @@ Renderer::~Renderer()
 
 bool Renderer::Init()
 {
+	mRenderResourceManager = std::make_shared<RenderResourceManager>();
+
 	mRHI = std::make_shared<DXRHI>();
-	//mRenderResourceManager = std::make_shared<RenderResourceManager>();
 	//mRenderResourceManager->mFactory = std::make_shared<RenderResource_Factory>();
 	//mRenderResourceManager->mDevice = std::make_shared<RenderResource_Device>();
 	//mRenderResourceManager->mFence = std::make_shared<RenderResource_Fence>();
 
 	mRHI->InitMember();
+	//创建Heap在这里创建,方法已经写好了，从InitMember下面copy过来就可以
+	//OnResize拆开
+
+
 	mRHI->LoadExternalMapActor(MapActorLoadPath);
 	mRHI->LoadLightInfo(MapLightLoadPath);
 	mRHI->LoadTexture(TextureLoadPath,0);

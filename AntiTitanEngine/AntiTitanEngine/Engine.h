@@ -17,6 +17,7 @@ public:
 public:
 	static Engine* mEngine;
 	static Engine* Get();
+	static void ReleaseEngine();
 
 	std::shared_ptr<GameTimer>         GetGameTimer();
 	std::shared_ptr<Window>            GetWindow();

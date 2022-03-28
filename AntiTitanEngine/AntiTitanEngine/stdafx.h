@@ -2,6 +2,7 @@
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers.
+#define _CRTDBG_MAP_ALLOC
 #endif
 
 #include <windows.h>
@@ -51,17 +52,14 @@
 #include <cstdint>
 #include <WindowsX.h>
 
-#include "d3dApp.h"
+
 #include "d3dUtil.h"
 #include "d3dx12.h"
 #include "GameTimer.h"
 #include "UploadBuffer.h"
-#include "BoxApp.h"
 #include "StaticMesh.h"
 #include "Camera.h"
 #include "MeshGeometry.h"
-#include "App.h"
-#include "WindowsApp.h"
 #include "ActorsInfo.h"
 #include "AssetManager.h"
 #include "Renderer.h"

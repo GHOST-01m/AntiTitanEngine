@@ -19,12 +19,6 @@
     <Filter Include="Source Files\D3D">
       <UniqueIdentifier>{042ff2d2-d2e3-402c-9db7-3670c6abcdd6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ObsoleteD3DApp">
-      <UniqueIdentifier>{cb5f6fef-b31a-4fb7-8024-792eda9ed060}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ObsoleteD3DApp">
-      <UniqueIdentifier>{fe9b3927-cea1-4743-a1db-72328a0464b6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Launch">
       <UniqueIdentifier>{a4641541-5ac5-4c49-a17d-187e890a54d5}</UniqueIdentifier>
     </Filter>
@@ -57,12 +51,6 @@
     </Filter>
     <Filter Include="Source Files\Asset">
       <UniqueIdentifier>{2b5feb57-2700-478f-b8b7-6d4d7b874568}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\ObsoleteAPP">
-      <UniqueIdentifier>{67988997-be63-4711-aac2-0b94ba4add78}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ObsoleteAPP">
-      <UniqueIdentifier>{b63604f6-b797-4da6-b595-a6a05c99f407}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\TopAPP">
       <UniqueIdentifier>{467815f6-1a05-47ba-8039-eefc72342a97}</UniqueIdentifier>
@@ -143,18 +131,6 @@
     </ClInclude>
     <ClInclude Include="UploadBuffer.h">
       <Filter>Header Files\D3D</Filter>
-    </ClInclude>
-    <ClInclude Include="App.h">
-      <Filter>Header Files\ObsoleteAPP</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsApp.h">
-      <Filter>Header Files\ObsoleteAPP</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dApp.h">
-      <Filter>Header Files\ObsoleteD3DApp</Filter>
-    </ClInclude>
-    <ClInclude Include="BoxApp.h">
-      <Filter>Header Files\ObsoleteD3DApp</Filter>
     </ClInclude>
     <ClInclude Include="Launch.h">
       <Filter>Header Files\Launch</Filter>
@@ -264,6 +240,15 @@
     <ClInclude Include="Camera.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
+    <ClInclude Include="RenderResource.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RHIResource_Heap.h">
+      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="DXRHIResource_Heap.h">
+      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -280,18 +265,6 @@
     </ClCompile>
     <ClCompile Include="MathHelper.cpp">
       <Filter>Source Files\D3D</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowsApp.cpp">
-      <Filter>Source Files\ObsoleteAPP</Filter>
-    </ClCompile>
-    <ClCompile Include="App.cpp">
-      <Filter>Source Files\ObsoleteAPP</Filter>
-    </ClCompile>
-    <ClCompile Include="BoxApp.cpp">
-      <Filter>Source Files\ObsoleteD3DApp</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dApp.cpp">
-      <Filter>Source Files\ObsoleteD3DApp</Filter>
     </ClCompile>
     <ClCompile Include="Launch.cpp">
       <Filter>Source Files\Launch</Filter>
@@ -385,6 +358,15 @@
     </ClCompile>
     <ClCompile Include="FLight.cpp">
       <Filter>Source Files\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderResource.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="RHIResource_Heap.cpp">
+      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRHIResource_Heap.cpp">
+      <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
