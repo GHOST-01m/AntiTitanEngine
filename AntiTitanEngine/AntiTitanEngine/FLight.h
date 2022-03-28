@@ -20,7 +20,14 @@ public:
 
 public:
 	void LoadLightFromBat(const std::string& filepath);
+	void InitView();
+	void InitProj();
 	XMMATRIX GetView();
 	XMMATRIX GetProj();
+
+	//Ðý×ª
+	void Pitch(float angle);
+	void Yaw(float angle);
+	void Roll(float angle);
 };
 

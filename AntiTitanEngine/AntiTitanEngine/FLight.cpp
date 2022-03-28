@@ -6,7 +6,7 @@ FLight::FLight()
 	//mSceneBounds.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	mSceneBounds.Center = XMFLOAT3(-1100.0f, -360.0f, 158.0f);
 	//mSceneBounds.Radius = sqrtf(10.0f* 10.0f+ 15.0f* 15.0f);
-	mSceneBounds.Radius = 2400;
+	mSceneBounds.Radius = 5000;
 }
 
 void FLight::LoadLightFromBat(const std::string& filepath)
@@ -27,12 +27,12 @@ void FLight::LoadLightFromBat(const std::string& filepath)
 	BatFile.close();
 }
 
-XMMATRIX FLight::GetView()
+void FLight::InitView()
 {
 	XMVECTOR R = XMLoadFloat3(&mRight);
 	XMVECTOR U = XMLoadFloat3(&mUp);
 	XMVECTOR L = XMLoadFloat3(&mLook);
-	XMFLOAT3 Pf3 = { mLightInfo.mTransform.translation.x,mLightInfo.mTransform.translation.y, mLightInfo.mTransform.translation .z};
+	XMFLOAT3 Pf3 = { mLightInfo.mTransform.translation.x,mLightInfo.mTransform.translation.y, mLightInfo.mTransform.translation.z };
 	XMVECTOR P = XMLoadFloat3(&Pf3);
 
 	// Keep camera's axes orthogonal to each other and of unit length.
@@ -72,10 +72,9 @@ XMMATRIX FLight::GetView()
 	mView(2, 3) = 0.0f;
 	mView(3, 3) = 1.0f;
 
-	return XMLoadFloat4x4(&mView);
 }
 
-XMMATRIX FLight::GetProj()
+void FLight::InitProj()
 {
 	XMFLOAT3 sphereCenterLS;
 	XMStoreFloat3(&sphereCenterLS, XMVector3TransformCoord(XMLoadFloat3(&mSceneBounds.Center), XMLoadFloat4x4(&mView)));
@@ -88,5 +87,46 @@ XMMATRIX FLight::GetProj()
 	Engine::Get()->GetAssetManager()->mLight->mLightNearZ = n;
 	Engine::Get()->GetAssetManager()->mLight->mLightFarZ = f;
 	XMMATRIX lightProj = XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);//P
-	return lightProj;
+
+	XMStoreFloat4x4(&mProj, lightProj);
 }
+
+XMMATRIX FLight::GetView()
+{
+	InitView();
+	return XMLoadFloat4x4(&mView);
+}
+
+XMMATRIX FLight::GetProj()
+{
+	InitProj();
+	return XMLoadFloat4x4(&mProj);;
+}
+
+
+void FLight::Pitch(float angle)
+{
+	// Rotate up and look vector about the right vector.
+	XMMATRIX R = XMMatrixRotationAxis(XMLoadFloat3(&mRight), angle);
+	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
+	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
+
+}
+
+void FLight::Yaw(float angle)
+{
+	// Rotate the basis vectors about the world y-axis.
+	XMMATRIX R = XMMatrixRotationZ(angle);
+	XMStoreFloat3(&mRight, XMVector3TransformNormal(XMLoadFloat3(&mRight), R));
+	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
+	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
+}
+
+void FLight::Roll(float angle) {
+
+	XMMATRIX R = XMMatrixRotationY(angle);
+	XMStoreFloat3(&mRight, XMVector3TransformNormal(XMLoadFloat3(&mRight), R));
+	XMStoreFloat3(&mUp, XMVector3TransformNormal(XMLoadFloat3(&mUp), R));
+	XMStoreFloat3(&mLook, XMVector3TransformNormal(XMLoadFloat3(&mLook), R));
+
+};//Roll·½Ïò

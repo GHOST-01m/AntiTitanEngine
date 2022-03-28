@@ -118,7 +118,7 @@ public:
 
 public:
 	void OnResize();
-
+	
 	void Update() override;
 		 //void UpdateMVP(int Index, ObjectConstants& objConstants) override;
 		 //void UpdateTime(ObjectConstants& objConstants) override;
