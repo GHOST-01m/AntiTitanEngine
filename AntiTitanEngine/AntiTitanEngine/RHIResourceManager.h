@@ -9,7 +9,7 @@
 #include "RHIResource_ShadowMap.h"
 #include "RHIResource_Heap.h"
 
-class RHIResourceManager
+class RHIResourceManager//改名：RendererPrimitiveManager 把这个成员从RHI里拿到Renderer里
 {
 public:
 	std::shared_ptr<RHIFactory> mRHIFactory;

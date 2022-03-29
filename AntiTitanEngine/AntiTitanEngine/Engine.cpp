@@ -87,7 +87,6 @@ void Engine::Tick()
 	mTimer->Tick();
 	mRenderer->Update();
 	mRenderer->Draw();
-	mRenderer->CalculateFrameStats();//这玩意其实应该放到Game里，但是这一行代码用不用无所谓，只是在窗口最上面显示一些信息
 	//mRenderer.Update();
 	//mRenderer.Draw();
 	//mRenderer.CalculateFrameStats();

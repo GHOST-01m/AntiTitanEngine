@@ -87,7 +87,6 @@ public:
 
 public:
 	bool Get4xMsaaState()const;
-	void Set4xMsaaState(bool value) override;
 	bool      m4xMsaaState = false;    // 4X MSAA enabled
 	UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
@@ -101,14 +100,20 @@ public:
 		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		void InsertHeapToHeapLib(std::string heapName, std::shared_ptr<RHIResource_Heap> heap)override;
 		void ResetCommandList() override;
-		void LoadExternalMapActor(std::string Path)override;
-		void LoadLightInfo(std::string Path);
-		void LoadTexture(std::wstring Path, int TextureIndex)override;
-		void BuildTexture(std::string Name,std::wstring Path)override;
-		void BuildMember()override;
+
+		//这个LoadTexture应该Load成一个Render的资源
+		void LoadDDSTextureToResource(std::wstring Path, int TextureIndex)override; //LoadTexture
+
+		//这里SetHeap还要重新做一下
+		void SetDescriptorHeaps() override;
+		void BuildRootSignature() override;
 		void SetShader(std::wstring ShaderPath)override;
+
+		//管线创建多个
 		void InitPSO()override;
-		void BuildShadow()override;//ShadowMap的管线重新建了一个，没有用原来的管线赋值构造，龙书实例代码是把sMapPSO直接赋值构造了原来的管线一个；
+
+		//BuildShadow里的东西实际上是调用之前创建好的几种方法创建出来的
+		void BuildShadow()override;
 		void LoadMeshAndSetBuffer()override;
 		void CreateVBIB()override;
 		void Execute()override;
@@ -142,9 +147,8 @@ public:
 	void CalculateFrameStats()override;
 
 public:
-	void BuildDescriptorHeaps();
-	void SetDescriptorHeaps();//往Heap里面灌数据
-	void BuildRootSignature();
+	//void SetDescriptorHeaps();//往Heap里面灌数据
+	//void BuildRootSignature();
 	void BuildShadersAndInputLayout();
 	void BuildPSO();
 

@@ -7,7 +7,7 @@ public:
     ~DXRHIResource_ShadowMap();
 
 public:
-	UINT mWidth = 4096;//SRVµÄÏñËØ??
+	UINT mWidth = 4096;//SRVµÄÏñËØ
 	UINT mHeight = 4096;
 
 	D3D12_VIEWPORT mViewport;

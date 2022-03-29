@@ -32,18 +32,6 @@ bool DXRHI::Get4xMsaaState() const
 	return m4xMsaaState;
 }
 
-void DXRHI::Set4xMsaaState(bool value)
-{
-	if (m4xMsaaState != value)
-	{
-		m4xMsaaState = value;
-
-		// Recreate the swapchain and buffers with new multisample settings.
-		SetSwapChain();
-		OnResize();
-	}
-}
-
 bool DXRHI::Init() {
 
 	mCamera = std::make_shared<Camera>();
@@ -115,7 +103,7 @@ bool DXRHI::Init() {
 	//mAsset.LoadExternalMapActor(MapLoadPath);//要先从外部导入地图数据才能绘制//这个应该放在游戏里
 	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapLoadPath);
 	Engine::Get()->GetMaterialSystem()->LoadTexture();
-	BuildDescriptorHeaps();
+	//BuildDescriptorHeaps();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	LoadAsset();
@@ -139,6 +127,8 @@ void DXRHI::InitMember()
 	mRHIResourceManager->mRHIDevice = std::make_shared<DXRHIDevice>();
 	mRHIResourceManager->mShader= std::make_shared<DXRHIResource_Shader>();
 	mRHIResourceManager->mShadowMap= std::make_shared<DXRHIResource_ShadowMap>();
+
+	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 100000.0f);
 
 #if defined(DEBUG) || defined(_DEBUG) 
 	// Enable the D3D12 debug layer.
@@ -203,11 +193,11 @@ void DXRHI::InitMember()
 	InsertHeapToHeapLib(rtvHeapName, rtvHeap);
 
 	std::string dsvHeapName = "mDsvHeap";
-	auto dsvHeap = CreateDescriptorHeap(dsvHeapName, 1, 3,0);
+	auto dsvHeap = CreateDescriptorHeap(dsvHeapName, 1, 3, 0);
 	InsertHeapToHeapLib(dsvHeapName, dsvHeap);
 
 	std::string cbvHeapName = "mCbvHeap";
-	auto cbvHeap = CreateDescriptorHeap(cbvHeapName, 1, 0,0);
+	auto cbvHeap = CreateDescriptorHeap(cbvHeapName, 10000, 0, 1);
 	InsertHeapToHeapLib(cbvHeapName, cbvHeap);
 	
 	std::string TextureHeapName = "mTextureHeap";
@@ -225,6 +215,7 @@ void DXRHI::InitMember()
 	//--------------------------------------------------------------------------------
 
 	OnResize();
+
 	// Reset the command list to prep for initialization commands.
 	ResetCommandList();
 
@@ -235,8 +226,9 @@ std::shared_ptr<RHIResource_Heap> DXRHI::CreateDescriptorHeap(std::string heapNa
 	std::shared_ptr<RHIResource_Heap> heap = std::make_shared<DXRHIResource_Heap>();
 	auto mHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(heap);
 	
-	D3D12_DESCRIPTOR_HEAP_TYPE heapType;
-	D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag;
+	D3D12_DESCRIPTOR_HEAP_TYPE heapType = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
+	D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
 	switch (mHeapType)
 	{
 	case 0:  heapType = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;	break;
@@ -329,35 +321,33 @@ void DXRHI::InitDX_CreateSwapChain() {
 		mSwapChain.GetAddressOf()));
 };
 
-void DXRHI::LoadExternalMapActor(std::string MapActorLoadPath)
-{
-	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
-}
+//void DXRHI::LoadExternalMapActor(std::string MapActorLoadPath)
+//{
+//	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
+//}
 
-void DXRHI::LoadLightInfo(std::string MapLightLoadPath)
-{
-	//auto Light =Engine::Get()->GetAssetManager()->mLight;
-	//Light = std::make_shared<FLight>();
-	//Light->LoadLightFromBat(MapLightLoadPath);
-	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
-	Engine::Get()->GetAssetManager()->mLight->LoadLightFromBat(MapLightLoadPath);
+//void DXRHI::LoadLightInfo(std::string MapLightLoadPath)
+//{
+//	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
+//	Engine::Get()->GetAssetManager()->mLight->LoadLightFromBat(MapLightLoadPath);
+//	Engine::Get()->GetAssetManager()->mLight->InitView();
+//	Engine::Get()->GetAssetManager()->mLight->InitProj();
+//}
 
-	Engine::Get()->GetAssetManager()->mLight->InitView();
-	Engine::Get()->GetAssetManager()->mLight->InitProj();
-}
-
-void DXRHI::LoadTexture(std::wstring Path, int TextureIndex)
+void DXRHI::LoadDDSTextureToResource(std::wstring Path, int TextureIndex)
 {
 	Engine::Get()->GetMaterialSystem()->mTexture = std::make_shared<Texture>();
 	Engine::Get()->GetMaterialSystem()->mTexture->Name = "TestTexture";
 	Engine::Get()->GetMaterialSystem()->mTexture->Filename = Path;
 
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-		mCommandList.Get(), 
+		mCommandList.Get(),
 		Engine::Get()->GetMaterialSystem()->mTexture->Filename.c_str(),
 		Engine::Get()->GetMaterialSystem()->mTexture->Resource,
 		Engine::Get()->GetMaterialSystem()->mTexture->UploadHeap));
+	
 	//------------------------------------------------------
+	//手动给一个测试
 	Engine::Get()->GetMaterialSystem()->mTextureNormal = std::make_shared<Texture>();
 	Engine::Get()->GetMaterialSystem()->mTextureNormal->Name = "TestNormal";
 	Engine::Get()->GetMaterialSystem()->mTextureNormal->Filename = L"Texture/Stone_Normal.dds";
@@ -377,14 +367,12 @@ void DXRHI::BuildShadow()
 	shadowResource->mViewport = { 0.0f, 0.0f, (float)shadowResource->mWidth, (float)shadowResource->mHeight, 0.0f, 1.0f };
 	shadowResource->mScissorRect = { 0, 0, (int)shadowResource->mWidth, (int)shadowResource->mHeight };
 
-	//创建一个ShadowSrvHeap
-
+	//ShadowMap内CpuSrv,GpuSrv指针赋值,创建一个ShadowSrvHeap
 	auto mShadowSrvDescriptorHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRHIResourceManager->GetHeapByName("mShadowSrvDescriptorHeap"));
-
 	shadowResource->mhCpuSrv = CD3DX12_CPU_DESCRIPTOR_HANDLE(mShadowSrvDescriptorHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	shadowResource->mhGpuSrv = CD3DX12_GPU_DESCRIPTOR_HANDLE(mShadowSrvDescriptorHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-	//创建一个ShadowDsvHeap
+	//ShadowMap内CpuDsv指针赋值,创建一个ShadowDsvHeap
 	auto mShadowDsvDescriptorHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRHIResourceManager->GetHeapByName("mShadowDsvDescriptorHeap"));
 	shadowResource->mhCpuDsv = CD3DX12_CPU_DESCRIPTOR_HANDLE(mShadowDsvDescriptorHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
@@ -479,33 +467,32 @@ void DXRHI::BuildShadow()
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowMapPsoDesc, IID_PPV_ARGS(&mShadowMapPSO)));
 }
 
-void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
-{
-	mRHIResourceManager->mTextures.resize(100);
-	mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum] = std::make_shared<DXRHIResource_Texture>();
-	auto Textures=std::dynamic_pointer_cast<DXRHIResource_Texture>(mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum]);
+//void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
+//{
+//	mRHIResourceManager->mTextures.resize(100);
+//	mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum] = std::make_shared<DXRHIResource_Texture>();
+//	auto Textures=std::dynamic_pointer_cast<DXRHIResource_Texture>(mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum]);
+//
+//	Textures->Name = Name;
+//	Textures->Filename = Path;
+//
+//	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+//		mCommandList.Get(), Textures->Filename.c_str(),
+//		Textures->Resource, Textures->UploadHeap));
+//	mRHIResourceManager->TextureMap.insert(std::make_pair(Engine::Get()->GetMaterialSystem()->mTextureNum, Name));
+//
+//	Engine::Get()->GetMaterialSystem()->mTextureNum++;
+//}
 
-	Textures->Name = Name;
-	Textures->Filename = Path;
-
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-		mCommandList.Get(), Textures->Filename.c_str(),
-		Textures->Resource, Textures->UploadHeap));
-	mRHIResourceManager->TextureMap.insert(std::make_pair(Engine::Get()->GetMaterialSystem()->mTextureNum, Name));
-
-	Engine::Get()->GetMaterialSystem()->mTextureNum++;
-}
-
-void DXRHI::BuildMember()
-{
-	BuildDescriptorHeaps();
-	BuildRootSignature();
-}
+//void DXRHI::BuildMember()
+//{
+//	SetDescriptorHeaps();
+//	BuildRootSignature();
+//}
 
 
 void DXRHI::SetShader(std::wstring ShaderPath)
 {
-	//HRESULT hr = S_OK;
 	auto DXShader = std::dynamic_pointer_cast<DXRHIResource_Shader> (mRHIResourceManager->mShader);
 	DXShader->mvsByteCode = d3dUtil::CompileShader(ShaderPath, nullptr, "VS", "vs_5_0");
 	DXShader->mpsByteCode = d3dUtil::CompileShader(ShaderPath, nullptr, "PS", "ps_5_0");
@@ -674,11 +661,14 @@ void DXRHI::OnResize()
 	// Flush before changing any resources.
 	FlushCommandQueue();
 
-	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+	ResetCommandList();
+
+	//ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 	// Release the previous resources we will be recreating.
-	for (int i = 0; i < SwapChainBufferCount; ++i)
+	for (int i = 0; i < SwapChainBufferCount; ++i){
 		mSwapChainBuffer[i].Reset();
+	}
 	mDepthStencilBuffer.Reset();
 
 	// Resize the swap chain.
@@ -715,7 +705,6 @@ void DXRHI::OnResize()
 	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
 	// we need to create the depth buffer resource with a typeless format.  
 	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-
 	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
 	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
@@ -725,6 +714,7 @@ void DXRHI::OnResize()
 	optClear.Format = mDepthStencilFormat;
 	optClear.DepthStencil.Depth = 1.0f;
 	optClear.DepthStencil.Stencil = 0;
+
 	ThrowIfFailed(md3dDevice->CreateCommittedResource(
 		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 		D3D12_HEAP_FLAG_NONE,
@@ -762,8 +752,6 @@ void DXRHI::OnResize()
 	mScreenViewport.MaxDepth = 1.0f;
 
 	mScissorRect = { 0, 0, Engine::Get()->GetWindow()->mClientWidth, Engine::Get()->GetWindow()->mClientHeight };
-
-	mCamera->SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 100000.0f);
 }
 
 
@@ -773,8 +761,8 @@ float DXRHI::AspectRatio() {
 
 void DXRHI::Update()
 {
-	//Engine::Get()->GetAssetManager()->mLight->Pitch(0.0002);
-	Engine::Get()->GetAssetManager()->mLight->Yaw(0.0002);
+	//Engine::Get()->GetAssetManager()->mLight->Pitch(0.0002f);
+	Engine::Get()->GetAssetManager()->mLight->Yaw(0.0002f);
 	
 	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
 	{
@@ -978,8 +966,8 @@ void DXRHI::DrawSceneToShadowMap()
 		auto testGeoIndex = mRHIResourceManager->GetKeyByName(DrawMeshName);
 		auto mVBIB = std::dynamic_pointer_cast<DXRHIResource_VBIBBuffer>(mRHIResourceManager->VBIBBuffers[testGeoIndex]);
 
-		mCommandList->IASetVertexBuffers(0, 1, &mVBIB->VertexBufferView());
-		mCommandList->IASetIndexBuffer(&mVBIB->IndexBufferView());
+		mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
+		mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
 		mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -1087,8 +1075,8 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	auto testGeoIndex = mRHIResourceManager->GetKeyByName(DrawMeshName);
 	auto mVBIB = std::dynamic_pointer_cast<DXRHIResource_VBIBBuffer>(mRHIResourceManager->VBIBBuffers[testGeoIndex]);
 	
-	mCommandList->IASetVertexBuffers(0, 1, &mVBIB->VertexBufferView());
-	mCommandList->IASetIndexBuffer(&mVBIB->IndexBufferView());
+	mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
+	mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -1304,7 +1292,6 @@ void DXRHI::LoadAsset()//将外部导入的Actor信息赋给VS
 
 void DXRHI::CalculateFrameStats()
 {
-
 	// Code computes the average frames per second, and also the 
 	// average time it takes to render one frame.  These stats 
 	// are appended to the window caption bar.
@@ -1351,36 +1338,14 @@ void DXRHI::CalculateFrameStats()
 	}
 }
 
-void DXRHI::BuildDescriptorHeaps()
-{
-	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRHIResourceManager->GetHeapByName("mCbvHeap"));
-
-	D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc;
-	if (!Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size())
-	{
-		cbvHeapDesc.NumDescriptors = 1;
-	}
-	else {
-		cbvHeapDesc.NumDescriptors = 10000;
-	}
-
-	cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	cbvHeapDesc.NodeMask = 0;
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
-		IID_PPV_ARGS(&mCbvHeap->mDescriptorHeap)));
-
-	auto mTextureHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRHIResourceManager->GetHeapByName("mTextureHeap"));
-	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&cbvHeapDesc,
-		IID_PPV_ARGS(&mTextureHeap->mDescriptorHeap)));
-
-	SetDescriptorHeaps();
-}
+//void DXRHI::BuildDescriptorHeaps()
+//{
+//	SetDescriptorHeaps();
+//}
 
 void DXRHI::SetDescriptorHeaps()
 {
 	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(), true);
-
 
 	UINT DescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	UINT ConstantbufferSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -1403,7 +1368,6 @@ void DXRHI::SetDescriptorHeaps()
 		cbvDesc.SizeInBytes = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 		md3dDevice->CreateConstantBufferView(&cbvDesc, heapCPUHandle);
 	}
-
 
 	for (int srvIndex = 0; srvIndex < Engine::Get()->GetMaterialSystem()->GetTextureNum(); srvIndex++)
 	{

@@ -195,9 +195,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
-    <ClInclude Include="RenderResourceManager.h">
-      <Filter>Header Files\Render</Filter>
-    </ClInclude>
     <ClInclude Include="RHIFactory.h">
       <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
     </ClInclude>
@@ -238,9 +235,6 @@
       <Filter>Header Files\Asset</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>Header Files\Render</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderResource.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="RHIResource_Heap.h">
@@ -326,9 +320,6 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
-    <ClCompile Include="RenderResourceManager.cpp">
-      <Filter>Source Files\Render</Filter>
-    </ClCompile>
     <ClCompile Include="RHIDevice.cpp">
       <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
     </ClCompile>
@@ -358,9 +349,6 @@
     </ClCompile>
     <ClCompile Include="FLight.cpp">
       <Filter>Source Files\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderResource.cpp">
-      <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="RHIResource_Heap.cpp">
       <Filter>Source Files\RHIResourceManager\RHIResource</Filter>

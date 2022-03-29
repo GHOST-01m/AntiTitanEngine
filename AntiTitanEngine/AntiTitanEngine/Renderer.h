@@ -3,7 +3,7 @@
 #include "DXRHI.h"
 #include "RHIResourceManager.h"
 #include "MyStruct.h"
-#include "RenderResourceManager.h"
+
 class Renderer
 {
 public:
@@ -26,12 +26,8 @@ public:
 	std::shared_ptr<RHI> GetRHI();
 	std::shared_ptr<Camera> GetCamera();
 
-	void CalculateFrameStats();
-	void Set4xMsaaState(bool value);
 	bool m4xMsaaState = false;
 private:
-	std::shared_ptr<RenderResourceManager> mRenderResourceManager;
-
 	ObjectConstants objConstants;
 	ScreenViewport mViewport{
 		0,

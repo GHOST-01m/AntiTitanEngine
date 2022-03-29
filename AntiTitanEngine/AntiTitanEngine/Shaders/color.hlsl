@@ -127,7 +127,7 @@ VertexOut VS(VertexIn vin)
 	float4 posw = mul(float4(vin.PosL, 1.0f), gWorld);
 	vout.PosW             = posw.xyz;
 	vout.ShadowPosH       = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
-	vout.NormalW          = vin.Normal;
+	vout.NormalW          = vin.Normal.xyz;
     return vout;
 }
 

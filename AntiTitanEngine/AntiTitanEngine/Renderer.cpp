@@ -12,23 +12,23 @@ Renderer::~Renderer()
 
 bool Renderer::Init()
 {
-	mRenderResourceManager = std::make_shared<RenderResourceManager>();
-
 	mRHI = std::make_shared<DXRHI>();
-	//mRenderResourceManager->mFactory = std::make_shared<RenderResource_Factory>();
-	//mRenderResourceManager->mDevice = std::make_shared<RenderResource_Device>();
-	//mRenderResourceManager->mFence = std::make_shared<RenderResource_Fence>();
 
 	mRHI->InitMember();
 	//创建Heap在这里创建,方法已经写好了，从InitMember下面copy过来就可以
 	//OnResize拆开
 
 
-	mRHI->LoadExternalMapActor(MapActorLoadPath);
-	mRHI->LoadLightInfo(MapLightLoadPath);
-	mRHI->LoadTexture(TextureLoadPath,0);
+	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
+	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
+	Engine::Get()->GetAssetManager()->mLight->LoadLightFromBat(MapLightLoadPath);
+	Engine::Get()->GetAssetManager()->mLight->InitView();
+	Engine::Get()->GetAssetManager()->mLight->InitProj();
+	mRHI->LoadDDSTextureToResource(TextureLoadPath,0);
 	//mRHI->BuildTexture("SkySphere", TextureLoadPath);
-	mRHI->BuildMember();
+	//mRHI->BuildMember();
+	mRHI->SetDescriptorHeaps();
+	mRHI->BuildRootSignature();
 	mRHI->BuildShadow();
 	mRHI->SetShader(ShaderPath);
 	//mRHI->BuildPSO();
@@ -75,15 +75,6 @@ void Renderer::Destroy()
 std::shared_ptr<RHI> Renderer::GetRHI()
 {
 	return mRHI;
-}
-
-void Renderer::CalculateFrameStats()
-{
-}
-
-void Renderer::Set4xMsaaState(bool value)
-{
-	mRHI->Set4xMsaaState(value);
 }
 
 std::shared_ptr<Camera> Renderer::GetCamera()
