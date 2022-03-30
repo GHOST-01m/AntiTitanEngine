@@ -164,38 +164,11 @@ void DXRHI::InitPrimitiveManagerMember()
 	InitDX_CreateSwapChain();
 	//InitDX_CreateRtvAndDsvDescriptorHeaps();
 
-	//Heap创建
-	std::string rtvHeapName = "mRtvHeap";
-	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
-	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
-	auto rtvHeap = CreateDescriptorHeap(rtvHeapName, SwapChainBufferCount, 2,0);
-	mRenderPrimitiveManager->mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(rtvHeapName, rtvHeap));
-
-	std::string dsvHeapName = "mDsvHeap";
-	auto dsvHeap = CreateDescriptorHeap(dsvHeapName, 100, 3, 0);
-	mRenderPrimitiveManager->mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(dsvHeapName, dsvHeap));
-
-	std::string cbvHeapName = "mCbvHeap";
-	auto cbvHeap = CreateDescriptorHeap(cbvHeapName, 10000, 0, 1);
-	mRenderPrimitiveManager->mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(cbvHeapName, cbvHeap));
-
-	std::string TextureHeapName = "mTextureHeap";
-	auto TextureHeap = CreateDescriptorHeap(TextureHeapName, 1, 0,0);
-	mRenderPrimitiveManager->mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(TextureHeapName, TextureHeap));
-
-	std::string ShadowSrvDescriptorHeapName = "mShadowSrvDescriptorHeap";
-	auto ShadowSrvDescriptorHeap = CreateDescriptorHeap(ShadowSrvDescriptorHeapName, 10000, 0,1);
-	mRenderPrimitiveManager->mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(ShadowSrvDescriptorHeapName,ShadowSrvDescriptorHeap));
-
-	std::string ShadowDsvDescriptorHeapName = "mShadowDsvDescriptorHeap";
-	auto ShadowDsvDescriptorHeap = CreateDescriptorHeap(ShadowDsvDescriptorHeapName, 10000, 3, 0);
-	mRenderPrimitiveManager->mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(ShadowDsvDescriptorHeapName, ShadowDsvDescriptorHeap));
-
 	//--------------------------------------------------------------------------------
-	OnResize();
+	//OnResize();//这里曾经有一个OnResize
 
 	// Reset the command list to prep for initialization commands.
-	ResetCommandList();
+	//ResetCommandList();
 }
 
 std::shared_ptr<RHIResource_Heap> DXRHI::CreateDescriptorHeap(std::string heapName,int NumDescriptors, int mHeapType,int mFlag)

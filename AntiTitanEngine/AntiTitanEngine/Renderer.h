@@ -25,6 +25,7 @@ public:
 //没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
 //没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
 	bool Init();
+		void CreateHeap();
 	void Update();
 	void Draw();
 	void Destroy();
@@ -46,8 +47,8 @@ private:
 	Color mClearColor = { 0,0,0,0 };
 
 	int m4xMsaaQuality = 0;
-	int mClientWidth = 1920;
-	int mClientHeight = 1080;
+	float mClientWidth = 1920;
+	float mClientHeight = 1080;
 	static const int SwapChainBufferCount = 2;
 
 	std::string MapActorLoadPath = "MapActorInfo/MapActorInfo.bat";
