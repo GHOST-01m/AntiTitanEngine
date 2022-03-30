@@ -1,7 +1,6 @@
 #pragma once
 #include "RHI.h"
-#include "RHIResourceManager.h"
-#include "DXRHIResourceManager.h"
+#include "RenderPrimitiveManager.h"
 
 #include <wrl.h>
 #include <dxgi1_4.h>
@@ -27,24 +26,24 @@
 #include "MyStruct.h"
 #include "AssetManager.h"
 #include "RHI.h"
-#include "DXRHIResourceManager.h"
+#include "DXRHIResource_Heap.h"
+#include "DXRHIResource_Shader.h"
+#include "DXRHIResource_ShadowMap.h"
+#include "DXRHIResource_Texture.h"
+#include "DXRHIResource_MeshBuffer.h"
+#include "DXRHIResource_RenderTarget.h"
 
 class DXRHI :public RHI
 {
 public:
-	std::shared_ptr<RHIResourceManager> GetResource()override;
-	std::shared_ptr<Camera> GetCamera()override;
-
-public:
 	Microsoft::WRL::ComPtr<ID3D12Device> Getd3dDevice();
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> GetCommandList();
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
-	float AspectRatio();
 
 public:
-	int mCurrBackBuffer = 0;
+	//int mCurrBackBufferIndex = 0;
 
-	static const int SwapChainBufferCount = 2;//交换链数量
+	//static const int SwapChainBufferCount = 2;//交换链数量
 
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
@@ -57,8 +56,8 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
-	Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
+	//Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
+	//Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
 
 public:
 	UINT mRtvDescriptorSize = 0;
@@ -96,9 +95,8 @@ public:
 
 public:
 	bool Init() override;
-		void InitMember() override;
+		void InitPrimitiveManagerMember() override;
 		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
-		void InsertHeapToHeapLib(std::string heapName, std::shared_ptr<RHIResource_Heap> heap)override;
 		void ResetCommandList() override;
 
 		//这个LoadTexture应该Load成一个Render的资源
@@ -116,14 +114,28 @@ public:
 		void BuildShadow()override;
 		void LoadMeshAndSetBuffer()override;
 		void CreateVBIB()override;
-		void Execute()override;
+		void ExecuteCommandList()override;
+		void WaitCommandComplete()override;
+
 
 	void InitDX_CreateCommandObjects();
 	void InitDX_CreateSwapChain();
 
 public:
 	void OnResize();
-	
+	//OnResize
+		void resetRenderTarget()override;
+		void resizeSwapChain()override;
+		void BuildRenderTarget()override;
+		void SetScreenSetViewPort(
+			float TopLeftX, float TopLeftY, 
+			float Width,    float Height,
+			float MinDepth, float MaxDepth) override;
+		void SetScissorRect(
+			long Left, long Top,
+			long Right, long Bottom)override;
+
+
 	void Update() override;
 		 //void UpdateMVP(int Index, ObjectConstants& objConstants) override;
 		 //void UpdateTime(ObjectConstants& objConstants) override;
@@ -143,7 +155,7 @@ public:
 
 	void FlushCommandQueue();
 	void SetSwapChain();
-	void LoadAsset();
+	//void LoadAsset();
 	void CalculateFrameStats()override;
 
 public:
@@ -155,7 +167,7 @@ public:
 public:
 	ID3D12Resource* CurrentBackBuffer()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
-	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView();
+
 
 public:
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
@@ -170,7 +182,4 @@ public://这一部分应该写到Game里
 
 public:
 	POINT mLastMousePos;
-	std::string MapLoadPath = "MapActorInfo/MapActorInfo.bat";
-	static std::shared_ptr<Camera> mCamera;
-
 };

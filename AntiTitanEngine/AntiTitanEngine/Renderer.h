@@ -1,7 +1,7 @@
 #pragma once
 #include "RHI.h"
 #include "DXRHI.h"
-#include "RHIResourceManager.h"
+#include "RenderPrimitiveManager.h"
 #include "MyStruct.h"
 
 class Renderer
@@ -12,6 +12,13 @@ public:
 
 private:
 	std::shared_ptr<RHI> mRHI;
+	std::shared_ptr<Camera> mCamera;
+	std::shared_ptr<RenderPrimitiveManager> mRenderPrimitiveManager;
+
+public:
+	std::shared_ptr<RHI> GetRHI();
+	std::shared_ptr<Camera> GetCamera();
+	std::shared_ptr<RenderPrimitiveManager> GetRenderPrimitiveManager();
 
 public:
 //没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
@@ -23,10 +30,8 @@ public:
 	void Destroy();
 	
 public:
-	std::shared_ptr<RHI> GetRHI();
-	std::shared_ptr<Camera> GetCamera();
-
 	bool m4xMsaaState = false;
+
 private:
 	ObjectConstants objConstants;
 	ScreenViewport mViewport{

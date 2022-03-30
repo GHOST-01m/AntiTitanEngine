@@ -94,22 +94,22 @@
     <Filter Include="Header Files\Shader">
       <UniqueIdentifier>{679d2b32-0720-4e15-9083-0eb63d71ce7e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\RHIResourceManager">
+    <Filter Include="Header Files\RenderPrimitiveManager">
       <UniqueIdentifier>{1f44bcf0-7dd1-4c52-a45d-42177b93b620}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\RHIResourceManager\RHIResource">
+    <Filter Include="Header Files\RenderPrimitiveManager\RHIResource">
       <UniqueIdentifier>{a4a2d4bf-20c6-419a-9653-c6892d862924}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\RHIResourceManager">
-      <UniqueIdentifier>{400962fd-503e-4605-aab5-8ec01fa9010b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\RHIResourceManager\RHIResource">
-      <UniqueIdentifier>{a3c17ffc-047e-468c-8e8f-73b887edfe62}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\RHIResourceManager\DXRHIResource">
+    <Filter Include="Header Files\RenderPrimitiveManager\DXRHIResource">
       <UniqueIdentifier>{dd6bc117-aa96-47d0-91fa-93422759f84b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\RHIResourceManager\DXRHIResource">
+    <Filter Include="Source Files\RenderPrimitiveManager">
+      <UniqueIdentifier>{400962fd-503e-4605-aab5-8ec01fa9010b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RenderPrimitiveManager\RHIResource">
+      <UniqueIdentifier>{a3c17ffc-047e-468c-8e8f-73b887edfe62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RenderPrimitiveManager\DXRHIResource">
       <UniqueIdentifier>{e1da2102-d960-44c4-aeb5-7431549013e6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -186,50 +186,38 @@
     <ClInclude Include="OpenGLRHI.h">
       <Filter>Header Files\RHI\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="RHIResourceManager.h">
-      <Filter>Header Files\RHIResourceManager</Filter>
-    </ClInclude>
-    <ClInclude Include="DXRHIResourceManager.h">
-      <Filter>Header Files\RHIResourceManager</Filter>
-    </ClInclude>
     <ClInclude Include="Renderer.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="RHIFactory.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
     <ClInclude Include="RHIDevice.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
-    <ClInclude Include="RHIResource_VBIBBuffer.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+    <ClInclude Include="RHIResource_MeshBuffer.h">
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
-    <ClInclude Include="DXRHIDevice.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
-    </ClInclude>
-    <ClInclude Include="DXRHIFactory.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
-    </ClInclude>
-    <ClInclude Include="DXRHIResource_VBIBBuffer.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+    <ClInclude Include="DXRHIResource_MeshBuffer.h">
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
     <ClInclude Include="RHIResource_Shader.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
     <ClInclude Include="DXRHIResource_Shader.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
     <ClInclude Include="RHIResource_Texture.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
     <ClInclude Include="DXRHIResource_Texture.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
     <ClInclude Include="RHIResource_ShadowMap.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
     <ClInclude Include="DXRHIResource_ShadowMap.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
     <ClInclude Include="FLight.h">
       <Filter>Header Files\Asset</Filter>
@@ -238,10 +226,25 @@
       <Filter>Header Files\Render</Filter>
     </ClInclude>
     <ClInclude Include="RHIResource_Heap.h">
-      <Filter>Header Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
     <ClInclude Include="DXRHIResource_Heap.h">
-      <Filter>Header Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPrimitiveManager.h">
+      <Filter>Header Files\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="RHIResource_Resource.h">
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="DXRHIResource_Resource.h">
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="RHIResource_RenderTarget.h">
+      <Filter>Header Files\RenderPrimitiveManager\RHIResource</Filter>
+    </ClInclude>
+    <ClInclude Include="DXRHIResource_RenderTarget.h">
+      <Filter>Header Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -311,50 +314,59 @@
     <ClCompile Include="OpenGLRHI.cpp">
       <Filter>Source Files\RHI\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="DXRHIResourceManager.cpp">
-      <Filter>Source Files\RHIResourceManager</Filter>
-    </ClCompile>
-    <ClCompile Include="RHIResourceManager.cpp">
-      <Filter>Source Files\RHIResourceManager</Filter>
+    <ClCompile Include="RenderPrimitiveManager.cpp">
+      <Filter>Source Files\RenderPrimitiveManager</Filter>
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="RHIDevice.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="RHIFctory.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
-    <ClCompile Include="RHIResource_VBIBBuffer.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+    <ClCompile Include="RHIResource_MeshBuffer.cpp">
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="RHIResource_Shader.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="DXRHIResource_Shader.cpp">
-      <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
     <ClCompile Include="RHIResource_Texture.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="DXRHIResource_Texture.cpp">
-      <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
     <ClCompile Include="RHIResource_ShadowMap.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="DXRHIResource_ShadowMap.cpp">
-      <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
     <ClCompile Include="FLight.cpp">
       <Filter>Source Files\Asset</Filter>
     </ClCompile>
     <ClCompile Include="RHIResource_Heap.cpp">
-      <Filter>Source Files\RHIResourceManager\RHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="DXRHIResource_Heap.cpp">
-      <Filter>Source Files\RHIResourceManager\DXRHIResource</Filter>
+      <Filter>Source Files\RenderPrimitiveManager\DXRHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="RHIResource_Resource.cpp">
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRHIResource_Resource.cpp">
+      <Filter>Source Files\RenderPrimitiveManager\DXRHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="RHIResource_RenderTarget.cpp">
+      <Filter>Source Files\RenderPrimitiveManager\RHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="DXRHIResource_RenderTarget.cpp">
+      <Filter>Source Files\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

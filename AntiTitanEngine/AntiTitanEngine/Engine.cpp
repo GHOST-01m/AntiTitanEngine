@@ -93,7 +93,7 @@ void Engine::Tick()
 }
 
 void Engine::EngineDestroy() {
-	mRenderer = nullptr;
+	//mRenderer = nullptr;
 	mWindow = nullptr;
 	mTimer = nullptr;
 	ReleaseEngine();

@@ -1,5 +1,5 @@
 #pragma once
-#include "RHIResourceManager.h"
+#include "RenderPrimitiveManager.h"
 #include "Camera.h"
 #include "MyStruct.h"
 
@@ -7,9 +7,8 @@ class RHI
 {
 public:
 	virtual bool Init()=0;
-		virtual void InitMember() = 0;
+		virtual void InitPrimitiveManagerMember() = 0;
 		virtual std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors,int HeapType, int Flag) = 0;
-		virtual void InsertHeapToHeapLib(std::string heapName, std::shared_ptr<RHIResource_Heap> heap) = 0;
 		virtual void ResetCommandList() = 0;
 		virtual void LoadDDSTextureToResource(std::wstring Path,int TextureIndex) = 0;
 		virtual void SetDescriptorHeaps() = 0;
@@ -19,7 +18,16 @@ public:
 		virtual void BuildShadow() = 0;
 		virtual void LoadMeshAndSetBuffer() = 0;
 		virtual void CreateVBIB() = 0;
-		virtual void Execute() = 0;
+		virtual void ExecuteCommandList() = 0;
+		virtual void WaitCommandComplete() = 0;
+
+	//OnResize
+		virtual void resetRenderTarget() = 0;
+		virtual void resizeSwapChain() = 0;
+		virtual void BuildRenderTarget() = 0;
+		virtual void SetScreenSetViewPort(float TopLeftX, float TopLeftY, float Width, float Height,float MinDepth,float MaxDepth) = 0;
+		virtual void SetScissorRect(long Left, long Top, long Right, long Bottom) = 0;
+
 
 	virtual void Update()=0;
 		//virtual void UpdateMVP(int Index, ObjectConstants& objConstants) = 0;
@@ -38,14 +46,5 @@ public:
 		virtual void CommitShadowMap() = 0;
 		virtual void DrawActor(int ActorIndex,int TextureIndex) = 0;
 		virtual void DrawFinal() = 0;
-
-public:
-	virtual std::shared_ptr<RHIResourceManager> GetResource() = 0;
-	virtual std::shared_ptr<Camera> GetCamera() = 0;
-
-public:
-	std::shared_ptr<RHIResourceManager> mRHIResourceManager;
-	std::shared_ptr<RHIResourceManager> GetRHIResourceManager();
-
 };
 

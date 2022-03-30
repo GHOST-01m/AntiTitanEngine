@@ -1,17 +1,17 @@
 #include "stdafx.h"
-#include "RHIResourceManager.h"
+#include "RenderPrimitiveManager.h"
 
 RHIDevice::~RHIDevice()
 {
 
 }
 
-RHIResource_VBIBBuffer::~RHIResource_VBIBBuffer()
+RHIResource_MeshBuffer::~RHIResource_MeshBuffer()
 {
 
 }
 
-int RHIResourceManager::GetKeyByName(std::string name)
+int RenderPrimitiveManager::GetMeshKeyByName(std::string name)
 {
 	for (auto it = MeshMap.begin(); it != MeshMap.end(); it++)
 	{
@@ -24,7 +24,7 @@ int RHIResourceManager::GetKeyByName(std::string name)
 	return -1;//如果执行到这里了,应该抛出一个异常表示没有从Map中找到对应名字的几何体
 }
 
-std::shared_ptr<RHIResource_Heap> RHIResourceManager::GetHeapByName(std::string name)
+std::shared_ptr<RHIResource_Heap> RenderPrimitiveManager::GetHeapByName(std::string name)
 {
 	return mHeapsLib.at(name);
 }

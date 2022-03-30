@@ -1,7 +1,7 @@
 #pragma once
-class RHIResource_VBIBBuffer {
+class RHIResource_MeshBuffer {
 public:
-	virtual ~RHIResource_VBIBBuffer();
+	virtual ~RHIResource_MeshBuffer();
 public:
 	std::string MeshName;
 	std::vector<Vertex> vertices;

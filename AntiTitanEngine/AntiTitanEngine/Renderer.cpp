@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "Renderer.h"
-#include "DXRHIResourceManager.h"
 
 Renderer::Renderer()
 {
@@ -10,14 +9,22 @@ Renderer::~Renderer()
 {
 }
 
+std::shared_ptr<RenderPrimitiveManager> Renderer::GetRenderPrimitiveManager()
+{
+	return mRenderPrimitiveManager;
+}
+
 bool Renderer::Init()
 {
+	mRenderPrimitiveManager = std::make_shared<RenderPrimitiveManager>();
+	mCamera = std::make_shared<Camera>();
 	mRHI = std::make_shared<DXRHI>();
+	mRHI->InitPrimitiveManagerMember();
 
-	mRHI->InitMember();
+	mCamera->SetLens(0.25f * MathHelper::Pi, static_cast<float>(mClientWidth) / mClientHeight, 1.0f, 100000.0f);
+
 	//创建Heap在这里创建,方法已经写好了，从InitMember下面copy过来就可以
 	//OnResize拆开
-
 
 	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
 	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
@@ -25,8 +32,6 @@ bool Renderer::Init()
 	Engine::Get()->GetAssetManager()->mLight->InitView();
 	Engine::Get()->GetAssetManager()->mLight->InitProj();
 	mRHI->LoadDDSTextureToResource(TextureLoadPath,0);
-	//mRHI->BuildTexture("SkySphere", TextureLoadPath);
-	//mRHI->BuildMember();
 	mRHI->SetDescriptorHeaps();
 	mRHI->BuildRootSignature();
 	mRHI->BuildShadow();
@@ -35,8 +40,8 @@ bool Renderer::Init()
 	mRHI->InitPSO() ;
 	mRHI->LoadMeshAndSetBuffer();
 	mRHI->CreateVBIB();
-	mRHI->Execute();
-
+	mRHI->ExecuteCommandList();
+	mRHI->WaitCommandComplete();
 	return true;
 	//return mRHI->Init();
 
@@ -79,6 +84,6 @@ std::shared_ptr<RHI> Renderer::GetRHI()
 
 std::shared_ptr<Camera> Renderer::GetCamera()
 {
-	return mRHI->GetCamera();
+	return mCamera;
 }
 

@@ -1,10 +1,10 @@
 #pragma once
 #include "MyStruct.h"
 
-class DXRHIResource_VBIBBuffer :public RHIResource_VBIBBuffer {
+class DXRHIResource_MeshBuffer :public RHIResource_MeshBuffer {
 
 public:
-	~DXRHIResource_VBIBBuffer();
+	//~DXRHIResource_VBIBBuffer();
 
 public:
 	std::string MeshName;
@@ -45,3 +45,5 @@ public:
 		return ibv;
 	}
 };
+
+
