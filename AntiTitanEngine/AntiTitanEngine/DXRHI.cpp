@@ -416,30 +416,6 @@ void DXRHI::BuildShadow()
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowMapPsoDesc, IID_PPV_ARGS(&mShadowMapPSO)));
 }
 
-//void DXRHI::BuildTexture(std::string Name ,std::wstring Path)
-//{
-//	mRHIResourceManager->mTextures.resize(100);
-//	mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum] = std::make_shared<DXRHIResource_Texture>();
-//	auto Textures=std::dynamic_pointer_cast<DXRHIResource_Texture>(mRHIResourceManager->mTextures[Engine::Get()->GetMaterialSystem()->mTextureNum]);
-//
-//	Textures->Name = Name;
-//	Textures->Filename = Path;
-//
-//	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-//		mCommandList.Get(), Textures->Filename.c_str(),
-//		Textures->Resource, Textures->UploadHeap));
-//	mRHIResourceManager->TextureMap.insert(std::make_pair(Engine::Get()->GetMaterialSystem()->mTextureNum, Name));
-//
-//	Engine::Get()->GetMaterialSystem()->mTextureNum++;
-//}
-
-//void DXRHI::BuildMember()
-//{
-//	SetDescriptorHeaps();
-//	BuildRootSignature();
-//}
-
-
 void DXRHI::SetShader(std::wstring ShaderPath)
 {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
@@ -623,7 +599,7 @@ void DXRHI::OnResize()
 	resetRenderTarget();//Resize的时候才要用，初始化不需要用
 
 	// Resize the swap chain.
-	resizeSwapChain();
+	ResizeSwapChain();
 
 	//auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
 	//auto mSwapChainBuffer     = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->mSwapChainBuffer;
@@ -656,7 +632,7 @@ void DXRHI::resetRenderTarget()
 	mRendertarget->GetDepthStencilBuffer().Reset();
 }
 
-void DXRHI::resizeSwapChain()
+void DXRHI::ResizeSwapChain()
 {
 	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
 	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();

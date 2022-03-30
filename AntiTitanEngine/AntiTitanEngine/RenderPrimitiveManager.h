@@ -29,4 +29,5 @@ public:
 public:
 	int GetMeshKeyByName(std::string name);
 	std::shared_ptr<RHIResource_Heap> GetHeapByName(std::string name);
+	void InsertHeapToHeapLib(std::string, std::shared_ptr<RHIResource_Heap>);
 };

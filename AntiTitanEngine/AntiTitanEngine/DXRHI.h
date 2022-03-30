@@ -41,10 +41,6 @@ public:
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 
 public:
-	//int mCurrBackBufferIndex = 0;
-
-	//static const int SwapChainBufferCount = 2;//交换链数量
-
 	Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
 	Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
@@ -56,9 +52,6 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
-	//Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
-	//Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
-
 public:
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
@@ -68,14 +61,7 @@ public:
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
-	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
-
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
-	//ComPtr<ID3D12DescriptorHeap> mCbvHeap = nullptr;
-	//ComPtr<ID3D12DescriptorHeap> mTextureHeap = nullptr;
-	//ComPtr<ID3D12DescriptorHeap> mShadowSrvDescriptorHeap = nullptr;
-	//ComPtr<ID3D12DescriptorHeap> mShadowDsvDescriptorHeap = nullptr;
 
 	D3D12_VIEWPORT mScreenViewport;
 	D3D12_RECT mScissorRect;
@@ -98,7 +84,7 @@ public:
 		void InitPrimitiveManagerMember() override;
 		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		void ResetCommandList() override;
-
+		//这里曾经有一个OnResize
 		//这个LoadTexture应该Load成一个Render的资源
 		void LoadDDSTextureToResource(std::wstring Path, int TextureIndex)override; //LoadTexture
 

@@ -28,3 +28,8 @@ std::shared_ptr<RHIResource_Heap> RenderPrimitiveManager::GetHeapByName(std::str
 {
 	return mHeapsLib.at(name);
 }
+
+void RenderPrimitiveManager::InsertHeapToHeapLib(std::string heapname, std::shared_ptr<RHIResource_Heap> heap)
+{
+	mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(heapname, heap));
+}
