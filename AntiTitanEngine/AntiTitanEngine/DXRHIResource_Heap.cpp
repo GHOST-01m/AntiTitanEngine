@@ -5,3 +5,8 @@ DXRHIResource_Heap::~DXRHIResource_Heap()
 {
 
 }
+
+Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DXRHIResource_Heap::GetDXHeap()
+{
+	return mDescriptorHeap;
+}

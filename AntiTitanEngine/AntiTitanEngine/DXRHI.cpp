@@ -5,13 +5,11 @@ Microsoft::WRL::ComPtr<ID3D12Device> DXRHI::Getd3dDevice() {
 	return md3dDevice;
 };
 
-Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DXRHI::GetCommandList()
-{
+Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> DXRHI::GetCommandList(){
 	return mCommandList;
 }
 
-bool DXRHI::Get4xMsaaState() const
-{
+bool DXRHI::Get4xMsaaState() const{
 	return m4xMsaaState;
 }
 
@@ -87,7 +85,7 @@ bool DXRHI::Init() {
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	//LoadAsset();
-	BuildPSO();
+	//BuildPSO();
 
 	// Execute the initialization commands.
 	ThrowIfFailed(mCommandList->Close());
@@ -106,15 +104,6 @@ void DXRHI::InitPrimitiveManagerMember()
 	mRenderPrimitiveManager->mShader = std::make_shared<DXRHIResource_Shader>();
 	mRenderPrimitiveManager->mShadowMap = std::make_shared<DXRHIResource_ShadowMap>();
 	mRenderPrimitiveManager->mRenderTarget = std::make_shared<DXRHIResource_RenderTarget>();
-
-#if defined(DEBUG) || defined(_DEBUG) 
-	// Enable the D3D12 debug layer.
-	{
-		ComPtr<ID3D12Debug> debugController;
-		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
-		debugController->EnableDebugLayer();
-	}
-#endif
 
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
 
@@ -169,6 +158,18 @@ void DXRHI::InitPrimitiveManagerMember()
 
 	// Reset the command list to prep for initialization commands.
 	//ResetCommandList();
+}
+
+void DXRHI::OpenDebugLayer()
+{
+#if defined(DEBUG) || defined(_DEBUG) 
+	// Enable the D3D12 debug layer.
+	{
+		ComPtr<ID3D12Debug> debugController;
+		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+		debugController->EnableDebugLayer();
+	}
+#endif
 }
 
 std::shared_ptr<RHIResource_Heap> DXRHI::CreateDescriptorHeap(std::string heapName,int NumDescriptors, int mHeapType,int mFlag)
@@ -371,49 +372,49 @@ void DXRHI::BuildShadow()
 	dsvDesc.Texture2D.MipSlice = 0;
 	md3dDevice->CreateDepthStencilView(shadowResource->mShadowResource.Get(), &dsvDesc, shadowResource->mhCpuDsv);
 
-	//一根shadowMap的管线
-		//ShadowMapPSO有自己的Shader
-		DXShader->mvsShadowMapCode = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", nullptr, "VS", "vs_5_1");
-		DXShader->mpsShadowMapCode = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", nullptr, "PS", "ps_5_1");
-		DXShader->mInputLayout =
-		{
-			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
-		};
+	//一根shadowMap的管线------------------------------------------------------------
+	//	//ShadowMapPSO有自己的Shader
+	//	DXShader->mvsShadowMapCode = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", nullptr, "VS", "vs_5_1");
+	//	DXShader->mpsShadowMapCode = d3dUtil::CompileShader(L"Shaders\\Shadows.hlsl", nullptr, "PS", "ps_5_1");
+	//	DXShader->mInputLayout =
+	//	{
+	//		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	//		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	//		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	//		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	//	};
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC shadowMapPsoDesc;
-	ZeroMemory(&shadowMapPsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	shadowMapPsoDesc.InputLayout = { DXShader->mInputLayout.data(), (UINT)DXShader->mInputLayout.size() };
-	shadowMapPsoDesc.pRootSignature = mRootSignature.Get();
-	shadowMapPsoDesc.VS =
-	{
-		reinterpret_cast<BYTE*>(DXShader->mvsShadowMapCode->GetBufferPointer()),
-		DXShader->mvsShadowMapCode->GetBufferSize()
-	};
-	shadowMapPsoDesc.PS =
-	{
-		reinterpret_cast<BYTE*>(DXShader->mpsShadowMapCode->GetBufferPointer()),
-		DXShader->mpsShadowMapCode->GetBufferSize()
-	};
+	//D3D12_GRAPHICS_PIPELINE_STATE_DESC shadowMapPsoDesc;
+ //	ZeroMemory(&shadowMapPsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+	//shadowMapPsoDesc.InputLayout = { DXShader->mInputLayout.data(), (UINT)DXShader->mInputLayout.size() };
+	//shadowMapPsoDesc.pRootSignature = mRootSignature.Get();
+	//shadowMapPsoDesc.VS =
+	//{
+	//	reinterpret_cast<BYTE*>(DXShader->mvsShadowMapCode->GetBufferPointer()),
+	//	DXShader->mvsShadowMapCode->GetBufferSize()
+	//};
+	//shadowMapPsoDesc.PS =
+	//{
+	//	reinterpret_cast<BYTE*>(DXShader->mpsShadowMapCode->GetBufferPointer()),
+	//	DXShader->mpsShadowMapCode->GetBufferSize()
+	//};
 
-	shadowMapPsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	shadowMapPsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	shadowMapPsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	shadowMapPsoDesc.RasterizerState.FrontCounterClockwise = true;
-	shadowMapPsoDesc.SampleMask = UINT_MAX;
-	shadowMapPsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	shadowMapPsoDesc.NumRenderTargets = 0;//
-	shadowMapPsoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;//
-	shadowMapPsoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	shadowMapPsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-	shadowMapPsoDesc.DSVFormat = mDepthStencilFormat;
+	//shadowMapPsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	//shadowMapPsoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
+	//shadowMapPsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	//shadowMapPsoDesc.RasterizerState.FrontCounterClockwise = true;
+	//shadowMapPsoDesc.SampleMask = UINT_MAX;
+	//shadowMapPsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	//shadowMapPsoDesc.NumRenderTargets = 0;//
+	//shadowMapPsoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;//
+	//shadowMapPsoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	//shadowMapPsoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+	//shadowMapPsoDesc.DSVFormat = mDepthStencilFormat;
 
-	shadowMapPsoDesc.RasterizerState.DepthBias = 400000;//
-	shadowMapPsoDesc.RasterizerState.DepthBiasClamp = 0.0f;//
-	shadowMapPsoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;//
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowMapPsoDesc, IID_PPV_ARGS(&mShadowMapPSO)));
+	//shadowMapPsoDesc.RasterizerState.DepthBias = 400000;//
+	//shadowMapPsoDesc.RasterizerState.DepthBiasClamp = 0.0f;//
+	//shadowMapPsoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;//
+	//ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&shadowMapPsoDesc, IID_PPV_ARGS(&mShadowMapPSO)));
 }
 
 void DXRHI::SetShader(std::wstring ShaderPath)
@@ -431,6 +432,24 @@ void DXRHI::SetShader(std::wstring ShaderPath)
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
+}
+
+std::shared_ptr<RHIResource_Shader> DXRHI::CreateShader(std::string ShaderName, std::wstring ShaderPath)
+{
+	auto dxshader = std::make_shared<DXRHIResource_Shader>();
+	dxshader->name = ShaderName;
+	dxshader->mvsByteCode = d3dUtil::CompileShader(ShaderPath, nullptr, "VS", "vs_5_0");
+	dxshader->mpsByteCode = d3dUtil::CompileShader(ShaderPath, nullptr, "PS", "ps_5_0");
+
+	dxshader->mInputLayout =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	return dxshader;
 }
 
 void DXRHI::LoadMeshAndSetBuffer()
@@ -537,24 +556,25 @@ void DXRHI::CreateVBIB() {
 	}
 }
 
-void DXRHI::InitPSO()
+std::shared_ptr<RHIResource_Pipeline> DXRHI::CreatePipeline(std::string pipelineName, std::shared_ptr<RHIResource_Shader> shader, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline)
 {
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto DXShader = std::dynamic_pointer_cast<DXRHIResource_Shader> (mRenderPrimitiveManager->mShader);
+	auto dxShader = std::dynamic_pointer_cast<DXRHIResource_Shader>(shader);
+	auto pipeline = std::make_shared<DXRHIResource_Pipeline>();
+	pipeline->pipelineName = pipelineName;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
 	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	psoDesc.InputLayout = { DXShader->mInputLayout.data(), (UINT)DXShader->mInputLayout.size() };
+	psoDesc.InputLayout = { dxShader->mInputLayout.data(), (UINT)dxShader->mInputLayout.size() };
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.VS =
 	{
-		reinterpret_cast<BYTE*>(DXShader->mvsByteCode->GetBufferPointer()),
-		DXShader->mvsByteCode->GetBufferSize()
+		reinterpret_cast<BYTE*>(dxShader->mvsByteCode->GetBufferPointer()),
+		dxShader->mvsByteCode->GetBufferSize()
 	};
 	psoDesc.PS =
 	{
-		reinterpret_cast<BYTE*>(DXShader->mpsByteCode->GetBufferPointer()),
-		DXShader->mpsByteCode->GetBufferSize()
+		reinterpret_cast<BYTE*>(dxShader->mpsByteCode->GetBufferPointer()),
+		dxShader->mpsByteCode->GetBufferSize()
 	};
 
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -563,12 +583,30 @@ void DXRHI::InitPSO()
 	psoDesc.RasterizerState.FrontCounterClockwise = true;
 	psoDesc.SampleMask = UINT_MAX;
 	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = mBackBufferFormat;
+	psoDesc.NumRenderTargets = NumRenderTargets;
+
+	switch (RenderTargetType)
+	{
+	case 0:	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM; break;
+	case 1:	psoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN; break;
+	break;
+	}
+
 	psoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	psoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
 	psoDesc.DSVFormat = mDepthStencilFormat;
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPSO)));
+
+	if (isShadowPipeline)
+	{
+		psoDesc.RasterizerState.DepthBias = 400000;//
+		psoDesc.RasterizerState.DepthBiasClamp = 0.0f;//
+		psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;//
+	}
+
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&psoDesc, 
+		IID_PPV_ARGS(&pipeline->mPipeline)));
+
+	return pipeline;
 }
 
 void DXRHI::ExecuteCommandList()
@@ -658,7 +696,7 @@ void DXRHI::BuildRenderTarget()
 	auto SwapChainBufferCount = mRendertarget->GetSwapChainBufferCount();
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-	for (UINT i = 0; i < SwapChainBufferCount; i++)
+	for (auto i = 0; i < SwapChainBufferCount; i++)
 	{
 		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
 		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
@@ -839,7 +877,7 @@ void DXRHI::Draw()
 
 	// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
 	// Reusing the command list reuses memory.
-	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), mPSO.Get()));
+	//ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), mPSO.Get()));
 
 	mCommandList->RSSetViewports(1, &mScreenViewport);
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
@@ -927,11 +965,12 @@ void DXRHI::DrawSceneToShadowMap()
 
 	mCommandList->OMSetRenderTargets(0, nullptr, false, &shadowMap->mhCpuDsv);
 	//mCommandList->OMSetRenderTargets(0, nullptr, false, &DepthStencilView());
-
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap->mDescriptorHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-	mCommandList->SetPipelineState(mShadowMapPSO.Get());
-	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+	
+	SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
+	//mCommandList->SetPipelineState(mShadowMapPSO.Get());
+	//mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)//绘制每一个Actor
 	{
@@ -962,7 +1001,9 @@ void DXRHI::DrawSceneToShadowMap()
 void DXRHI::DrawReset()
 {
 	ThrowIfFailed(mDirectCmdListAlloc->Reset());
-	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), mPSO.Get()));
+	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), 
+		std::dynamic_pointer_cast<DXRHIResource_Pipeline>(mRenderPrimitiveManager->GetPipelineByName("basePipeline"))->mPipeline.Get()));
 }
 
 void DXRHI::ResetViewports(int NumViewPort, ScreenViewport& vp)
@@ -1016,18 +1057,27 @@ void DXRHI::ClearDepthStencilView()
 
 void DXRHI::OMSetRenderTargets()
 {
-	CommitShadowMap();
-
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
 	auto mDsvHeapHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &mDsvHeapHandle);
+}
+
+void DXRHI::SetDescriptorHeap()
+{
+	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap->mDescriptorHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+}
+
+void DXRHI::SetPipelineState(std::shared_ptr<RHIResource_Pipeline> pipeline)
+{
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-	mCommandList->SetPipelineState(mPSO.Get());
+	mCommandList->SetPipelineState(
+		std::dynamic_pointer_cast<DXRHIResource_Pipeline>(pipeline)->mPipeline.Get());
 }
 
 void DXRHI::CommitShadowMap()
@@ -1041,8 +1091,10 @@ void DXRHI::CommitShadowMap()
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mShadowSrvDescriptorHeap->mDescriptorHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-	mCommandList->SetPipelineState(mShadowMapPSO.Get());
-	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
+	SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
+
+	//mCommandList->SetPipelineState(mShadowMapPSO.Get());
+	//mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	//Shader Texture gShadowMap
 	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
@@ -1328,7 +1380,7 @@ void DXRHI::CalculateFrameStats()
 //	SetDescriptorHeaps();
 //}
 
-void DXRHI::SetDescriptorHeaps()
+void DXRHI::BuildDescriptorHeaps()
 {
 	mObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(md3dDevice.Get(), Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(), true);
 
@@ -1460,37 +1512,6 @@ void DXRHI::BuildShadersAndInputLayout()
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 28, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
-}
-
-void DXRHI::BuildPSO()
-{
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	psoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
-	psoDesc.pRootSignature = mRootSignature.Get();
-	psoDesc.VS =
-	{
-		reinterpret_cast<BYTE*>(mvsByteCode->GetBufferPointer()),
-		mvsByteCode->GetBufferSize()
-	};
-	psoDesc.PS =
-	{
-		reinterpret_cast<BYTE*>(mpsByteCode->GetBufferPointer()),
-		mpsByteCode->GetBufferSize()
-	};
-
-	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
-	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
-	psoDesc.RasterizerState.FrontCounterClockwise = true;
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	psoDesc.NumRenderTargets = 1;
-	psoDesc.RTVFormats[0] = mBackBufferFormat;
-	psoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	psoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-	psoDesc.DSVFormat = mDepthStencilFormat;
-	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPSO)));
 }
 
 ID3D12Resource* DXRHI::CurrentBackBuffer() const

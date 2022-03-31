@@ -32,6 +32,7 @@
 #include "DXRHIResource_Texture.h"
 #include "DXRHIResource_MeshBuffer.h"
 #include "DXRHIResource_RenderTarget.h"
+#include "DXRHIResource_Pipeline.h"
 
 class DXRHI :public RHI
 {
@@ -82,6 +83,7 @@ public:
 public:
 	bool Init() override;
 		void InitPrimitiveManagerMember() override;
+		void OpenDebugLayer()override;
 		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		void ResetCommandList() override;
 		//这里曾经有一个OnResize
@@ -89,12 +91,11 @@ public:
 		void LoadDDSTextureToResource(std::wstring Path, int TextureIndex)override; //LoadTexture
 
 		//这里SetHeap还要重新做一下
-		void SetDescriptorHeaps() override;
+		void BuildDescriptorHeaps() override;
 		void BuildRootSignature() override;
 		void SetShader(std::wstring ShaderPath)override;
-
-		//管线创建多个
-		void InitPSO()override;
+		std::shared_ptr<RHIResource_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
+		std::shared_ptr<RHIResource_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<RHIResource_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
 
 		//BuildShadow里的东西实际上是调用之前创建好的几种方法创建出来的
 		void BuildShadow()override;
@@ -111,7 +112,7 @@ public:
 	void OnResize();
 	//OnResize
 		void resetRenderTarget()override;
-		void resizeSwapChain()override;
+		void ResizeSwapChain()override;
 		void BuildRenderTarget()override;
 		void SetScreenSetViewPort(
 			float TopLeftX, float TopLeftY, 
@@ -134,8 +135,10 @@ public:
 		void ResourceBarrier()override;
 		void ClearRenderTargetView(Color mClearColor, int NumRects) override;
 		void ClearDepthStencilView() override;
-		void OMSetRenderTargets()override;
 		void CommitShadowMap()override;
+		void OMSetRenderTargets()override;
+		void SetDescriptorHeap() override;
+		void SetPipelineState(std::shared_ptr<RHIResource_Pipeline> pipeline)override;
 		void DrawActor(int ActorIndex, int TextureIndex)override;
 		void DrawFinal()override;
 
@@ -148,7 +151,6 @@ public:
 	//void SetDescriptorHeaps();//往Heap里面灌数据
 	//void BuildRootSignature();
 	void BuildShadersAndInputLayout();
-	void BuildPSO();
 
 public:
 	ID3D12Resource* CurrentBackBuffer()const;
@@ -157,8 +159,8 @@ public:
 
 public:
 	std::unique_ptr<UploadBuffer<ObjectConstants>> mObjectCB = nullptr;
-	ComPtr<ID3D12PipelineState> mPSO = nullptr;
-	ComPtr<ID3D12PipelineState> mShadowMapPSO = nullptr;
+	//ComPtr<ID3D12PipelineState> mPSO = nullptr;
+	//ComPtr<ID3D12PipelineState> mShadowMapPSO = nullptr;
 
 public://这一部分应该写到Game里
 	void OnMouseDown(WPARAM btnState, int x, int y);

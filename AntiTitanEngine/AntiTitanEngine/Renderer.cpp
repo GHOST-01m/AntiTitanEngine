@@ -21,6 +21,7 @@ bool Renderer::Init()
 	mCamera->SetLens(0.25f * MathHelper::Pi, static_cast<float>(mClientWidth) / mClientHeight, 1.0f, 100000.0f);//这个应该放到GameLogic里
 	
 	mRHI = std::make_shared<DXRHI>();
+	mRHI->OpenDebugLayer();
 	mRHI->InitPrimitiveManagerMember();
 	CreateHeap();
 	mRHI->ResetCommandList();
@@ -39,11 +40,12 @@ bool Renderer::Init()
 	Engine::Get()->GetAssetManager()->mLight->InitProj();//这个应该放到GameLogic里
 
 	mRHI->LoadDDSTextureToResource(TextureLoadPath,0);
-	mRHI->SetDescriptorHeaps();
+	mRHI->BuildDescriptorHeaps();
 	mRHI->BuildRootSignature();
 	mRHI->BuildShadow();
 	mRHI->SetShader(ShaderPath);
-	mRHI->InitPSO() ;
+	CreateShader();
+	CreatePipeline();
 	mRHI->LoadMeshAndSetBuffer();
 	mRHI->CreateVBIB();
 	mRHI->ExecuteCommandList();
@@ -57,26 +59,46 @@ void Renderer::CreateHeap()
 	//基础Rtv
 	auto mRendertarget =GetRenderPrimitiveManager()->mRenderTarget;
 	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
-	mRenderPrimitiveManager->InsertHeapToHeapLib(
+	mRenderPrimitiveManager->InsertHeapToLib(
 		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", SwapChainBufferCount, 2, 0));
 
 	//基础Dsv
-	mRenderPrimitiveManager->InsertHeapToHeapLib(
+	mRenderPrimitiveManager->InsertHeapToLib(
 		"mDsvHeap",mRHI->CreateDescriptorHeap("mDsvHeap", 100, 3, 0));
 
-	mRenderPrimitiveManager->InsertHeapToHeapLib(
+	mRenderPrimitiveManager->InsertHeapToLib(
 		"mCbvHeap",mRHI->CreateDescriptorHeap("mCbvHeap", 10000, 0, 1));
 
-	mRenderPrimitiveManager->InsertHeapToHeapLib(
+	mRenderPrimitiveManager->InsertHeapToLib(
 		"mTextureHeap",mRHI->CreateDescriptorHeap("mTextureHeap", 1, 0, 0));
 
 	//单独给shadow用的SrvHeap，测试用
-	mRenderPrimitiveManager->InsertHeapToHeapLib(
+	mRenderPrimitiveManager->InsertHeapToLib(
 		"mShadowSrvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowSrvDescriptorHeap", 10000, 0, 1));
 
 	//单独给shadow用的SrvHeap，测试用
-	mRenderPrimitiveManager->InsertHeapToHeapLib(
+	mRenderPrimitiveManager->InsertHeapToLib(
 		"mShadowDsvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowDsvDescriptorHeap", 10000, 3, 0));
+}
+
+void Renderer::CreateShader()
+{
+	mRenderPrimitiveManager->InsertShaderToLib("color", 
+		mRHI->CreateShader("color", ShaderPath));
+
+	mRenderPrimitiveManager->InsertShaderToLib("shadow", 
+		mRHI->CreateShader("shadow", L"Shaders\\Shadows.hlsl"));
+}
+
+void Renderer::CreatePipeline()
+{
+	auto baseShader = mRenderPrimitiveManager->GetShaderByName("color");
+	mRenderPrimitiveManager->InsertPipelineToLib("basePipeline",
+		mRHI->CreatePipeline("basePipeline", baseShader, 1, 0, false));
+
+	auto shadowShader = mRenderPrimitiveManager->GetShaderByName("shadow");
+	mRenderPrimitiveManager->InsertPipelineToLib("shadowPipeline",
+		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, 1, true));
 }
 
 void Renderer::Update()
@@ -96,7 +118,11 @@ void Renderer::Draw()
 	mRHI->ResourceBarrier();
 	mRHI->ClearRenderTargetView(mClearColor, 0);
 	mRHI->ClearDepthStencilView();
+	mRHI->CommitShadowMap();
 	mRHI->OMSetRenderTargets();
+	mRHI->SetDescriptorHeap();
+
+	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
 		mRHI->DrawActor(ActorIndex,0);

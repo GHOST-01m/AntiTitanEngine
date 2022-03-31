@@ -29,7 +29,39 @@ std::shared_ptr<RHIResource_Heap> RenderPrimitiveManager::GetHeapByName(std::str
 	return mHeapsLib.at(name);
 }
 
-void RenderPrimitiveManager::InsertHeapToHeapLib(std::string heapname, std::shared_ptr<RHIResource_Heap> heap)
+std::shared_ptr<RHIResource_Texture> RenderPrimitiveManager::GetTextureByName(std::string name)
+{
+	return mTextureLib.at(name);
+}
+
+std::shared_ptr<RHIResource_Pipeline> RenderPrimitiveManager::GetPipelineByName(std::string name)
+{
+	return mPipelineLib.at(name);
+}
+
+std::shared_ptr<RHIResource_Shader> RenderPrimitiveManager::GetShaderByName(std::string name)
+{
+	return mShaderLib.at(name);
+
+}
+
+void RenderPrimitiveManager::InsertTextureToLib(std::string name , std::shared_ptr<RHIResource_Texture>texture)
+{
+	mTextureLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Texture>>(name, texture));
+
+}
+
+void RenderPrimitiveManager::InsertHeapToLib(std::string heapname, std::shared_ptr<RHIResource_Heap> heap)
 {
 	mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(heapname, heap));
+}
+
+void RenderPrimitiveManager::InsertPipelineToLib(std::string name, std::shared_ptr<RHIResource_Pipeline>pipeline)
+{
+	mPipelineLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Pipeline>>(name, pipeline));
+}
+
+void RenderPrimitiveManager::InsertShaderToLib(std::string name, std::shared_ptr<RHIResource_Shader> shader)
+{
+	mShaderLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Shader>>(name, shader));
 }

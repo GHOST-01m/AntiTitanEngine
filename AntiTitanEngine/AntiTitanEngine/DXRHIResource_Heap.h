@@ -5,6 +5,9 @@ class DXRHIResource_Heap :
 {
 public:
     ~DXRHIResource_Heap();
+
+public:
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDXHeap();
 public:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;
 };

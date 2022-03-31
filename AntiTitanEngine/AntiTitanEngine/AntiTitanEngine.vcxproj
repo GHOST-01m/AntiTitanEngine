@@ -152,6 +152,7 @@
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DXRHI.h" />
     <ClInclude Include="DXRHIResource_Heap.h" />
+    <ClInclude Include="DXRHIResource_Pipeline.h" />
     <ClInclude Include="DXRHIResource_RenderTarget.h" />
     <ClInclude Include="DXRHIResource_Resource.h" />
     <ClInclude Include="DXRHIResource_Shader.h" />
@@ -162,6 +163,7 @@
     <ClInclude Include="FSingleton.h" />
     <ClInclude Include="FLight.h" />
     <ClInclude Include="RHIResource_Heap.h" />
+    <ClInclude Include="RHIResource_Pipeline.h" />
     <ClInclude Include="RHIResource_RenderTarget.h" />
     <ClInclude Include="RHIResource_Resource.h" />
     <ClInclude Include="RHIResource_Shader.h" />
@@ -197,6 +199,7 @@
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DXRHI.cpp" />
     <ClCompile Include="DXRHIResource_Heap.cpp" />
+    <ClCompile Include="DXRHIResource_Pipeline.cpp" />
     <ClCompile Include="DXRHIResource_RenderTarget.cpp" />
     <ClCompile Include="DXRHIResource_Resource.cpp" />
     <ClCompile Include="DXRHIResource_Shader.cpp" />
@@ -211,6 +214,7 @@
     <ClCompile Include="RHIFctory.cpp" />
     <ClCompile Include="RenderPrimitiveManager.cpp" />
     <ClCompile Include="RHIResource_Heap.cpp" />
+    <ClCompile Include="RHIResource_Pipeline.cpp" />
     <ClCompile Include="RHIResource_RenderTarget.cpp" />
     <ClCompile Include="RHIResource_Resource.cpp" />
     <ClCompile Include="RHIResource_Shader.cpp" />

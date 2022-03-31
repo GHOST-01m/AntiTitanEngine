@@ -8,13 +8,15 @@ class RHI
 public:
 	virtual bool Init()=0;
 		virtual void InitPrimitiveManagerMember() = 0;
+		virtual void OpenDebugLayer()=0;
 		virtual std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors,int HeapType, int Flag) = 0;
 		virtual void ResetCommandList() = 0;
 		virtual void LoadDDSTextureToResource(std::wstring Path,int TextureIndex) = 0;
-		virtual void SetDescriptorHeaps() = 0;
+		virtual void BuildDescriptorHeaps() = 0;
 		virtual void BuildRootSignature() = 0;
 		virtual void SetShader(std::wstring ShaderPath) = 0;
-		virtual void InitPSO() = 0;
+		virtual std::shared_ptr<RHIResource_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) = 0;//InputLayout暂时写死了
+		virtual std::shared_ptr<RHIResource_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<RHIResource_Shader>,int NumRenderTargets,int RenderTargetType,bool isShadowPipeline) = 0;//暂定type0是basepipeline用的，1是shadow用的
 		virtual void BuildShadow() = 0;
 		virtual void LoadMeshAndSetBuffer() = 0;
 		virtual void CreateVBIB() = 0;
@@ -23,7 +25,7 @@ public:
 
 	//OnResize
 		virtual void resetRenderTarget() = 0;
-		virtual void resizeSwapChain() = 0;
+		virtual void ResizeSwapChain() = 0;
 		virtual void BuildRenderTarget() = 0;
 		virtual void SetScreenSetViewPort(float TopLeftX, float TopLeftY, float Width, float Height,float MinDepth,float MaxDepth) = 0;
 		virtual void SetScissorRect(long Left, long Top, long Right, long Bottom) = 0;
@@ -43,6 +45,8 @@ public:
 		virtual void ClearRenderTargetView(Color mClearColor,int NumRects) = 0;
 		virtual void ClearDepthStencilView() = 0;
 		virtual void OMSetRenderTargets() = 0;
+		virtual void SetDescriptorHeap() = 0;
+		virtual void SetPipelineState(std::shared_ptr<RHIResource_Pipeline> pipeline) = 0;
 		virtual void CommitShadowMap() = 0;
 		virtual void DrawActor(int ActorIndex,int TextureIndex) = 0;
 		virtual void DrawFinal() = 0;

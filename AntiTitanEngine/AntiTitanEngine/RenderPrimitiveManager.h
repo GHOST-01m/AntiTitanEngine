@@ -9,6 +9,7 @@
 #include "RHIResource_ShadowMap.h"
 #include "RHIResource_Heap.h"
 #include "RHIResource_RenderTarget.h"
+#include "RHIResource_Pipeline.h"
 
 class RenderPrimitiveManager
 {
@@ -19,15 +20,26 @@ public:
 public:
 	std::vector<std::shared_ptr<RHIResource_MeshBuffer>> VBIBBuffers;
 	std::map<int,std::string> MeshMap;
-	std::vector<std::shared_ptr<RHIResource_Texture>> mTextures;
-	std::map<int, std::string> TextureMap;
 	std::shared_ptr<RHIResource_Shader> mShader;
 	std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
-	std::map<std::string,std::shared_ptr<RHIResource_Heap>> mHeapsLib;
+	std::map<std::string, std::shared_ptr<RHIResource_Texture>>     mTextureLib;
+	std::map<std::string, std::shared_ptr<RHIResource_Heap>>        mHeapsLib;
+	std::map<std::string, std::shared_ptr<RHIResource_Shader>>      mShaderLib;
+	std::map<std::string, std::shared_ptr<RHIResource_Pipeline>>    mPipelineLib;
+
 	std::shared_ptr<RHIResource_RenderTarget> mRenderTarget;
 
 public:
 	int GetMeshKeyByName(std::string name);
-	std::shared_ptr<RHIResource_Heap> GetHeapByName(std::string name);
-	void InsertHeapToHeapLib(std::string, std::shared_ptr<RHIResource_Heap>);
+	std::shared_ptr<RHIResource_Heap>     GetHeapByName(std::string name);
+	std::shared_ptr<RHIResource_Texture>  GetTextureByName(std::string name);
+	std::shared_ptr<RHIResource_Pipeline> GetPipelineByName(std::string name);
+	std::shared_ptr<RHIResource_Shader>   GetShaderByName(std::string name);
+
+
+	void InsertTextureToLib(std::string name, std::shared_ptr<RHIResource_Texture>texture);
+	void InsertHeapToLib(std::string, std::shared_ptr<RHIResource_Heap>);
+	void InsertPipelineToLib(std::string, std::shared_ptr<RHIResource_Pipeline>);
+	void InsertShaderToLib(std::string, std::shared_ptr<RHIResource_Shader>);
+
 };
