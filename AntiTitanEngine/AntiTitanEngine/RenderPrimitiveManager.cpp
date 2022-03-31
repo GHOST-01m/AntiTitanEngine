@@ -45,6 +45,11 @@ std::shared_ptr<RHIResource_Shader> RenderPrimitiveManager::GetShaderByName(std:
 
 }
 
+std::shared_ptr<RHIResource_RenderTarget> RenderPrimitiveManager::GetRenderTargetByName(std::string name)
+{
+	return mRenderTargetLib.at(name);
+}
+
 void RenderPrimitiveManager::InsertTextureToLib(std::string name , std::shared_ptr<RHIResource_Texture>texture)
 {
 	mTextureLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Texture>>(name, texture));
@@ -64,4 +69,9 @@ void RenderPrimitiveManager::InsertPipelineToLib(std::string name, std::shared_p
 void RenderPrimitiveManager::InsertShaderToLib(std::string name, std::shared_ptr<RHIResource_Shader> shader)
 {
 	mShaderLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Shader>>(name, shader));
+}
+
+void RenderPrimitiveManager::InsertRenderTargetToLib(std::string name, std::shared_ptr<RHIResource_RenderTarget>RenderTarget)
+{
+	mRenderTargetLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_RenderTarget>>(name, RenderTarget));
 }

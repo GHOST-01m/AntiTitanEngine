@@ -21,13 +21,11 @@ public:
 	std::shared_ptr<RenderPrimitiveManager> GetRenderPrimitiveManager();
 
 public:
-//没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
-//没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
-//没有检查Init之外的方法内使用的Resource是不是从RHIResourceManager中获取的！！
 	bool Init();
 		void CreateHeap();
 		void CreateShader();
 		void CreatePipeline();
+		void CreateRenderTarget();
 	void Update();
 	void Draw();
 	void Destroy();

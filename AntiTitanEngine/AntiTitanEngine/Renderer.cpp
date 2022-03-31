@@ -26,7 +26,9 @@ bool Renderer::Init()
 	CreateHeap();
 	mRHI->ResetCommandList();
 	mRHI->ResizeSwapChain();
-	mRHI->BuildRenderTarget();
+	//mRHI->BuildRenderTarget();
+	CreateRenderTarget();
+
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
 	mRHI->SetScreenSetViewPort(0, 0, mClientWidth, mClientHeight, 0.0f, 1.0f);
@@ -43,7 +45,6 @@ bool Renderer::Init()
 	mRHI->BuildDescriptorHeaps();
 	mRHI->BuildRootSignature();
 	mRHI->BuildShadow();
-	mRHI->SetShader(ShaderPath);
 	CreateShader();
 	CreatePipeline();
 	mRHI->LoadMeshAndSetBuffer();
@@ -101,6 +102,23 @@ void Renderer::CreatePipeline()
 		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, 1, true));
 }
 
+void Renderer::CreateRenderTarget()
+{
+	auto baseRenderTarget = mRHI->CreateRenderTarget(
+		"baseRenderTarget",
+		3,
+		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
+		nullptr,
+		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
+		2,
+		mClientWidth,
+		mClientHeight);
+	mRenderPrimitiveManager->InsertRenderTargetToLib("baseRenderTarget", baseRenderTarget);
+	
+	mRHI->ResourceTransition(baseRenderTarget, 0, 1);
+
+}
+
 void Renderer::Update()
 {
 	mRHI->Update();
@@ -115,14 +133,15 @@ void Renderer::Draw()
 	mRHI->DrawSceneToShadowMap();
 	mRHI->ResetViewports(1, mViewport);
 	mRHI->ResetScissorRects(1, mScissorRect);
+	//mRHI->ResourceTransition(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"), 3, 2);
 	mRHI->ResourceBarrier();
 	mRHI->ClearRenderTargetView(mClearColor, 0);
 	mRHI->ClearDepthStencilView();
 	mRHI->CommitShadowMap();
 	mRHI->OMSetRenderTargets();
-	mRHI->SetDescriptorHeap();
 
 	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
+	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
 		mRHI->DrawActor(ActorIndex,0);
