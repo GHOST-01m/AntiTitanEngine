@@ -33,6 +33,7 @@
 #include "DXRHIResource_MeshBuffer.h"
 #include "DXRHIResource_RenderTarget.h"
 #include "DXRHIResource_Pipeline.h"
+#include "DXRHIResource_GPUResource.h"
 
 class DXRHI :public RHI
 {
@@ -60,7 +61,7 @@ public:
 
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	//DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
 
@@ -95,12 +96,12 @@ public:
 		void BuildRootSignature() override;
 		std::shared_ptr<RHIResource_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
 		std::shared_ptr<RHIResource_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<RHIResource_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
-		std::shared_ptr<RHIResource_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType,std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
-		void ResourceTransition(std::shared_ptr<RHIResource_RenderTarget> renderTarget, int BeforeStateType, int AfterStateType) override;
+		std::shared_ptr<RHIResource_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType,std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+		void ResourceTransition(std::shared_ptr<RHIResource_GPUResource> myResource, int AfterStateType) override;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
 
 
 		//BuildShadow里的东西实际上是调用之前创建好的几种方法创建出来的,且shadowMap不是一个资源
-		void BuildShadow()override;
+		//void BuildShadow()override;
 		void LoadMeshAndSetBuffer()override;
 		void CreateVBIB()override;
 		void ExecuteCommandList()override;
@@ -115,7 +116,7 @@ public:
 	//OnResize
 		void resetRenderTarget()override;
 		void ResizeSwapChain()override;
-		void BuildRenderTarget()override;
+	//	void BuildRenderTarget()override;
 		void SetScreenSetViewPort(
 			float TopLeftX, float TopLeftY, 
 			float Width,    float Height,
@@ -137,10 +138,10 @@ public:
 		void ResetViewports(int NumViewport, ScreenViewport& vp) override;
 		void ResetScissorRects(int NumRects,ScissorRect& sr)override;
 		void ResourceBarrier()override;
-		void ClearRenderTargetView(Color mClearColor, int NumRects) override;
-		void ClearDepthStencilView() override;
+		void ClearRenderTargetView(std::shared_ptr<RHIResource_RenderTarget>renderTarget, Color mClearColor, int NumRects) override;
+		void ClearDepthStencilView(std::shared_ptr<RHIResource_RenderTarget> renderTarget) override;
 		void CommitShadowMap()override;
-		void OMSetRenderTargets()override;
+		void OMSetRenderTargets(std::shared_ptr<RHIResource_RenderTarget>renderTarget)override;
 		void SetDescriptorHeap(std::shared_ptr<RHIResource_Heap> heap) override;
 		void SetPipelineState(std::shared_ptr<RHIResource_Pipeline> pipeline)override;
 		void DrawActor(int ActorIndex, int TextureIndex)override;

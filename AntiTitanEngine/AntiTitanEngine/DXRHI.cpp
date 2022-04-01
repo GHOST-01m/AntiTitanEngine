@@ -102,7 +102,7 @@ void DXRHI::InitPrimitiveManagerMember()
 {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	//mRenderPrimitiveManager->mShader = std::make_shared<DXRHIResource_Shader>();
-	mRenderPrimitiveManager->mShadowMap = std::make_shared<DXRHIResource_ShadowMap>();
+	//mRenderPrimitiveManager->mShadowMap = std::make_shared<DXRHIResource_ShadowMap>();
 	mRenderPrimitiveManager->mRenderTarget = std::make_shared<DXRHIResource_RenderTarget>();
 
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
@@ -176,7 +176,7 @@ std::shared_ptr<RHIResource_Heap> DXRHI::CreateDescriptorHeap(std::string heapNa
 {
 	std::shared_ptr<RHIResource_Heap> heap = std::make_shared<DXRHIResource_Heap>();
 	auto mHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(heap);
-	
+	mHeap->name = heapName;
 	D3D12_DESCRIPTOR_HEAP_TYPE heapType = D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES;
 	D3D12_DESCRIPTOR_HEAP_FLAGS heapFlag = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
@@ -206,6 +206,7 @@ std::shared_ptr<RHIResource_Heap> DXRHI::CreateDescriptorHeap(std::string heapNa
 	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
 		&HeapDesc, IID_PPV_ARGS(mHeap->mDescriptorHeap.GetAddressOf())));
 
+	
 	return heap;
 }
 
@@ -307,71 +308,71 @@ void DXRHI::LoadDDSTextureToResource(std::wstring Path, int TextureIndex)
 		Engine::Get()->GetMaterialSystem()->mTextureNormal->Resource,
 		Engine::Get()->GetMaterialSystem()->mTextureNormal->UploadHeap));
 }
-
-void DXRHI::BuildShadow()
-{
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
-	auto DXShader = std::dynamic_pointer_cast<DXRHIResource_Shader> (mRenderPrimitiveManager->mShader);
-
-	shadowResource->mViewport = { 0.0f, 0.0f, (float)shadowResource->mWidth, (float)shadowResource->mHeight, 0.0f, 1.0f };
-	shadowResource->mScissorRect = { 0, 0, (int)shadowResource->mWidth, (int)shadowResource->mHeight };
-
-	//ShadowMap内CpuSrv,GpuSrv指针赋值,创建一个ShadowSrvHeap
-	auto mShadowSrvDescriptorHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"));
-	shadowResource->mhCpuSrv = CD3DX12_CPU_DESCRIPTOR_HANDLE(mShadowSrvDescriptorHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-	shadowResource->mhGpuSrv = CD3DX12_GPU_DESCRIPTOR_HANDLE(mShadowSrvDescriptorHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-
-	//ShadowMap内CpuDsv指针赋值,创建一个ShadowDsvHeap
-	auto mShadowDsvDescriptorHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"));
-	shadowResource->mhCpuDsv = CD3DX12_CPU_DESCRIPTOR_HANDLE(mShadowDsvDescriptorHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-	//一个Resource
-	D3D12_RESOURCE_DESC texDesc;
-	ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
-	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	texDesc.Alignment = 0;
-	texDesc.Width = shadowResource->mWidth;
-	texDesc.Height = shadowResource->mHeight;
-	texDesc.DepthOrArraySize = 1;
-	texDesc.MipLevels = 1;
-	texDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	texDesc.SampleDesc.Count = 1;//像素的多重采样数
-	texDesc.SampleDesc.Quality = 0;
-	texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-	D3D12_CLEAR_VALUE optClear;
-	optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	optClear.DepthStencil.Depth = 1.0f;
-	optClear.DepthStencil.Stencil = 0;
-
-	ThrowIfFailed(md3dDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&texDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		&optClear,
-		IID_PPV_ARGS(&shadowResource->mShadowResource)));
-
-	//两个View
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MostDetailedMip = 0;
-	srvDesc.Texture2D.MipLevels = 1;
-	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-	srvDesc.Texture2D.PlaneSlice = 0;
-	md3dDevice->CreateShaderResourceView(shadowResource->mShadowResource.Get(),&srvDesc, shadowResource->mhCpuSrv);
-
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	dsvDesc.Texture2D.MipSlice = 0;
-	md3dDevice->CreateDepthStencilView(shadowResource->mShadowResource.Get(), &dsvDesc, shadowResource->mhCpuDsv);
-}
+//
+//void DXRHI::BuildShadow()
+//{
+//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+//	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
+//	auto DXShader = std::dynamic_pointer_cast<DXRHIResource_Shader> (mRenderPrimitiveManager->mShader);
+//
+//	shadowResource->mViewport = { 0.0f, 0.0f, (float)shadowResource->mWidth, (float)shadowResource->mHeight, 0.0f, 1.0f };
+//	shadowResource->mScissorRect = { 0, 0, (int)shadowResource->mWidth, (int)shadowResource->mHeight };
+//
+//	//ShadowMap内CpuSrv,GpuSrv指针赋值,创建一个ShadowSrvHeap
+//	auto mShadowSrvDescriptorHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"));
+//	shadowResource->mhCpuSrv = CD3DX12_CPU_DESCRIPTOR_HANDLE(mShadowSrvDescriptorHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+//	shadowResource->mhGpuSrv = CD3DX12_GPU_DESCRIPTOR_HANDLE(mShadowSrvDescriptorHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+//
+//	//ShadowMap内CpuDsv指针赋值,创建一个ShadowDsvHeap
+//	auto mShadowDsvDescriptorHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"));
+//	shadowResource->mhCpuDsv = CD3DX12_CPU_DESCRIPTOR_HANDLE(mShadowDsvDescriptorHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+//
+//	//一个Resource
+//	D3D12_RESOURCE_DESC texDesc;
+//	ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
+//	texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+//	texDesc.Alignment = 0;
+//	texDesc.Width = shadowResource->mWidth;
+//	texDesc.Height = shadowResource->mHeight;
+//	texDesc.DepthOrArraySize = 1;
+//	texDesc.MipLevels = 1;
+//	texDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+//	texDesc.SampleDesc.Count = 1;//像素的多重采样数
+//	texDesc.SampleDesc.Quality = 0;
+//	texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+//	texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+//
+//	D3D12_CLEAR_VALUE optClear;
+//	optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+//	optClear.DepthStencil.Depth = 1.0f;
+//	optClear.DepthStencil.Stencil = 0;
+//
+//	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+//		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+//		D3D12_HEAP_FLAG_NONE,
+//		&texDesc,
+//		D3D12_RESOURCE_STATE_GENERIC_READ,
+//		&optClear,
+//		IID_PPV_ARGS(&shadowResource->mShadowResource)));
+//
+//	//两个View
+//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+//	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+//	srvDesc.Texture2D.MostDetailedMip = 0;
+//	srvDesc.Texture2D.MipLevels = 1;
+//	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+//	srvDesc.Texture2D.PlaneSlice = 0;
+//	md3dDevice->CreateShaderResourceView(shadowResource->mShadowResource.Get(),&srvDesc, shadowResource->mhCpuSrv);
+//
+//	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+//	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+//	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+//	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+//	dsvDesc.Texture2D.MipSlice = 0;
+//	md3dDevice->CreateDepthStencilView(shadowResource->mShadowResource.Get(), &dsvDesc, shadowResource->mhCpuDsv);
+//}
 
 std::shared_ptr<RHIResource_Shader> DXRHI::CreateShader(std::string ShaderName, std::wstring ShaderPath)
 {
@@ -533,7 +534,7 @@ std::shared_ptr<RHIResource_Pipeline> DXRHI::CreatePipeline(std::string pipeline
 
 	psoDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	psoDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-	psoDesc.DSVFormat = mDepthStencilFormat;
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	if (isShadowPipeline)
 	{
@@ -548,20 +549,84 @@ std::shared_ptr<RHIResource_Pipeline> DXRHI::CreatePipeline(std::string pipeline
 	return pipeline;
 }
 
-std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string RenderTargetName,int resourceType, std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)
+std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string RenderTargetName,int resourceType, int initialResourceStateType, std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)
 {
 	auto Rendertarget = std::make_shared<DXRHIResource_RenderTarget>();
 	Rendertarget->name = RenderTargetName;
-	
+
+	Rendertarget->mDSResource = std::make_shared<DXRHIResource_GPUResource>();
+
 	if (SwapChainCount<=0)
 	{
 		SwapChainCount = 1;
 	}
+	
 	//Rendertarget->SetSwapChainBufferCount(SwapChainCount);
-	if (rtvHeap!=nullptr)
+
+	// Create the depth/stencil buffer and view.
+	D3D12_RESOURCE_DESC ResourceDesc;
+	ZeroMemory(&ResourceDesc, sizeof(D3D12_RESOURCE_DESC));
+	switch (resourceType){
+	case 0:	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_UNKNOWN; break;
+	case 1:	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; break;
+	case 2:	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE1D; break;
+	case 3:	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; break;
+	case 4:	ResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D; break;
+	break;
+	}
+	ResourceDesc.Alignment = 0;
+	ResourceDesc.Width = int(Width);
+	ResourceDesc.Height = int(Height);
+	ResourceDesc.DepthOrArraySize = 1;
+	ResourceDesc.MipLevels = 1;
+
+	// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
+	// the depth buffer.  Therefore, because we need to create two views to the same resource:
+	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
+	// we need to create the depth buffer resource with a typeless format.  
+	ResourceDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	ResourceDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	ResourceDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+	ResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	ResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	D3D12_CLEAR_VALUE optClear;
+	optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	optClear.DepthStencil.Depth = 1.0f;
+	optClear.DepthStencil.Stencil = 0;
+
+	//设置资源初始状态==================================================================
+	D3D12_RESOURCE_STATES InitStateType;
+	switch (initialResourceStateType)
 	{
-		//如果有问题看看这个Heap有没有传对
-		auto mRtvHeap=std::dynamic_pointer_cast<DXRHIResource_Heap>(rtvHeap);
+	case 0:InitStateType = D3D12_RESOURCE_STATE_COMMON; break;
+	case 1:InitStateType = D3D12_RESOURCE_STATE_DEPTH_WRITE; break;
+	case 2:InitStateType = D3D12_RESOURCE_STATE_RENDER_TARGET; break;
+	case 3:InitStateType = D3D12_RESOURCE_STATE_PRESENT; break;
+	case 4:InitStateType = D3D12_RESOURCE_STATE_GENERIC_READ; break;
+		//这里还要加两个shadow要用的，这个type的注释记得加到RHI里面
+	assert(0);break;
+	}
+
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+		D3D12_HEAP_FLAG_NONE,
+		&ResourceDesc,
+		InitStateType,
+		&optClear,
+		//IID_PPV_ARGS(Rendertarget->mDepthStencilBuffer.GetAddressOf())));
+		IID_PPV_ARGS(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->mResource.GetAddressOf())));
+
+	std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->currentType = InitStateType;
+
+	// Create descriptor to mip level 0 of entire resource using the format of the resource.
+	
+	//设置heap==================================================================
+	//如果传了heap进来就把对应的handle给填上
+	if (rtvHeap != nullptr)
+	{
+		auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(rtvHeap);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 		for (auto i = 0; i < SwapChainCount; i++)
 		{
@@ -569,88 +634,46 @@ std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string 
 			md3dDevice->CreateRenderTargetView(Rendertarget->mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
 			rtvHeapHandle.Offset(1, mRtvDescriptorSize);
 		}
+		Rendertarget->rtvHeapName = mRtvHeap->name;
+		Rendertarget->mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	}
 
-	// Create the depth/stencil buffer and view.
-	D3D12_RESOURCE_DESC depthStencilDesc;
-	switch (resourceType)
+	if (dsvHeap != nullptr)
 	{
-		case 0:	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_UNKNOWN; break;
-		case 1:	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER; break;
-		case 2:	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE1D; break;
-		case 3:	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; break;
-		case 4:	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D; break;
-			break;
-	}
+		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+		dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		dsvDesc.Texture2D.MipSlice = 0;
 
-	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = Width;
-	depthStencilDesc.Height = Height;
-	depthStencilDesc.DepthOrArraySize = 1;
-	depthStencilDesc.MipLevels = 1;
-
-	// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
-	// the depth buffer.  Therefore, because we need to create two views to the same resource:
-	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
-	// we need to create the depth buffer resource with a typeless format.  
-	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-	D3D12_CLEAR_VALUE optClear;
-	optClear.Format = mDepthStencilFormat;
-	optClear.DepthStencil.Depth = 1.0f;
-	optClear.DepthStencil.Stencil = 0;
-
-	ThrowIfFailed(md3dDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&depthStencilDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&optClear,
-		IID_PPV_ARGS(Rendertarget->mDepthStencilBuffer.GetAddressOf())));
-
-	// Create descriptor to mip level 0 of entire resource using the format of the resource.
-
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Format = mDepthStencilFormat;
-	dsvDesc.Texture2D.MipSlice = 0;
-
-	if (dsvHeap!=nullptr)
-	{
 		auto mDsvHeap=std::dynamic_pointer_cast<DXRHIResource_Heap>(dsvHeap);
 		Rendertarget->mhCpuDsvHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		md3dDevice->CreateDepthStencilView(Rendertarget->mDepthStencilBuffer.Get(), &dsvDesc, Rendertarget->mhCpuDsvHandle);
+		md3dDevice->CreateDepthStencilView(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->mResource.Get(), &dsvDesc, Rendertarget->mhCpuDsvHandle);
 	}
 
 	if (srvHeap != nullptr)
 	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MostDetailedMip = 0;
+		srvDesc.Texture2D.MipLevels = 1;
+		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+		srvDesc.Texture2D.PlaneSlice = 0;
+
 		auto mSrvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(srvHeap);
 		Rendertarget->mhCpuSrvHandle = mSrvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		md3dDevice->CreateDepthStencilView(Rendertarget->mDepthStencilBuffer.Get(), &dsvDesc, Rendertarget->mhCpuSrvHandle);
+		Rendertarget->mhGpuSrvHandle = mSrvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+		md3dDevice->CreateShaderResourceView(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->mResource.Get(), &srvDesc, Rendertarget->mhCpuSrvHandle);
 	}
 
 	return Rendertarget;
 }
 
-void DXRHI::ResourceTransition(std::shared_ptr<RHIResource_RenderTarget> renderTarget, int BeforeStateType, int AfterStateType)
+void DXRHI::ResourceTransition(std::shared_ptr<RHIResource_GPUResource> myResource, int AfterStateType)
 {
-	D3D12_RESOURCE_STATES beforType;
-	switch (BeforeStateType)
-	{
-	case 0:beforType = D3D12_RESOURCE_STATE_COMMON; break;
-	case 1:beforType = D3D12_RESOURCE_STATE_DEPTH_WRITE; break;
-	case 2:beforType = D3D12_RESOURCE_STATE_RENDER_TARGET; break;
-	case 3:beforType = D3D12_RESOURCE_STATE_PRESENT; break;
-
-		//这里还要加两个shadow要用的，这个type的注释记得加到RHI里面
-		break;
-	}
+	auto dxGpuResource = std::dynamic_pointer_cast<DXRHIResource_GPUResource>(myResource);
 
 	D3D12_RESOURCE_STATES afterType;
 	switch (AfterStateType)
@@ -659,16 +682,19 @@ void DXRHI::ResourceTransition(std::shared_ptr<RHIResource_RenderTarget> renderT
 	case 1:afterType = D3D12_RESOURCE_STATE_DEPTH_WRITE; break;
 	case 2:afterType = D3D12_RESOURCE_STATE_RENDER_TARGET; break;
 	case 3:afterType = D3D12_RESOURCE_STATE_PRESENT; break;
+	case 4:afterType = D3D12_RESOURCE_STATE_GENERIC_READ; break;
 		//这里还要加两个shadow要用的，这个type的注释记得加到RHI里面
-			break;
+	assert(0);
+		break;
 	}
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
-		std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(renderTarget)->mDepthStencilBuffer.Get(),
-		//ResourceBarrier要重新做
-		//这里指定DepthStencilBuffer是有问题的，定死了只能是这个Resource做资源转换
-		beforType,
+		dxGpuResource->mResource.Get(),
+		dxGpuResource->currentType,
 		afterType));
+
+	//转换之后把之前的状态设置为刚才设置好的状态
+	std::dynamic_pointer_cast<DXRHIResource_GPUResource>(myResource)->currentType = afterType;
 }
 
 void DXRHI::ExecuteCommandList()
@@ -701,7 +727,7 @@ void DXRHI::OnResize()
 	// Resize the swap chain.
 	ResizeSwapChain();
 
-	BuildRenderTarget();
+	//BuildRenderTarget();
 
 	// Execute the resize commands.
 	ExecuteCommandList();
@@ -723,7 +749,8 @@ void DXRHI::resetRenderTarget()
 	for (int i = 0; i < SwapChainBufferCount; ++i) {
 		mSwapChainBuffer[i].Reset();
 	}
-	mRendertarget->GetDepthStencilBuffer().Reset();
+	std::dynamic_pointer_cast<DXRHIResource_GPUResource>(mRendertarget->GetGpuResource())->mResource.Reset();
+	//mRendertarget->GetDepthStencilBuffer().Reset();
 }
 
 void DXRHI::ResizeSwapChain()
@@ -741,75 +768,75 @@ void DXRHI::ResizeSwapChain()
 	std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->SetCurrBackBufferIndex(0);
 
 }
-
-void DXRHI::BuildRenderTarget()
-{
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
-
-	auto mRendertarget = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget);
-	auto mSwapChainBuffer = mRendertarget->mSwapChainBuffer;
-	auto SwapChainBufferCount = mRendertarget->GetSwapChainBufferCount();
-
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-	for (auto i = 0; i < SwapChainBufferCount; i++)
-	{
-		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
-		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-		rtvHeapHandle.Offset(1, mRtvDescriptorSize);
-	}
-	//好像这上面才是真的BuildRenderTarget------------------------------------------------------------------------
-
-	// Create the depth/stencil buffer and view.
-	D3D12_RESOURCE_DESC depthStencilDesc;
-	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = Engine::Get()->GetWindow()->mClientWidth;
-	depthStencilDesc.Height = Engine::Get()->GetWindow()->mClientHeight;
-	depthStencilDesc.DepthOrArraySize = 1;
-	depthStencilDesc.MipLevels = 1;
-
-	// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
-	// the depth buffer.  Therefore, because we need to create two views to the same resource:
-	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
-	// we need to create the depth buffer resource with a typeless format.  
-	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-	D3D12_CLEAR_VALUE optClear;
-	optClear.Format = mDepthStencilFormat;
-	optClear.DepthStencil.Depth = 1.0f;
-	optClear.DepthStencil.Stencil = 0;
-
-	ThrowIfFailed(md3dDevice->CreateCommittedResource(
-		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-		D3D12_HEAP_FLAG_NONE,
-		&depthStencilDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&optClear,
-		IID_PPV_ARGS(mRendertarget->mDepthStencilBuffer.GetAddressOf())));
-
-	// Create descriptor to mip level 0 of entire resource using the format of the resource.
-
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
-	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	dsvDesc.Format = mDepthStencilFormat;
-	dsvDesc.Texture2D.MipSlice = 0;
-
-	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-	auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	md3dDevice->CreateDepthStencilView(mRendertarget->mDepthStencilBuffer.Get(), &dsvDesc, mDsvHeaphandle);
-
-	// Transition the resource from its initial state to be used as a depth buffer.
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mRendertarget->mDepthStencilBuffer.Get(),
-		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
-
-}
+//
+//void DXRHI::BuildRenderTarget()
+//{
+//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+//	auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
+//
+//	auto mRendertarget = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget);
+//	auto mSwapChainBuffer = mRendertarget->mSwapChainBuffer;
+//	auto SwapChainBufferCount = mRendertarget->GetSwapChainBufferCount();
+//
+//	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+//	for (auto i = 0; i < SwapChainBufferCount; i++)
+//	{
+//		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
+//		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+//		rtvHeapHandle.Offset(1, mRtvDescriptorSize);
+//	}
+//	//好像这上面才是真的BuildRenderTarget------------------------------------------------------------------------
+//
+//	// Create the depth/stencil buffer and view.
+//	D3D12_RESOURCE_DESC depthStencilDesc;
+//	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+//	depthStencilDesc.Alignment = 0;
+//	depthStencilDesc.Width = Engine::Get()->GetWindow()->mClientWidth;
+//	depthStencilDesc.Height = Engine::Get()->GetWindow()->mClientHeight;
+//	depthStencilDesc.DepthOrArraySize = 1;
+//	depthStencilDesc.MipLevels = 1;
+//
+//	// Correction 11/12/2016: SSAO chapter requires an SRV to the depth buffer to read from 
+//	// the depth buffer.  Therefore, because we need to create two views to the same resource:
+//	//   1. SRV format: DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+//	//   2. DSV Format: DXGI_FORMAT_D24_UNORM_S8_UINT
+//	// we need to create the depth buffer resource with a typeless format.  
+//	depthStencilDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+//	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+//	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+//	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+//	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+//
+//	D3D12_CLEAR_VALUE optClear;
+//	optClear.Format = mDepthStencilFormat;
+//	optClear.DepthStencil.Depth = 1.0f;
+//	optClear.DepthStencil.Stencil = 0;
+//
+//	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+//		&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+//		D3D12_HEAP_FLAG_NONE,
+//		&depthStencilDesc,
+//		D3D12_RESOURCE_STATE_COMMON,
+//		&optClear,
+//		IID_PPV_ARGS(mRendertarget->mDepthStencilBuffer.GetAddressOf())));
+//
+//	// Create descriptor to mip level 0 of entire resource using the format of the resource.
+//
+//	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+//	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+//	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+//	dsvDesc.Format = mDepthStencilFormat;
+//	dsvDesc.Texture2D.MipSlice = 0;
+//
+//	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
+//	auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+//	md3dDevice->CreateDepthStencilView(mRendertarget->mDepthStencilBuffer.Get(), &dsvDesc, mDsvHeaphandle);
+//
+//	// Transition the resource from its initial state to be used as a depth buffer.
+//	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mRendertarget->mDepthStencilBuffer.Get(),
+//		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+//
+//}
 
 void DXRHI::SetScreenSetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth)
 {
@@ -1005,22 +1032,29 @@ void DXRHI::Update()
 void DXRHI::DrawSceneToShadowMap()
 {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto shadowMap = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
+	//auto shadowMap = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
 	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 
-	mCommandList->RSSetViewports(1, &shadowMap->mViewport);
-	mCommandList->RSSetScissorRects(1, &shadowMap->mScissorRect);
+	//mCommandList->RSSetViewports(1, &shadowMap->mViewport);
+	//mCommandList->RSSetScissorRects(1, &shadowMap->mScissorRect);
+	float mClientWidth = 1920.0f;
+	float mClientHeight = 1080.0f;
+	SetScreenSetViewPort(0, 0, mClientWidth, mClientHeight, 0.0f, 1.0f);
+	SetScissorRect(0, 0, long(mClientWidth), long(mClientHeight));
 
 	//切换到Depth-Write
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
-		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	auto shadowRT=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
+	ResourceTransition(shadowRT->GetGpuResource(),1);
+	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
+	//	D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
 	//	D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
-	mCommandList->ClearDepthStencilView(shadowMap->mhCpuDsv,
-		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
-	mCommandList->OMSetRenderTargets(0, nullptr, false, &shadowMap->mhCpuDsv);
+	ClearDepthStencilView(shadowRT);
+	//mCommandList->ClearDepthStencilView(shadowMap->mhCpuDsv,
+	//	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	OMSetRenderTargets(shadowRT);
+	//mCommandList->OMSetRenderTargets(0, nullptr, false, &shadowMap->mhCpuDsv);
 
 	SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 
@@ -1044,8 +1078,9 @@ void DXRHI::DrawSceneToShadowMap()
 		mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
 	}
 
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
-		D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
+	ResourceTransition(shadowRT->GetGpuResource(),4);
+	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
+	//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
 
 	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
 	//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
@@ -1091,15 +1126,14 @@ void DXRHI::ResourceBarrier()
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 }
 
-void DXRHI::ClearRenderTargetView(Color mClearColor, int NumRects)
+void DXRHI::ClearRenderTargetView(std::shared_ptr<RHIResource_RenderTarget>renderTarget,Color mClearColor, int NumRects)
 {
+	//auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+	//auto rtvHeap = mRenderPrimitiveManager->GetHeapByName("mRtvHeap");
+	//auto mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto rtvHeap = mRenderPrimitiveManager->GetHeapByName("mRtvHeap");
-	auto mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	auto baseRenderRarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
-	auto mCurrentBackBufferView = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(baseRenderRarget)->CurrentBackBufferCpuHandle(rtvHeap, mRtvDescriptorSize);
+	//auto baseRenderRarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
+	//auto mCurrentBackBufferView = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(baseRenderRarget)->CurrentBackBufferCpuHandle(rtvHeap, mRtvDescriptorSize);
 
 	float color[4];
 	color[0] = mClearColor.r;
@@ -1107,29 +1141,43 @@ void DXRHI::ClearRenderTargetView(Color mClearColor, int NumRects)
 	color[2] = mClearColor.b;
 	color[3] = mClearColor.a;
 
-	mCommandList->ClearRenderTargetView(mCurrentBackBufferView, color, NumRects, nullptr);
+	auto dxRenderTarget=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(renderTarget);
+	//mCommandList->ClearRenderTargetView(mCurrentBackBufferView, color, NumRects, nullptr);
+	mCommandList->ClearRenderTargetView(dxRenderTarget->CurrentBackBufferCpuHandle(), color, NumRects, nullptr);
+
 }
 
-void DXRHI::ClearDepthStencilView()
+void DXRHI::ClearDepthStencilView(std::shared_ptr<RHIResource_RenderTarget> renderTarget)
 {
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-	auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-	mCommandList->ClearDepthStencilView(mDsvHeaphandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	//auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+	//auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
+	//auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//
+	//mCommandList->ClearDepthStencilView(mDsvHeaphandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	mCommandList->ClearDepthStencilView(
+		std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(renderTarget)->mhCpuDsvHandle,
+		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 }
 
-void DXRHI::OMSetRenderTargets()
+void DXRHI::OMSetRenderTargets(std::shared_ptr<RHIResource_RenderTarget>renderTarget)
 {
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-	auto mDsvHeapHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
-	int mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	auto mCurrentBackBuffer=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>( mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"))->CurrentBackBufferCpuHandle(mRtvHeap, mRtvDescriptorSize);
-	
-	
-	mCommandList->OMSetRenderTargets(1, &mCurrentBackBuffer, true, &mDsvHeapHandle);
+	//auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+	//auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
+	//auto mDsvHeapHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
+	//int mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	//auto mCurrentBackBuffer=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>( mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"))->CurrentBackBufferCpuHandle(mRtvHeap, mRtvDescriptorSize);
+	//
+	//
+	//mCommandList->OMSetRenderTargets(1, &mCurrentBackBuffer, true, &mDsvHeapHandle);
+
+	auto dxRenderTarget = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(renderTarget);
+	if (dxRenderTarget->rtvHeapName != ""){
+		mCommandList->OMSetRenderTargets(1, &dxRenderTarget->CurrentBackBufferCpuHandle(), true, &dxRenderTarget->mhCpuDsvHandle);
+	}
+	else{
+		mCommandList->OMSetRenderTargets(0, nullptr, false, &dxRenderTarget->mhCpuDsvHandle);
+	}
 }
 
 void DXRHI::SetDescriptorHeap(std::shared_ptr<RHIResource_Heap> heap)
@@ -1152,13 +1200,16 @@ void DXRHI::CommitShadowMap()
 {
 	//-------------------------------------------------------------------------------
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
-	auto ShadowHandle = shadowResource->mhGpuSrv;
+	//auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
+	//auto ShadowHandle = shadowResource->mhGpuSrv;
 
 	SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"));
 	SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
 
-	mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
+	auto dxshadowRT=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
+	//mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
+	mCommandList->SetGraphicsRootDescriptorTable(4, dxshadowRT->mhGpuSrvHandle);
+
 	//-------------------------------------------------------------------------------
 }
 
@@ -1192,7 +1243,6 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
 
-
 	////Shader Texture gShadowMap
 	//auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
 	//auto ShadowHandle = shadowResource->mhGpuSrv;
@@ -1210,10 +1260,8 @@ void DXRHI::DrawFinal()
 
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	auto baseRenderRarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
-
-	//ResourceTransition(baseRenderRarget,2,3);
-	auto rtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>( mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
 	auto currentBackBuffer = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(baseRenderRarget)->CurrentBackBuffer();
+
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer,
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
@@ -1225,7 +1273,6 @@ void DXRHI::DrawFinal()
 	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(baseRenderRarget)->GetSwapChainBufferCount();
 	auto mCurrBackBufferIndex = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(baseRenderRarget)->GetCurrBackBufferIndex();
 	std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(baseRenderRarget)->SetCurrBackBufferIndex(mCurrBackBufferIndex = (mCurrBackBufferIndex + 1) % SwapChainBufferCount);
-
 
 	WaitCommandComplete();
 }

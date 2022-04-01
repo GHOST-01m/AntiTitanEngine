@@ -16,9 +16,9 @@ public:
 		virtual void BuildRootSignature() = 0;
 		virtual std::shared_ptr<RHIResource_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) = 0;//InputLayout暂时写死了
 		virtual std::shared_ptr<RHIResource_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<RHIResource_Shader>,int NumRenderTargets,int RenderTargetType,bool isShadowPipeline) = 0;//暂定type0是basepipeline用的，1是shadow用的
-		virtual std::shared_ptr<RHIResource_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType,std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap,int SwapChainCount,float Width,float Height)=0;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
-		virtual void ResourceTransition(std::shared_ptr<RHIResource_RenderTarget> renderTarget,int BeforeStateType, int AfterStateType) = 0;
-		virtual void BuildShadow() = 0;
+		virtual std::shared_ptr<RHIResource_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int initialResourceType,int initialResourceStateType,std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap,int SwapChainCount,float Width,float Height)=0;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+		virtual void ResourceTransition(std::shared_ptr<RHIResource_GPUResource> myResource, int AfterStateType) = 0;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
+		//virtual void BuildShadow() = 0;
 		virtual void LoadMeshAndSetBuffer() = 0;
 		virtual void CreateVBIB() = 0;
 		virtual void ExecuteCommandList() = 0;
@@ -27,7 +27,7 @@ public:
 	//OnResize
 		virtual void resetRenderTarget() = 0;
 		virtual void ResizeSwapChain() = 0;
-		virtual void BuildRenderTarget() = 0;
+		//virtual void BuildRenderTarget() = 0;
 		virtual void SetScreenSetViewPort(float TopLeftX, float TopLeftY, float Width, float Height,float MinDepth,float MaxDepth) = 0;
 		virtual void SetScissorRect(long Left, long Top, long Right, long Bottom) = 0;
 
@@ -43,9 +43,9 @@ public:
 		virtual void ResetViewports(int NumViewport, ScreenViewport& vp) = 0;
 		virtual void ResetScissorRects(int NumRects, ScissorRect& sr) = 0;
 		virtual void ResourceBarrier() = 0;
-		virtual void ClearRenderTargetView(Color mClearColor,int NumRects) = 0;
-		virtual void ClearDepthStencilView() = 0;
-		virtual void OMSetRenderTargets() = 0;
+		virtual void ClearRenderTargetView(std::shared_ptr<RHIResource_RenderTarget>renderTarget, Color mClearColor,int NumRects) = 0;
+		virtual void ClearDepthStencilView(std::shared_ptr<RHIResource_RenderTarget> renderTarget) = 0;
+		virtual void OMSetRenderTargets(std::shared_ptr<RHIResource_RenderTarget>renderTarget) = 0;
 		virtual void SetDescriptorHeap(std::shared_ptr<RHIResource_Heap> heap) = 0;
 		virtual void SetPipelineState(std::shared_ptr<RHIResource_Pipeline> pipeline) = 0;
 		virtual void CommitShadowMap() = 0;

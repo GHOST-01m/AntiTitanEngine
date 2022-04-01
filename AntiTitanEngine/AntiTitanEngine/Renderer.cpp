@@ -44,7 +44,7 @@ bool Renderer::Init()
 	mRHI->LoadDDSTextureToResource(TextureLoadPath,0);
 	mRHI->BuildDescriptorHeaps();
 	mRHI->BuildRootSignature();
-	mRHI->BuildShadow();
+	//mRHI->BuildShadow();
 	CreateShader();
 	CreatePipeline();
 	mRHI->LoadMeshAndSetBuffer();
@@ -104,9 +104,11 @@ void Renderer::CreatePipeline()
 
 void Renderer::CreateRenderTarget()
 {
+	//»ù´¡RenderTarget
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
 		"baseRenderTarget",
 		3,
+		1,
 		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
@@ -115,7 +117,20 @@ void Renderer::CreateRenderTarget()
 		mClientHeight);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("baseRenderTarget", baseRenderTarget);
 	
-	mRHI->ResourceTransition(baseRenderTarget, 0, 1);
+	//mRHI->ResourceTransition(baseRenderTarget->GetGpuResource(), 1);
+
+	//ÒõÓ°RenderTarget
+	auto shadowRenderTarget = mRHI->CreateRenderTarget(
+		"shadowRenderTarget",
+		3,
+		4,
+		nullptr,
+		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"),
+		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"),
+		2,
+		mClientWidth,
+		mClientHeight);
+	mRenderPrimitiveManager->InsertRenderTargetToLib("shadowRenderTarget", shadowRenderTarget);
 
 }
 
@@ -133,12 +148,12 @@ void Renderer::Draw()
 	mRHI->DrawSceneToShadowMap();
 	mRHI->ResetViewports(1, mViewport);
 	mRHI->ResetScissorRects(1, mScissorRect);
-	//mRHI->ResourceTransition(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"), 3, 2);
 	mRHI->ResourceBarrier();
-	mRHI->ClearRenderTargetView(mClearColor, 0);
-	mRHI->ClearDepthStencilView();
+	
+	mRHI->ClearRenderTargetView(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"),mClearColor, 0);
+	mRHI->ClearDepthStencilView(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
 	mRHI->CommitShadowMap();
-	mRHI->OMSetRenderTargets();
+	mRHI->OMSetRenderTargets(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
 
 	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
 	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));

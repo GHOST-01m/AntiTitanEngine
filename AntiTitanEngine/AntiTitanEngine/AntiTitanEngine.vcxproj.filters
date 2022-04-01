@@ -234,10 +234,10 @@
     <ClInclude Include="RenderPrimitiveManager.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
-    <ClInclude Include="RHIResource_Resource.h">
+    <ClInclude Include="RHIResource_GPUResource.h">
       <Filter>Header Files\Render\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
-    <ClInclude Include="DXRHIResource_Resource.h">
+    <ClInclude Include="DXRHIResource_GPUResource.h">
       <Filter>Header Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
     <ClInclude Include="RHIResource_RenderTarget.h">
@@ -362,10 +362,10 @@
     <ClCompile Include="DXRHIResource_Heap.cpp">
       <Filter>Source Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
-    <ClCompile Include="RHIResource_Resource.cpp">
+    <ClCompile Include="RHIResource_GPUResource.cpp">
       <Filter>Source Files\Render\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
-    <ClCompile Include="DXRHIResource_Resource.cpp">
+    <ClCompile Include="DXRHIResource_GPUResource.cpp">
       <Filter>Source Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
     <ClCompile Include="RHIResource_RenderTarget.cpp">

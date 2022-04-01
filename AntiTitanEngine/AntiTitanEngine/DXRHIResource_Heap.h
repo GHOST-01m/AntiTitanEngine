@@ -5,7 +5,7 @@ class DXRHIResource_Heap :
 {
 public:
     ~DXRHIResource_Heap();
-
+    std::string name;
 public:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDXHeap();
 public:

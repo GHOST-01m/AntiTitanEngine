@@ -10,6 +10,7 @@
 #include "RHIResource_Heap.h"
 #include "RHIResource_RenderTarget.h"
 #include "RHIResource_Pipeline.h"
+#include "RHIResource_GPUResource.h"
 
 class RenderPrimitiveManager
 {
@@ -21,7 +22,7 @@ public:
 	std::vector<std::shared_ptr<RHIResource_MeshBuffer>> VBIBBuffers;
 	std::map<int,std::string> MeshMap;
 	std::shared_ptr<RHIResource_Shader> mShader;
-	std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
+	//std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
 	std::map<std::string, std::shared_ptr<RHIResource_Texture>>         mTextureLib;
 	std::map<std::string, std::shared_ptr<RHIResource_Heap>>            mHeapsLib;
 	std::map<std::string, std::shared_ptr<RHIResource_Shader>>          mShaderLib;
