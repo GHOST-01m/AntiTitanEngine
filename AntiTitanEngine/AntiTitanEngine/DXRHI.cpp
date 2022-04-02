@@ -554,6 +554,8 @@ std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string 
 	auto Rendertarget = std::make_shared<DXRHIResource_RenderTarget>();
 	Rendertarget->mGPUResource = std::make_shared<DXRHIResource_GPUResource>();
 	Rendertarget->name = RenderTargetName;
+	Rendertarget->width = Width;
+	Rendertarget->height = Height;
 
 	if (SwapChainCount<=0)
 	{
@@ -857,131 +859,116 @@ void DXRHI::SetScissorRect(long Right, long Bottom)
 	mScissorRect = { 0, 0, Right, Bottom };
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
 }
+//
+//void DXRHI::Update()
+//{
+//	//Engine::Get()->GetAssetManager()->mLight->Pitch(0.0002f);
+//	//Engine::Get()->GetAssetManager()->mLight->Yaw(0.0002f);
+//	
+//	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
+//	{
+//		ObjectConstants objConstants;
+//
+//		//UPDate Actor--------------------------------------------------------------------------------
+//
+//		//auto world = MathHelper::Identity4x4();
+//		auto location = XMMatrixTranslation(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.z
+//		);
+//		auto Scale = XMMatrixScaling(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
+//		);
+//		auto Rotator = XMMatrixScaling(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Pitch,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Yaw,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Roll
+//		);
+//
+//		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].X,
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Y,
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Z,
+//				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].W
+//			} } };
+//
+//		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
+//
+//		glm::mat4 translateMat4 = glm::translate(glm::identity<glm::mat4>(), glm::vec3(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.z
+//		));
+//
+//		glm::mat4 scaleMat4 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
+//		));
+//
+//		glm::quat rotationQuat(
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].X,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Y,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Z,
+//			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].W
+//		);
+//		glm::mat4 rotationMat4 = glm::toMat4(rotationQuat);
+//
+//		auto world = Scale * mrotation * location;
+//		glm::mat4 worldMat4 = scaleMat4 * rotationMat4 * translateMat4;
+//		//!!!旋转矩阵好像有问题，用glm的rotator传给Shader，mul(Normal,rotator)的值不对，表现出来的颜色不是正确的。
+//		//!!!要看正确的颜色可以乘XMMATRIX的rotation，XMMATRIX还要转化为FLOAT4X4
+//
+//		auto mCamera = Engine::Get()->GetRenderer()->GetCamera();
+//		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4(&mCamera->GetProj4x4f());
+//		glm::mat4 worldViewProjMat4 = mCamera->GetProjMat4() * mCamera->GetViewMat4() * worldMat4;
+//
+//		//XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
+//		//glm::mat4 worldViewProjMat4 = mCamera.GetProjMat4() * mCamera.GetViewMat4() * worldMat4;
+//
+//		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+//		objConstants.WorldViewProjMat4 = glm::transpose(worldViewProjMat4);
+//		//objConstants.mTime = Engine::Get()->gt.TotalTime();
+//		XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
+//
+//		//UPDate LIGHT--------------------------------------------------------------------------------
+//		auto TestVV = Engine::Get()->GetAssetManager()->mLight->GetView();//重新创建的V矩阵
+//		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj();//重新创建的P矩阵
+//
+//		XMMATRIX T(
+//			0.5f, 0.0f, 0.0f, 0.0f,
+//			0.0f,-0.5f, 0.0f, 0.0f,
+//			0.0f, 0.0f, 1.0f, 0.0f,
+//			0.5f, 0.5f, 0.0f, 1.0f);
+//
+//		////重新造的VP
+//		XMMATRIX VP = TestVV * TestPP;
+//		XMMATRIX S  =  TestVV * TestPP * T;
+//		XMMATRIX LightworldViewProj = world * TestVV * TestPP;
+//		XMMATRIX LightworldViewProjT = world * TestVV * TestPP * T;
+//
+//		XMStoreFloat4x4(&objConstants.gWorld, XMMatrixTranspose(world));
+//		XMStoreFloat4x4(&objConstants.gLightVP, XMMatrixTranspose(VP));
+//		XMStoreFloat4x4(&objConstants.gShadowTransform, XMMatrixTranspose(S));
+//		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
+//		XMStoreFloat4x4(&objConstants.gLightMVPT, XMMatrixTranspose(LightworldViewProjT));
+//
+//		CommitResourceToGPU(i, objConstants);
+//	}
+//}
 
-void DXRHI::Update()
+void DXRHI::CommitResourceToGPU(int elementIndex, ObjectConstants objConstants)
 {
-	//Engine::Get()->GetAssetManager()->mLight->Pitch(0.0002f);
-	Engine::Get()->GetAssetManager()->mLight->Yaw(0.0002f);
-	
-	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)
-	{
-		ObjectConstants objConstants;
-
-		//UPDate Actor--------------------------------------------------------------------------------
-
-		//auto world = MathHelper::Identity4x4();
-		auto location = XMMatrixTranslation(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.z
-		);
-		auto Scale = XMMatrixScaling(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
-		);
-		auto Rotator = XMMatrixScaling(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Pitch,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Yaw,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].rotation.Roll
-		);
-
-		DirectX::XMVECTORF32 g_XMIdentityR3 = { { {
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].X,
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Y,
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Z,
-				Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].W
-			} } };
-
-		auto mrotation = DirectX::XMMatrixRotationQuaternion(g_XMIdentityR3);
-
-		glm::mat4 translateMat4 = glm::translate(glm::identity<glm::mat4>(), glm::vec3(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.z
-		));
-
-		glm::mat4 scaleMat4 = glm::scale(glm::identity<glm::mat4>(), glm::vec3(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.x,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].scale3D.z
-		));
-
-		glm::quat rotationQuat(
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].X,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Y,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].Z,
-			Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsQuatArray[i].W
-		);
-		glm::mat4 rotationMat4 = glm::toMat4(rotationQuat);
-
-		auto world = Scale * mrotation * location;
-		glm::mat4 worldMat4 = scaleMat4 * rotationMat4 * translateMat4;
-		//!!!旋转矩阵好像有问题，用glm的rotator传给Shader，mul(Normal,rotator)的值不对，表现出来的颜色不是正确的。
-		//!!!要看正确的颜色可以乘XMMATRIX的rotation，XMMATRIX还要转化为FLOAT4X4
-
-		auto mCamera = Engine::Get()->GetRenderer()->GetCamera();
-		XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera->GetView4x4f()) * XMLoadFloat4x4(&mCamera->GetProj4x4f());
-		glm::mat4 worldViewProjMat4 = mCamera->GetProjMat4() * mCamera->GetViewMat4() * worldMat4;
-
-		//XMMATRIX worldViewProj = world * XMLoadFloat4x4(&mCamera.GetView4x4f()) * XMLoadFloat4x4((&mCamera.GetProj4x4f()));
-		//glm::mat4 worldViewProjMat4 = mCamera.GetProjMat4() * mCamera.GetViewMat4() * worldMat4;
-
-		XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
-		objConstants.WorldViewProjMat4 = glm::transpose(worldViewProjMat4);
-		//objConstants.mTime = Engine::Get()->gt.TotalTime();
-		XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
-
-		//UPDate LIGHT--------------------------------------------------------------------------------
-		auto TestVV = Engine::Get()->GetAssetManager()->mLight->GetView();//重新创建的V矩阵
-		auto TestPP = Engine::Get()->GetAssetManager()->mLight->GetProj();//重新创建的P矩阵
-
-		XMMATRIX T(
-			0.5f, 0.0f, 0.0f, 0.0f,
-			0.0f,-0.5f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 1.0f);
-
-		////重新造的VP
-		XMMATRIX VP = TestVV * TestPP;
-		XMMATRIX S  =  TestVV * TestPP * T;
-		XMMATRIX LightworldViewProj = world * TestVV * TestPP;
-		XMMATRIX LightworldViewProjT = world * TestVV * TestPP * T;
-
-		XMStoreFloat4x4(&objConstants.gWorld, XMMatrixTranspose(world));
-		XMStoreFloat4x4(&objConstants.gLightVP, XMMatrixTranspose(VP));
-		XMStoreFloat4x4(&objConstants.gShadowTransform, XMMatrixTranspose(S));
-		XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
-		XMStoreFloat4x4(&objConstants.gLightMVPT, XMMatrixTranspose(LightworldViewProjT));
-
-		mObjectCB->CopyData(i, objConstants);
-	}
+	mObjectCB->CopyData(elementIndex, objConstants);
 }
 
 void DXRHI::DrawSceneToShadowMap()
 {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-
 	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-
-	float mClientWidth = 2048.0f;
-	float mClientHeight = 2048.0f;
-	SetScreenSetViewPort(mClientWidth, mClientHeight);
-	SetScissorRect(long(mClientWidth), long(mClientHeight));
-
-	//mCommandList->RSSetViewports(1, &mScreenViewport);
-	//mCommandList->RSSetScissorRects(1, &mScissorRect);
-
-	auto shadowRT=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
-	//ResourceTransition(shadowRT->GetGpuResource(),1);
-
-	ClearDepthStencilView(shadowRT);
-
-	OMSetRenderTargets(shadowRT);
-
-	SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-
-	SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
 
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)//绘制每一个Actor
 	{
@@ -1000,7 +987,7 @@ void DXRHI::DrawSceneToShadowMap()
 
 		mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
 	}
-	//ResourceTransition(shadowRT->GetGpuResource(),4);
+
 }
 
 void DXRHI::DrawReset()
@@ -1397,10 +1384,6 @@ void DXRHI::CalculateFrameStats()
 	}
 }
 
-//void DXRHI::BuildDescriptorHeaps()
-//{
-//	SetDescriptorHeaps();
-//}
 
 void DXRHI::BuildDescriptorHeaps()
 {

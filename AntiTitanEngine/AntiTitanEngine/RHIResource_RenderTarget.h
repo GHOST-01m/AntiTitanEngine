@@ -8,5 +8,7 @@ public:
 	virtual std::shared_ptr<RHIResource_GPUResource> GetGpuResource()=0;
 public:
 	std::string name;
+	float width;
+	float height;
 };
 

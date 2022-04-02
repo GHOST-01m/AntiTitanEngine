@@ -13,6 +13,7 @@ private:
 	static const int SwapChainBufferCount = 2;//½»»»Á´ÊýÁ¿
 
 public:
+
 	void SetCurrBackBufferIndex(int Index);
 	int  GetCurrBackBufferIndex();
 	int  GetSwapChainBufferCount();

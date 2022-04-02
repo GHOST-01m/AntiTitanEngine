@@ -28,8 +28,6 @@ ID3D12Resource* DXRHIResource_RenderTarget::CurrentBackBuffer() const
 
 D3D12_CPU_DESCRIPTOR_HANDLE DXRHIResource_RenderTarget::CurrentBackBufferCpuHandle() const
 {
-	if (rtvHeapName!="")
-	{	}
 		auto rtvHeap = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->GetHeapByName(rtvHeapName);
 
 		return CD3DX12_CPU_DESCRIPTOR_HANDLE(

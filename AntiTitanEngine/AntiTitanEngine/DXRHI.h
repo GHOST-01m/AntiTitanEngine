@@ -86,7 +86,6 @@ public:
 		void OpenDebugLayer()override;
 		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		void ResetCommandList() override;
-		//这里曾经有一个OnResize
 		//这个LoadTexture应该Load成一个Render的资源
 		void LoadDDSTextureToResource(std::wstring Path, int TextureIndex)override; //LoadTexture
 
@@ -98,8 +97,6 @@ public:
 		std::shared_ptr<RHIResource_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType,std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
 		void ResourceTransition(std::shared_ptr<RHIResource_GPUResource> myResource, int AfterStateType) override;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
 
-		//BuildShadow里的东西实际上是调用之前创建好的几种方法创建出来的,且shadowMap不是一个资源
-		//void BuildShadow()override;
 		void LoadMeshAndSetBuffer()override;
 		void CreateMeshBuffer()override;
 		void ExecuteCommandList()override;
@@ -114,22 +111,16 @@ public:
 	//OnResize
 		void resetRenderTarget()override;
 		void ResizeSwapChain()override;
-	//	void BuildRenderTarget()override;
 		void SetScreenSetViewPort(float Width,float Height) override;
 		void SetScissorRect(long Right, long Bottom)override;
 
 
-	void Update() override;
-		 //void UpdateMVP(int Index, ObjectConstants& objConstants) override;
-		 //void UpdateTime(ObjectConstants& objConstants) override;
-		 //void UploadConstant(int offset, ObjectConstants& objConstants) override;
-	
+//	void Update() override;
+		void CommitResourceToGPU(int elementIndex, ObjectConstants objConstants) override;
 	
 	//void Draw() override;
 		void DrawReset() override;
 		void DrawSceneToShadowMap() override;//这个函数的位置还要考虑一下,参考龙书Draw()里这个函数的位置
-		//void ResetViewports(int NumViewport, ScreenViewport& vp) override;
-		//void ResetScissorRects(int NumRects,ScissorRect& sr)override;
 		void ResourceBarrier()override;
 		void ClearRenderTargetView(std::shared_ptr<RHIResource_RenderTarget>renderTarget, Color mClearColor, int NumRects) override;
 		void ClearDepthStencilView(std::shared_ptr<RHIResource_RenderTarget> renderTarget) override;

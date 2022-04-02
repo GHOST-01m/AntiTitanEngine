@@ -28,15 +28,12 @@ public:
 	//OnResize
 		virtual void resetRenderTarget() = 0;
 		virtual void ResizeSwapChain() = 0;
-		//virtual void BuildRenderTarget() = 0;
 		virtual void SetScreenSetViewPort(float Width, float Height) = 0;
 		virtual void SetScissorRect(long Right, long Bottom) = 0;
 
 
-	virtual void Update()=0;
-		//virtual void UpdateMVP(int Index, ObjectConstants& objConstants) = 0;
-		//virtual void UpdateTime(ObjectConstants& objConstants) = 0;
-		//virtual void UploadConstant(int offset, ObjectConstants& objConstants) = 0;
+//	virtual void Update()=0;
+		virtual void CommitResourceToGPU(int elementIndex, ObjectConstants objConstants) = 0;
 		virtual void CalculateFrameStats()=0;
 	//virtual void Draw() = 0;
 		virtual void DrawSceneToShadowMap() = 0;
