@@ -47,25 +47,25 @@ void Renderer::CreateHeap()
 
 	//基础Rtv
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", 2, 2, 0));
+		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", 2, RTV, 0));
 
 	//基础Dsv
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mDsvHeap",mRHI->CreateDescriptorHeap("mDsvHeap", 100, 3, 0));
+		"mDsvHeap",mRHI->CreateDescriptorHeap("mDsvHeap", 100, DSV, 0));
 
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mCbvHeap",mRHI->CreateDescriptorHeap("mCbvHeap", 10000, 0, 1));
+		"mCbvHeap",mRHI->CreateDescriptorHeap("mCbvHeap", 10000, CBVSRVUAV, 1));
 
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mTextureHeap",mRHI->CreateDescriptorHeap("mTextureHeap", 1, 0, 0));
-
-	//单独给shadow用的SrvHeap，测试用
-	mRenderPrimitiveManager->InsertHeapToLib(
-		"mShadowSrvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowSrvDescriptorHeap", 10000, 0, 1));
+		"mTextureHeap",mRHI->CreateDescriptorHeap("mTextureHeap", 1, CBVSRVUAV, 0));
 
 	//单独给shadow用的SrvHeap，测试用
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mShadowDsvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowDsvDescriptorHeap", 10000, 3, 0));
+		"mShadowSrvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowSrvDescriptorHeap", 10000, CBVSRVUAV, 1));
+
+	//单独给shadow用的SrvHeap，测试用
+	mRenderPrimitiveManager->InsertHeapToLib(
+		"mShadowDsvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowDsvDescriptorHeap", 10000, DSV, 0));
 }
 
 void Renderer::CreateShader()
@@ -94,7 +94,7 @@ void Renderer::CreateRenderTarget()
 {
 	//基础RenderTarget=======================================================
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
-		"baseRenderTarget", 3 , 1 ,
+		"baseRenderTarget", TEXTURE2D , STATE_DEPTH_WRITE ,
 		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
@@ -105,7 +105,7 @@ void Renderer::CreateRenderTarget()
 	
 	//阴影RenderTarget=====================================================
 	auto shadowRenderTarget = mRHI->CreateRenderTarget(
-		"shadowRenderTarget", 3, 1,
+		"shadowRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE ,
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"),
 		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"),
@@ -268,10 +268,14 @@ void Renderer::ShadowPass()
 		long(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget")->height));
 	mRHI->ClearDepthStencilView(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
 	mRHI->OMSetRenderTargets(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
-	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
-	mRHI->DrawSceneToShadowMap();
-	mRHI->CommitShadowMap();
+
+	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+	{
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
+		mRHI->DrawMesh(ActorIndex, 0);
+		mRHI->CommitShaderParameters();//这个提交shader参数没有做完
+	}
 
 }
 
@@ -291,7 +295,7 @@ void Renderer::DrawScenePass()
 	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
-		mRHI->DrawActor(ActorIndex, 0);
+		mRHI->DrawMesh(ActorIndex, 0);
 	}
 
 }

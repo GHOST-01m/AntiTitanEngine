@@ -963,31 +963,31 @@ void DXRHI::CommitResourceToGPU(int elementIndex, ObjectConstants objConstants)
 {
 	mObjectCB->CopyData(elementIndex, objConstants);
 }
-
-void DXRHI::DrawSceneToShadowMap()
-{
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-
-	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)//绘制每一个Actor
-	{
-		auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-		DrawMeshName.erase(DrawMeshName.size() - 1, 1);
-		auto testGeoIndex = mRenderPrimitiveManager->GetMeshKeyByName(DrawMeshName);
-		auto mVBIB = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->VBIBBuffers[testGeoIndex]);
-
-		mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
-		mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
-		mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-		auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-		heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-		mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
-
-		mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
-	}
-
-}
+//
+//void DXRHI::DrawSceneToShadowMap()
+//{
+//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+//	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+//
+//	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)//绘制每一个Actor
+//	{
+//		auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
+//		DrawMeshName.erase(DrawMeshName.size() - 1, 1);
+//		auto testGeoIndex = mRenderPrimitiveManager->GetMeshKeyByName(DrawMeshName);
+//		auto mVBIB = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->VBIBBuffers[testGeoIndex]);
+//
+//		mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
+//		mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
+//		mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//
+//		auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+//		heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+//		mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
+//
+//		mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
+//	}
+//
+//}
 
 void DXRHI::DrawReset()
 {
@@ -1099,29 +1099,24 @@ void DXRHI::SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline)
 		std::dynamic_pointer_cast<DXPrimitive_Pipeline>(pipeline)->mPipeline.Get());
 }
 
-void DXRHI::CommitShadowMap()
+void DXRHI::CommitShaderParameters()
 {
 	//-------------------------------------------------------------------------------
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	//auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
-	//auto ShadowHandle = shadowResource->mhGpuSrv;
 
 	SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"));
 	SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
 
 	auto dxshadowRT=std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
-	//mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
 	mCommandList->SetGraphicsRootDescriptorTable(4, dxshadowRT->mhGpuSrvHandle);
 
 	//-------------------------------------------------------------------------------
 }
 
-void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
+void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	
 	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-
 	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
 	DrawMeshName.erase(DrawMeshName.size() - 1, 1);
 	auto testGeoIndex = mRenderPrimitiveManager->GetMeshKeyByName(DrawMeshName);

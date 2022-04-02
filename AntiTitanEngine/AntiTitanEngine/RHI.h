@@ -36,7 +36,7 @@ public:
 		virtual void CommitResourceToGPU(int elementIndex, ObjectConstants objConstants) = 0;
 		virtual void CalculateFrameStats()=0;
 	//virtual void Draw() = 0;
-		virtual void DrawSceneToShadowMap() = 0;
+		//virtual void DrawSceneToShadowMap() = 0;
 		virtual void DrawReset() = 0;
 		//virtual void ResetViewports(int NumViewport, ScreenViewport& vp) = 0;
 		//virtual void ResetScissorRects(int NumRects, ScissorRect& sr) = 0;
@@ -46,8 +46,8 @@ public:
 		virtual void OMSetRenderTargets(std::shared_ptr<Primitive_RenderTarget>renderTarget) = 0;
 		virtual void SetDescriptorHeap(std::shared_ptr<Primitive_Heap> heap) = 0;
 		virtual void SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline) = 0;
-		virtual void CommitShadowMap() = 0;
-		virtual void DrawActor(int ActorIndex,int TextureIndex) = 0;
+		virtual void CommitShaderParameters() = 0;
+		virtual void DrawMesh(int ActorIndex,int TextureIndex) = 0;
 		virtual void DrawFinal() = 0;
 };
 

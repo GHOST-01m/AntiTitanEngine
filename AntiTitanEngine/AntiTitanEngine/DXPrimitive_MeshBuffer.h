@@ -25,25 +25,22 @@ public:
 	std::unordered_map<std::string, SubmeshGeometry> DrawArgs;
 
 public:
-	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const
-	{
+	D3D12_VERTEX_BUFFER_VIEW GetVertexBufferView()const {
+
 		D3D12_VERTEX_BUFFER_VIEW vbv;
 		vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
 		vbv.StrideInBytes = VertexByteStride;
 		vbv.SizeInBytes = VertexBufferByteSize;
 
 		return vbv;
-	}
-
-	D3D12_INDEX_BUFFER_VIEW GetIndexBufferView()const
-	{
+	};
+	D3D12_INDEX_BUFFER_VIEW GetIndexBufferView()const {
 		D3D12_INDEX_BUFFER_VIEW ibv;
 		ibv.BufferLocation = IndexBufferGPU->GetGPUVirtualAddress();
 		ibv.Format = IndexFormat;
 		ibv.SizeInBytes = IndexBufferByteSize;
 
 		return ibv;
-	}
+	};
 };
-
 

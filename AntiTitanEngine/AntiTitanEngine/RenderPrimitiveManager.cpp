@@ -1,11 +1,6 @@
 #include "stdafx.h"
 #include "RenderPrimitiveManager.h"
 
-RHIDevice::~RHIDevice()
-{
-
-}
-
 Primitive_MeshBuffer::~Primitive_MeshBuffer()
 {
 

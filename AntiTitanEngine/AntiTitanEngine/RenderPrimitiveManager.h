@@ -1,8 +1,6 @@
 #pragma once
 #include "MyStruct.h"
 #include "map"
-#include "RHIFactory.h"
-#include "RHIDevice.h"
 #include "Primitive_MeshBuffer.h"
 #include "Primitive_Shader.h"
 #include "Primitive_Texture.h"
@@ -13,10 +11,6 @@
 
 class RenderPrimitiveManager
 {
-public:
-	std::shared_ptr<RHIFactory> mRHIFactory;
-	std::shared_ptr<RHIDevice> mRHIDevice;
-
 public:
 	std::vector<std::shared_ptr<Primitive_MeshBuffer>> VBIBBuffers;
 	std::map<int,std::string> MeshMap;

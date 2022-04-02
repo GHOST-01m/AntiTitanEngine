@@ -189,12 +189,6 @@
     <ClInclude Include="Renderer.h">
       <Filter>Header Files\Render</Filter>
     </ClInclude>
-    <ClInclude Include="RHIFactory.h">
-      <Filter>Header Files\Render\RenderPrimitiveManager\RHIResource</Filter>
-    </ClInclude>
-    <ClInclude Include="RHIDevice.h">
-      <Filter>Header Files\Render\RenderPrimitiveManager\RHIResource</Filter>
-    </ClInclude>
     <ClInclude Include="Primitive_MeshBuffer.h">
       <Filter>Header Files\Render\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
@@ -319,12 +313,6 @@
     </ClCompile>
     <ClCompile Include="Renderer.cpp">
       <Filter>Source Files\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="RHIDevice.cpp">
-      <Filter>Source Files\Render\RenderPrimitiveManager\RHIResource</Filter>
-    </ClCompile>
-    <ClCompile Include="RHIFctory.cpp">
-      <Filter>Source Files\Render\RenderPrimitiveManager\RHIResource</Filter>
     </ClCompile>
     <ClCompile Include="Primitive_MeshBuffer.cpp">
       <Filter>Source Files\Render\RenderPrimitiveManager\RHIResource</Filter>

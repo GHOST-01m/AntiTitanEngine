@@ -138,3 +138,33 @@ public:
 	FVector Direction;
 	Color LinearColor;
 };
+
+typedef
+enum HeapTyme
+{
+	CBVSRVUAV = 0,
+	SAMPLE = 1,
+	RTV = 2,
+	DSV = 3,
+	NUMTYPE = 4
+}HeapTyme;
+
+typedef
+enum ResourceType
+{
+	UNKNOWN     = 0,
+	BUFFER      = 1,
+	TEXTURE1D   = 2,
+	TEXTURE2D   = 3,
+	TEXTURE3D   = 4
+}ResourceType;
+
+typedef
+enum ResourceStateType
+{
+	STATE_COMMON          = 0,
+	STATE_DEPTH_WRITE = 1,
+	STATE_RENDER_TARGET = 2,
+	STATE_PRESENT = 3,
+	STATE_GENERIC_READ = 4
+}ResourceStateType;

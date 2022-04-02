@@ -5,7 +5,8 @@ public:
 	virtual ~Primitive_Heap();
 
 public:
-	virtual int GetCurrentHeapSize();
+	virtual int GetCurrentHeapSize()=0;
+
 public:
 	int currentHeapHeapSize;
 };

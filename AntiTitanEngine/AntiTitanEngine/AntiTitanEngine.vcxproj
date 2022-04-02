@@ -171,8 +171,6 @@
     <ClInclude Include="MaterialSystem.h" />
     <ClInclude Include="OpenGLRHI.h" />
     <ClInclude Include="RHI.h" />
-    <ClInclude Include="RHIDevice.h" />
-    <ClInclude Include="RHIFactory.h" />
     <ClInclude Include="RenderPrimitiveManager.h" />
     <ClInclude Include="TopAPP.h" />
     <ClInclude Include="GameLogic.h" />
@@ -207,8 +205,6 @@
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="OpenGLRHI.cpp" />
     <ClCompile Include="RHI.cpp" />
-    <ClCompile Include="RHIDevice.cpp" />
-    <ClCompile Include="RHIFctory.cpp" />
     <ClCompile Include="RenderPrimitiveManager.cpp" />
     <ClCompile Include="Primitive_Heap.cpp" />
     <ClCompile Include="Primitive_Pipeline.cpp" />

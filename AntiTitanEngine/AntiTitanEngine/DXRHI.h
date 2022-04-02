@@ -108,27 +108,25 @@ public:
 
 public:
 	void OnResize();
-	//OnResize
 		void resetRenderTarget()override;
 		void ResizeSwapChain()override;
 		void SetScreenSetViewPort(float Width,float Height) override;
 		void SetScissorRect(long Right, long Bottom)override;
-
 
 //	void Update() override;
 		void CommitResourceToGPU(int elementIndex, ObjectConstants objConstants) override;
 	
 	//void Draw() override;
 		void DrawReset() override;
-		void DrawSceneToShadowMap() override;//这个函数的位置还要考虑一下,参考龙书Draw()里这个函数的位置
+		//void DrawSceneToShadowMap() override;
 		void ResourceBarrier()override;
 		void ClearRenderTargetView(std::shared_ptr<Primitive_RenderTarget>renderTarget, Color mClearColor, int NumRects) override;
 		void ClearDepthStencilView(std::shared_ptr<Primitive_RenderTarget> renderTarget) override;
-		void CommitShadowMap()override;
+		void CommitShaderParameters()override;
 		void OMSetRenderTargets(std::shared_ptr<Primitive_RenderTarget>renderTarget)override;
 		void SetDescriptorHeap(std::shared_ptr<Primitive_Heap> heap) override;
 		void SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline)override;
-		void DrawActor(int ActorIndex, int TextureIndex)override;
+		void DrawMesh(int ActorIndex, int TextureIndex)override;
 		void DrawFinal()override;
 
 	void FlushCommandQueue();
