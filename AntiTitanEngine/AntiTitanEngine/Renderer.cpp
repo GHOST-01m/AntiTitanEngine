@@ -24,15 +24,12 @@ bool Renderer::Init()
 	mRHI->OpenDebugLayer();
 	mRHI->InitPrimitiveManagerMember();
 	CreateHeap();
-	mRHI->ResetCommandList();
-	mRHI->ResizeSwapChain();
-	//mRHI->BuildRenderTarget();
 	CreateRenderTarget();
-
+	mRHI->ResetCommandList();
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
-	mRHI->SetScreenSetViewPort(0, 0, mClientWidth, mClientHeight, 0.0f, 1.0f);
-	mRHI->SetScissorRect(0, 0, long(mClientWidth), long(mClientHeight));
+	//mRHI->SetScreenSetViewPort(0, 0, mClientWidth, mClientHeight, 0.0f, 1.0f);
+	//mRHI->SetScissorRect(0, 0, long(mClientWidth), long(mClientHeight));
 	mRHI->ResetCommandList();
 
 	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);//这个应该放到GameLogic里
@@ -48,7 +45,7 @@ bool Renderer::Init()
 	CreateShader();
 	CreatePipeline();
 	mRHI->LoadMeshAndSetBuffer();
-	mRHI->CreateVBIB();
+	mRHI->CreateMeshBuffer();
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
 	return true;
@@ -58,10 +55,8 @@ void Renderer::CreateHeap()
 {//Heap创建
 
 	//基础Rtv
-	auto mRendertarget =GetRenderPrimitiveManager()->mRenderTarget;
-	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", SwapChainBufferCount, 2, 0));
+		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", 2, 2, 0));
 
 	//基础Dsv
 	mRenderPrimitiveManager->InsertHeapToLib(
@@ -93,10 +88,12 @@ void Renderer::CreateShader()
 
 void Renderer::CreatePipeline()
 {
+	//基础管线====================================================================
 	auto baseShader = mRenderPrimitiveManager->GetShaderByName("color");
 	mRenderPrimitiveManager->InsertPipelineToLib("basePipeline",
 		mRHI->CreatePipeline("basePipeline", baseShader, 1, 0, false));
 
+	//阴影管线=====================================================================
 	auto shadowShader = mRenderPrimitiveManager->GetShaderByName("shadow");
 	mRenderPrimitiveManager->InsertPipelineToLib("shadowPipeline",
 		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, 1, true));
@@ -104,11 +101,9 @@ void Renderer::CreatePipeline()
 
 void Renderer::CreateRenderTarget()
 {
-	//基础RenderTarget
+	//基础RenderTarget=======================================================
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
-		"baseRenderTarget",
-		3,
-		1,
+		"baseRenderTarget", 3 , 1 ,
 		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
@@ -117,21 +112,16 @@ void Renderer::CreateRenderTarget()
 		mClientHeight);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("baseRenderTarget", baseRenderTarget);
 	
-	//mRHI->ResourceTransition(baseRenderTarget->GetGpuResource(), 1);
-
-	//阴影RenderTarget
+	//阴影RenderTarget=====================================================
 	auto shadowRenderTarget = mRHI->CreateRenderTarget(
-		"shadowRenderTarget",
-		3,
-		4,
+		"shadowRenderTarget", 3, 1,
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"),
 		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"),
 		2,
-		mClientWidth,
-		mClientHeight);
+		2048,
+		2048);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("shadowRenderTarget", shadowRenderTarget);
-
 }
 
 void Renderer::Update()
@@ -146,15 +136,14 @@ void Renderer::Draw()
 	//mRHI->Draw();
 	mRHI->DrawReset();
 	mRHI->DrawSceneToShadowMap();
-	mRHI->ResetViewports(1, mViewport);
-	mRHI->ResetScissorRects(1, mScissorRect);
+	mRHI->CommitShadowMap();
+	mRHI->SetScreenSetViewPort(1920,1080);
+	mRHI->SetScissorRect(1920, 1080);
 	mRHI->ResourceBarrier();
 	
 	mRHI->ClearRenderTargetView(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"),mClearColor, 0);
 	mRHI->ClearDepthStencilView(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
-	mRHI->CommitShadowMap();
 	mRHI->OMSetRenderTargets(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
-
 	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
 	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)

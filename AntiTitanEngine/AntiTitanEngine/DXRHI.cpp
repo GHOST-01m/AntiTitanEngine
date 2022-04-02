@@ -69,7 +69,7 @@ bool DXRHI::Init() {
 	assert(m4xMsaaQuality > 0 && "Unexpected MSAA quality level.");
 
 	InitDX_CreateCommandObjects();
-	InitDX_CreateSwapChain();
+	//CreateSwapChain();
 	//InitDX_CreateRtvAndDsvDescriptorHeaps();
 	//--------------------------------------------------------------------------------
 
@@ -103,7 +103,7 @@ void DXRHI::InitPrimitiveManagerMember()
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	//mRenderPrimitiveManager->mShader = std::make_shared<DXRHIResource_Shader>();
 	//mRenderPrimitiveManager->mShadowMap = std::make_shared<DXRHIResource_ShadowMap>();
-	mRenderPrimitiveManager->mRenderTarget = std::make_shared<DXRHIResource_RenderTarget>();
+	//mRenderPrimitiveManager->mRenderTarget = std::make_shared<DXRHIResource_RenderTarget>();
 
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
 
@@ -150,7 +150,8 @@ void DXRHI::InitPrimitiveManagerMember()
 	assert(m4xMsaaQuality > 0 && "Unexpected MSAA quality level.");
 
 	InitDX_CreateCommandObjects();
-	InitDX_CreateSwapChain();
+	CreateSwapChain();
+	//InitDX_CreateSwapChain();
 	//InitDX_CreateRtvAndDsvDescriptorHeaps();
 
 	//--------------------------------------------------------------------------------
@@ -239,9 +240,8 @@ void DXRHI::InitDX_CreateCommandObjects() {
 	mCommandList->Close();
 };
 
-void DXRHI::InitDX_CreateSwapChain() {
-	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
-	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
+void DXRHI::CreateSwapChain() {
+	//auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(rendertarget)->GetSwapChainBufferCount();
 
 	// Release the previous swapchain we will be recreating.
 	mSwapChain.Reset();
@@ -257,7 +257,7 @@ void DXRHI::InitDX_CreateSwapChain() {
 	sd.SampleDesc.Count = m4xMsaaState ? 4 : 1;
 	sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	sd.BufferCount = SwapChainBufferCount;
+	sd.BufferCount = 2;
 	sd.OutputWindow = std::dynamic_pointer_cast<Win32Window>(Engine::Get()->GetWindow())->GetHWND();
 	//sd.OutputWindow = dynamic_cast<Win32Window*>(Engine::Get()->GetWindow())->GetHWND();
 	sd.Windowed = true;
@@ -453,7 +453,7 @@ void DXRHI::LoadMeshAndSetBuffer()
 	}
 }
 
-void DXRHI::CreateVBIB() {
+void DXRHI::CreateMeshBuffer() {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 
 	for (int i = 0; i < mRenderPrimitiveManager->VBIBBuffers.size(); i++)
@@ -552,9 +552,8 @@ std::shared_ptr<RHIResource_Pipeline> DXRHI::CreatePipeline(std::string pipeline
 std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string RenderTargetName,int resourceType, int initialResourceStateType, std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)
 {
 	auto Rendertarget = std::make_shared<DXRHIResource_RenderTarget>();
+	Rendertarget->mGPUResource = std::make_shared<DXRHIResource_GPUResource>();
 	Rendertarget->name = RenderTargetName;
-
-	Rendertarget->mDSResource = std::make_shared<DXRHIResource_GPUResource>();
 
 	if (SwapChainCount<=0)
 	{
@@ -616,9 +615,9 @@ std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string 
 		InitStateType,
 		&optClear,
 		//IID_PPV_ARGS(Rendertarget->mDepthStencilBuffer.GetAddressOf())));
-		IID_PPV_ARGS(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->mResource.GetAddressOf())));
+		IID_PPV_ARGS(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mGPUResource)->mResource.GetAddressOf())));
 
-	std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->currentType = InitStateType;
+	std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mGPUResource)->currentType = InitStateType;
 
 	// Create descriptor to mip level 0 of entire resource using the format of the resource.
 	
@@ -648,7 +647,7 @@ std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string 
 
 		auto mDsvHeap=std::dynamic_pointer_cast<DXRHIResource_Heap>(dsvHeap);
 		Rendertarget->mhCpuDsvHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		md3dDevice->CreateDepthStencilView(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->mResource.Get(), &dsvDesc, Rendertarget->mhCpuDsvHandle);
+		md3dDevice->CreateDepthStencilView(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mGPUResource)->mResource.Get(), &dsvDesc, Rendertarget->mhCpuDsvHandle);
 	}
 
 	if (srvHeap != nullptr)
@@ -665,7 +664,7 @@ std::shared_ptr<RHIResource_RenderTarget> DXRHI::CreateRenderTarget(std::string 
 		auto mSrvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(srvHeap);
 		Rendertarget->mhCpuSrvHandle = mSrvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		Rendertarget->mhGpuSrvHandle = mSrvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-		md3dDevice->CreateShaderResourceView(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mDSResource)->mResource.Get(), &srvDesc, Rendertarget->mhCpuSrvHandle);
+		md3dDevice->CreateShaderResourceView(std::dynamic_pointer_cast<DXRHIResource_GPUResource>(Rendertarget->mGPUResource)->mResource.Get(), &srvDesc, Rendertarget->mhCpuSrvHandle);
 	}
 
 	return Rendertarget;
@@ -735,14 +734,14 @@ void DXRHI::OnResize()
 	WaitCommandComplete();
 
 	// Update the viewport transform to cover the client area.
-	SetScreenSetViewPort(0,0, static_cast<float>(Engine::Get()->GetWindow()->mClientWidth), static_cast<float>(Engine::Get()->GetWindow()->mClientHeight),0.0f,1.0f);
+	//SetScreenSetViewPort(0,0, static_cast<float>(Engine::Get()->GetWindow()->mClientWidth), static_cast<float>(Engine::Get()->GetWindow()->mClientHeight),0.0f,1.0f);
 
-	SetScissorRect(0, 0, Engine::Get()->GetWindow()->mClientWidth, Engine::Get()->GetWindow()->mClientHeight);
+	//SetScissorRect(0, 0, Engine::Get()->GetWindow()->mClientWidth, Engine::Get()->GetWindow()->mClientHeight);
 }
 
 void DXRHI::resetRenderTarget()
 {
-	auto mRendertarget = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget);
+	auto mRendertarget = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->GetRenderTargetByName("baseRenderTarget"));
 	auto mSwapChainBuffer = mRendertarget->mSwapChainBuffer;
 	auto SwapChainBufferCount = mRendertarget->GetSwapChainBufferCount();
 
@@ -755,7 +754,7 @@ void DXRHI::resetRenderTarget()
 
 void DXRHI::ResizeSwapChain()
 {
-	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
+	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->GetRenderTargetByName("baseRenderTarget");
 	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
 
 	ThrowIfFailed(mSwapChain->ResizeBuffers(
@@ -838,19 +837,25 @@ void DXRHI::ResizeSwapChain()
 //
 //}
 
-void DXRHI::SetScreenSetViewPort(float TopLeftX, float TopLeftY, float Width, float Height, float MinDepth, float MaxDepth)
+void DXRHI::SetScreenSetViewPort(float Width, float Height)
 {
-	mScreenViewport.TopLeftX = TopLeftX;
-	mScreenViewport.TopLeftY = TopLeftY;
+	D3D12_VIEWPORT mScreenViewport;
+
+	mScreenViewport.TopLeftX = 0;
+	mScreenViewport.TopLeftY = 0;
 	mScreenViewport.Width = Width;
 	mScreenViewport.Height = Height;
-	mScreenViewport.MinDepth = MinDepth;
-	mScreenViewport.MaxDepth = MaxDepth;
-}
+	mScreenViewport.MinDepth = 0;
+	mScreenViewport.MaxDepth = 1;
 
-void DXRHI::SetScissorRect(long Left, long Top, long Right, long Bottom)
+	mCommandList->RSSetViewports(1, &mScreenViewport);
+};
+
+void DXRHI::SetScissorRect(long Right, long Bottom)
 {
-	mScissorRect = { Left, Top, Right, Bottom };
+	D3D12_RECT mScissorRect;
+	mScissorRect = { 0, 0, Right, Bottom };
+	mCommandList->RSSetScissorRects(1, &mScissorRect);
 }
 
 void DXRHI::Update()
@@ -953,108 +958,26 @@ void DXRHI::Update()
 	}
 }
 
-//void DXRHI::Draw()
-//{
-//	// Reuse the memory associated with command recording.
-//	// We can only reset when the associated command lists have finished execution on the GPU.
-//	ThrowIfFailed(mDirectCmdListAlloc->Reset());
-//
-//	// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
-//	// Reusing the command list reuses memory.
-//	//ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), mPSO.Get()));
-//
-//	mCommandList->RSSetViewports(1, &mScreenViewport);
-//	mCommandList->RSSetScissorRects(1, &mScissorRect);
-//
-//	// Indicate a state transition on the resource usage.
-//	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-//		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-//
-//	// Clear the back buffer and depth buffer.
-//	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), Colors::Black, 0, nullptr);
-//
-//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-//	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-//	auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-//	mCommandList->ClearDepthStencilView(mDsvHeaphandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-//
-//	// Specify the buffers we are going to render to.
-//	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &mDsvHeaphandle);
-//
-//	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-//
-//	ID3D12DescriptorHeap* descriptorHeaps[] = { mCbvHeap->mDescriptorHeap.Get() };
-//	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-//
-//	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
-//
-//	for (int i = 0; i < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); i++)//绘制每一个Actor
-//	{
-//		auto GeoIndex = Engine::Get()->GetAssetManager()->GetGeoKeyByName(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
-//		auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-//
-//		mCommandList->IASetVertexBuffers(0, 1, &Engine::Get()->GetAssetManager()->Geos[GeoIndex]->VertexBufferView());
-//		mCommandList->IASetIndexBuffer(&Engine::Get()->GetAssetManager()->Geos[GeoIndex]->IndexBufferView());
-//		mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-//
-//		auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-//		heapHandle.Offset(i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-//		mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
-//
-//		//贴图的Size要记得改下面的Offset
-//		auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-//		GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+i, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-//		mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
-//
-//		mCommandList->DrawIndexedInstanced(Engine::Get()->GetAssetManager()->Geos[GeoIndex]->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]].IndexCount, 1, 0, 0, 0);
-//	
-//	}
-//	auto mCamera = Engine::Get()->GetRenderer()->GetCamera();
-//	mCommandList->SetGraphicsRoot32BitConstants(2, 3, &mCamera->GetPosition(), 0);
-//
-//	// Indicate a state transition on the resource usage.
-//	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-//		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-//
-//	ExecuteCommandList();
-//
-//	// swap the back and front buffers
-//	ThrowIfFailed(mSwapChain->Present(0, 0));
-//	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
-//	auto mCurrBackBufferIndex = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetCurrBackBufferIndex();
-//	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
-//	std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->SetCurrBackBufferIndex((mCurrBackBufferIndex + 1) % SwapChainBufferCount);
-//
-//	WaitCommandComplete();
-//
-//}
-
 void DXRHI::DrawSceneToShadowMap()
 {
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	//auto shadowMap = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRenderPrimitiveManager->mShadowMap);
+
 	auto mCbvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 
-	//mCommandList->RSSetViewports(1, &shadowMap->mViewport);
-	//mCommandList->RSSetScissorRects(1, &shadowMap->mScissorRect);
-	float mClientWidth = 1920.0f;
-	float mClientHeight = 1080.0f;
-	SetScreenSetViewPort(0, 0, mClientWidth, mClientHeight, 0.0f, 1.0f);
-	SetScissorRect(0, 0, long(mClientWidth), long(mClientHeight));
+	float mClientWidth = 2048.0f;
+	float mClientHeight = 2048.0f;
+	SetScreenSetViewPort(mClientWidth, mClientHeight);
+	SetScissorRect(long(mClientWidth), long(mClientHeight));
 
-	//切换到Depth-Write
+	//mCommandList->RSSetViewports(1, &mScreenViewport);
+	//mCommandList->RSSetScissorRects(1, &mScissorRect);
+
 	auto shadowRT=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
-	ResourceTransition(shadowRT->GetGpuResource(),1);
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
-	//	D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
-	//	D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	//ResourceTransition(shadowRT->GetGpuResource(),1);
 
 	ClearDepthStencilView(shadowRT);
-	//mCommandList->ClearDepthStencilView(shadowMap->mhCpuDsv,
-	//	D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
 	OMSetRenderTargets(shadowRT);
-	//mCommandList->OMSetRenderTargets(0, nullptr, false, &shadowMap->mhCpuDsv);
 
 	SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 
@@ -1077,14 +1000,7 @@ void DXRHI::DrawSceneToShadowMap()
 
 		mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
 	}
-
-	ResourceTransition(shadowRT->GetGpuResource(),4);
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
-	//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
-
-	//mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(shadowMap->mShadowResource.Get(),
-	//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE));
-
+	//ResourceTransition(shadowRT->GetGpuResource(),4);
 }
 
 void DXRHI::DrawReset()
@@ -1095,28 +1011,27 @@ void DXRHI::DrawReset()
 		std::dynamic_pointer_cast<DXRHIResource_Pipeline>(mRenderPrimitiveManager->GetPipelineByName("basePipeline"))->mPipeline.Get()));
 }
 
-void DXRHI::ResetViewports(int NumViewPort, ScreenViewport& vp)
-{
-	mScreenViewport.Height   =vp.Height;
-	mScreenViewport.MaxDepth =vp.MaxDepth;
-	mScreenViewport.MinDepth = vp.MinDepth ;
-	mScreenViewport.TopLeftX = vp.TopLeftX ;
-	mScreenViewport.TopLeftY = vp.TopLeftY;
-	mScreenViewport.Width    = vp.Width;
+//void DXRHI::ResetViewports(int NumViewPort, ScreenViewport& vp)
+//{
+//	mScreenViewport.Height   =vp.Height;
+//	mScreenViewport.MaxDepth =vp.MaxDepth;
+//	mScreenViewport.MinDepth = vp.MinDepth ;
+//	mScreenViewport.TopLeftX = vp.TopLeftX ;
+//	mScreenViewport.TopLeftY = vp.TopLeftY;
+//	mScreenViewport.Width    = vp.Width;
+//
+//	mCommandList->RSSetViewports(1, &mScreenViewport);
+//}
 
-	mCommandList->RSSetViewports(1, &mScreenViewport);
-}
-
-void DXRHI::ResetScissorRects(int NumRects, ScissorRect& sr)
-{
-	mScissorRect.bottom = sr.bottom;
-	mScissorRect.top = sr.top;
-	mScissorRect.left = sr.left;
-	mScissorRect.right = sr.right;
-
-	mCommandList->RSSetScissorRects(NumRects, &mScissorRect);
-
-}
+//void DXRHI::ResetScissorRects(int NumRects, ScissorRect& sr)
+//{
+//	mScissorRect.bottom = sr.bottom;
+//	mScissorRect.top = sr.top;
+//	mScissorRect.left = sr.left;
+//	mScissorRect.right = sr.right;
+//
+//	mCommandList->RSSetScissorRects(NumRects, &mScissorRect);
+//}
 
 void DXRHI::ResourceBarrier()
 {
@@ -1152,6 +1067,9 @@ void DXRHI::ClearDepthStencilView(std::shared_ptr<RHIResource_RenderTarget> rend
 	//auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	//auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
 	//auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//auto mshaodwDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"));
+	//auto mshadowDsvHeaphandle = mshaodwDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
 	//
 	//mCommandList->ClearDepthStencilView(mDsvHeaphandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	mCommandList->ClearDepthStencilView(
@@ -1167,7 +1085,6 @@ void DXRHI::OMSetRenderTargets(std::shared_ptr<RHIResource_RenderTarget>renderTa
 	//auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
 	//int mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	//auto mCurrentBackBuffer=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>( mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"))->CurrentBackBufferCpuHandle(mRtvHeap, mRtvDescriptorSize);
-	//
 	//
 	//mCommandList->OMSetRenderTargets(1, &mCurrentBackBuffer, true, &mDsvHeapHandle);
 
@@ -1242,15 +1159,7 @@ void DXRHI::DrawActor(int ActorIndex,int TextureIndex)
 	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
-
-	////Shader Texture gShadowMap
-	//auto shadowResource = std::dynamic_pointer_cast<DXRHIResource_ShadowMap>(mRHIResourceManager->mShadowMap);
-	//auto ShadowHandle = shadowResource->mhGpuSrv;
-	////TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	//mCommandList->SetGraphicsRootDescriptorTable(4, ShadowHandle);
-
 	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
-	
 }
 
 void DXRHI::DrawFinal()
@@ -1303,7 +1212,7 @@ void DXRHI::FlushCommandQueue()
 
 void DXRHI::SetSwapChain()
 {
-	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
+	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->GetRenderTargetByName("baseRenderTarget");
 	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetSwapChainBufferCount();
 
 	// Release the previous swapchain we will be recreating.

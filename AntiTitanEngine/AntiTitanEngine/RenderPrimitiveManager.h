@@ -22,14 +22,15 @@ public:
 	std::vector<std::shared_ptr<RHIResource_MeshBuffer>> VBIBBuffers;
 	std::map<int,std::string> MeshMap;
 	std::shared_ptr<RHIResource_Shader> mShader;
-	//std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
+
 	std::map<std::string, std::shared_ptr<RHIResource_Texture>>         mTextureLib;
 	std::map<std::string, std::shared_ptr<RHIResource_Heap>>            mHeapsLib;
 	std::map<std::string, std::shared_ptr<RHIResource_Shader>>          mShaderLib;
 	std::map<std::string, std::shared_ptr<RHIResource_Pipeline>>        mPipelineLib;
 	std::map<std::string, std::shared_ptr<RHIResource_RenderTarget>>    mRenderTargetLib;
-
-	std::shared_ptr<RHIResource_RenderTarget> mRenderTarget;
+	
+	//std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
+	//std::shared_ptr<RHIResource_RenderTarget> mRenderTarget;
 
 public:
 	int GetMeshKeyByName(std::string name);

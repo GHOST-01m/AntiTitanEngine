@@ -21,14 +21,12 @@ public:
 	ID3D12Resource* CurrentBackBuffer()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferCpuHandle()const;//	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	//Microsoft::WRL::ComPtr<ID3D12Resource> GetDepthStencilBuffer();
 public:
 	std::shared_ptr<RHIResource_GPUResource> GetGpuResource() override;
 
 public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
-	//Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
-	std::shared_ptr<RHIResource_GPUResource> mDSResource;
+	std::shared_ptr<RHIResource_GPUResource> mGPUResource;
 
 public:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuSrvHandle;

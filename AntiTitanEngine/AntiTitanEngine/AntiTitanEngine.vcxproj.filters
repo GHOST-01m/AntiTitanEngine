@@ -216,9 +216,6 @@
     <ClInclude Include="RHIResource_ShadowMap.h">
       <Filter>Header Files\Render\RenderPrimitiveManager\RHIResource</Filter>
     </ClInclude>
-    <ClInclude Include="DXRHIResource_ShadowMap.h">
-      <Filter>Header Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
-    </ClInclude>
     <ClInclude Include="FLight.h">
       <Filter>Header Files\Asset</Filter>
     </ClInclude>
@@ -349,9 +346,6 @@
     </ClCompile>
     <ClCompile Include="RHIResource_ShadowMap.cpp">
       <Filter>Source Files\Render\RenderPrimitiveManager\RHIResource</Filter>
-    </ClCompile>
-    <ClCompile Include="DXRHIResource_ShadowMap.cpp">
-      <Filter>Source Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClCompile>
     <ClCompile Include="FLight.cpp">
       <Filter>Source Files\Asset</Filter>

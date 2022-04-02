@@ -156,7 +156,6 @@
     <ClInclude Include="DXRHIResource_RenderTarget.h" />
     <ClInclude Include="DXRHIResource_GPUResource.h" />
     <ClInclude Include="DXRHIResource_Shader.h" />
-    <ClInclude Include="DXRHIResource_ShadowMap.h" />
     <ClInclude Include="DXRHIResource_Texture.h" />
     <ClInclude Include="DXRHIResource_MeshBuffer.h" />
     <ClInclude Include="Engine.h" />
@@ -203,7 +202,6 @@
     <ClCompile Include="DXRHIResource_RenderTarget.cpp" />
     <ClCompile Include="DXRHIResource_GPUResource.cpp" />
     <ClCompile Include="DXRHIResource_Shader.cpp" />
-    <ClCompile Include="DXRHIResource_ShadowMap.cpp" />
     <ClCompile Include="DXRHIResource_Texture.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="FLight.cpp" />
