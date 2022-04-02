@@ -1,7 +1,7 @@
 #pragma once
-class RHIResource_Pipeline
+class Primitive_Pipeline
 {public:
-	virtual ~RHIResource_Pipeline()
+	virtual ~Primitive_Pipeline()
 	{
 
 	}

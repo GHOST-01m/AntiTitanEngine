@@ -16,6 +16,7 @@ std::shared_ptr<RenderPrimitiveManager> Renderer::GetRenderPrimitiveManager()
 
 bool Renderer::Init()
 {
+	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
 	mRenderPrimitiveManager = std::make_shared<RenderPrimitiveManager>();
 	mCamera = std::make_shared<Camera>();
 	mCamera->SetLens(0.25f * MathHelper::Pi, static_cast<float>(mClientWidth) / mClientHeight, 1.0f, 100000.0f);//这个应该放到GameLogic里
@@ -28,20 +29,10 @@ bool Renderer::Init()
 	mRHI->ResetCommandList();
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
-	//mRHI->SetScreenSetViewPort(0, 0, mClientWidth, mClientHeight, 0.0f, 1.0f);
-	//mRHI->SetScissorRect(0, 0, long(mClientWidth), long(mClientHeight));
 	mRHI->ResetCommandList();
-
-	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);//这个应该放到GameLogic里
-	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();//这个应该放到GameLogic里
-	Engine::Get()->GetAssetManager()->mLight->LoadLightFromBat(MapLightLoadPath);//这个应该放到GameLogic里
-	Engine::Get()->GetAssetManager()->mLight->InitView();//这个应该放到GameLogic里
-	Engine::Get()->GetAssetManager()->mLight->InitProj();//这个应该放到GameLogic里
-
 	mRHI->LoadDDSTextureToResource(TextureLoadPath,0);
 	mRHI->BuildDescriptorHeaps();
 	mRHI->BuildRootSignature();
-	//mRHI->BuildShadow();
 	CreateShader();
 	CreatePipeline();
 	mRHI->LoadMeshAndSetBuffer();
@@ -127,7 +118,6 @@ void Renderer::CreateRenderTarget()
 void Renderer::Update()
 {
 	//mRHI->Update();
-
 	for (int index = 0; index < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); index++)
 	{
 		ObjectConstants objConstants;

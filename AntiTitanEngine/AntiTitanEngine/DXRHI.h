@@ -26,13 +26,13 @@
 #include "MyStruct.h"
 #include "AssetManager.h"
 #include "RHI.h"
-#include "DXRHIResource_Heap.h"
-#include "DXRHIResource_Shader.h"
-#include "DXRHIResource_Texture.h"
-#include "DXRHIResource_MeshBuffer.h"
-#include "DXRHIResource_RenderTarget.h"
-#include "DXRHIResource_Pipeline.h"
-#include "DXRHIResource_GPUResource.h"
+#include "DXPrimitive_Heap.h"
+#include "DXPrimitive_Shader.h"
+#include "DXPrimitive_Texture.h"
+#include "DXPrimitive_MeshBuffer.h"
+#include "DXPrimitive_RenderTarget.h"
+#include "DXPrimitive_Pipeline.h"
+#include "DXPrimitive_GPUResource.h"
 
 class DXRHI :public RHI
 {
@@ -84,7 +84,11 @@ public:
 	bool Init() override;
 		void InitPrimitiveManagerMember() override;
 		void OpenDebugLayer()override;
-		std::shared_ptr<RHIResource_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
+		std::shared_ptr<Primitive_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
+		std::shared_ptr<Primitive_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
+		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
+		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+
 		void ResetCommandList() override;
 		//这个LoadTexture应该Load成一个Render的资源
 		void LoadDDSTextureToResource(std::wstring Path, int TextureIndex)override; //LoadTexture
@@ -92,16 +96,12 @@ public:
 		//这里BuildHeap还要重新做一下
 		void BuildDescriptorHeaps() override;
 		void BuildRootSignature() override;
-		std::shared_ptr<RHIResource_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
-		std::shared_ptr<RHIResource_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<RHIResource_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
-		std::shared_ptr<RHIResource_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType,std::shared_ptr<RHIResource_Heap>rtvHeap, std::shared_ptr<RHIResource_Heap>srvHeap, std::shared_ptr<RHIResource_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
-		void ResourceTransition(std::shared_ptr<RHIResource_GPUResource> myResource, int AfterStateType) override;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
+		void ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource, int AfterStateType) override;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
 
 		void LoadMeshAndSetBuffer()override;
 		void CreateMeshBuffer()override;
 		void ExecuteCommandList()override;
 		void WaitCommandComplete()override;
-
 
 	void InitDX_CreateCommandObjects();
 	void CreateSwapChain()override;
@@ -122,12 +122,12 @@ public:
 		void DrawReset() override;
 		void DrawSceneToShadowMap() override;//这个函数的位置还要考虑一下,参考龙书Draw()里这个函数的位置
 		void ResourceBarrier()override;
-		void ClearRenderTargetView(std::shared_ptr<RHIResource_RenderTarget>renderTarget, Color mClearColor, int NumRects) override;
-		void ClearDepthStencilView(std::shared_ptr<RHIResource_RenderTarget> renderTarget) override;
+		void ClearRenderTargetView(std::shared_ptr<Primitive_RenderTarget>renderTarget, Color mClearColor, int NumRects) override;
+		void ClearDepthStencilView(std::shared_ptr<Primitive_RenderTarget> renderTarget) override;
 		void CommitShadowMap()override;
-		void OMSetRenderTargets(std::shared_ptr<RHIResource_RenderTarget>renderTarget)override;
-		void SetDescriptorHeap(std::shared_ptr<RHIResource_Heap> heap) override;
-		void SetPipelineState(std::shared_ptr<RHIResource_Pipeline> pipeline)override;
+		void OMSetRenderTargets(std::shared_ptr<Primitive_RenderTarget>renderTarget)override;
+		void SetDescriptorHeap(std::shared_ptr<Primitive_Heap> heap) override;
+		void SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline)override;
 		void DrawActor(int ActorIndex, int TextureIndex)override;
 		void DrawFinal()override;
 

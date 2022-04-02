@@ -6,6 +6,12 @@ bool GameLogic::InitGameLogic()
 	Engine::Get()->GetRenderer()->GetCamera()->SetPosition(300.0f, -3000.0f, 1000.0f);
 	Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed = 2;
 
+	//Engine::Get()->GetAssetManager()->LoadExternalMapActor("MapActorInfo/MapActorInfo.bat");
+	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
+	Engine::Get()->GetAssetManager()->mLight->LoadLightFromBat("MapLightInfo/MapLightInfo.bat");
+	Engine::Get()->GetAssetManager()->mLight->InitView();
+	Engine::Get()->GetAssetManager()->mLight->InitProj();
+
 	return true;
 }
 

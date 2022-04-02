@@ -1,10 +1,10 @@
 #pragma once
-#include "RHIResource_Texture.h"
-class DXRHIResource_Texture :
-    public RHIResource_Texture
+#include "Primitive_Texture.h"
+class DXPrimitive_Texture :
+    public Primitive_Texture
 {
 public:
-	~DXRHIResource_Texture();
+	~DXPrimitive_Texture();
 
 public:
 	// Unique material name for lookup.

@@ -1,12 +1,13 @@
 #pragma once
-#include "RHIResource_Heap.h"
-class DXRHIResource_Heap :
-    public RHIResource_Heap
+#include "Primitive_Heap.h"
+class DXPrimitive_Heap :
+    public Primitive_Heap
 {
 public:
-    ~DXRHIResource_Heap();
+    ~DXPrimitive_Heap();
     std::string name;
 public:
+    int GetCurrentHeapSize()override;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> GetDXHeap();
 public:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDescriptorHeap;

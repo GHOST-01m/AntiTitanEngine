@@ -1,7 +1,7 @@
 #pragma once
 #include "MyStruct.h"
 
-class DXRHIResource_MeshBuffer :public RHIResource_MeshBuffer {
+class DXPrimitive_MeshBuffer :public Primitive_MeshBuffer {
 
 public:
 	//~DXRHIResource_VBIBBuffer();

@@ -1,10 +1,10 @@
 #pragma once
-#include "RHIResource_Shader.h"
-class DXRHIResource_Shader :
-    public RHIResource_Shader
+#include "Primitive_Shader.h"
+class DXPrimitive_Shader :
+    public Primitive_Shader
 {
 public:
-	~DXRHIResource_Shader();
+	~DXPrimitive_Shader();
 public:
 	ComPtr<ID3DBlob> mvsByteCode = nullptr;
 	ComPtr<ID3DBlob> mpsByteCode = nullptr;

@@ -6,7 +6,7 @@ RHIDevice::~RHIDevice()
 
 }
 
-RHIResource_MeshBuffer::~RHIResource_MeshBuffer()
+Primitive_MeshBuffer::~Primitive_MeshBuffer()
 {
 
 }
@@ -24,54 +24,54 @@ int RenderPrimitiveManager::GetMeshKeyByName(std::string name)
 	return -1;//如果执行到这里了,应该抛出一个异常表示没有从Map中找到对应名字的几何体
 }
 
-std::shared_ptr<RHIResource_Heap> RenderPrimitiveManager::GetHeapByName(std::string name)
+std::shared_ptr<Primitive_Heap> RenderPrimitiveManager::GetHeapByName(std::string name)
 {
 	return mHeapsLib.at(name);
 }
 
-std::shared_ptr<RHIResource_Texture> RenderPrimitiveManager::GetTextureByName(std::string name)
+std::shared_ptr<Primitive_Texture> RenderPrimitiveManager::GetTextureByName(std::string name)
 {
 	return mTextureLib.at(name);
 }
 
-std::shared_ptr<RHIResource_Pipeline> RenderPrimitiveManager::GetPipelineByName(std::string name)
+std::shared_ptr<Primitive_Pipeline> RenderPrimitiveManager::GetPipelineByName(std::string name)
 {
 	return mPipelineLib.at(name);
 }
 
-std::shared_ptr<RHIResource_Shader> RenderPrimitiveManager::GetShaderByName(std::string name)
+std::shared_ptr<Primitive_Shader> RenderPrimitiveManager::GetShaderByName(std::string name)
 {
 	return mShaderLib.at(name);
 
 }
 
-std::shared_ptr<RHIResource_RenderTarget> RenderPrimitiveManager::GetRenderTargetByName(std::string name)
+std::shared_ptr<Primitive_RenderTarget> RenderPrimitiveManager::GetRenderTargetByName(std::string name)
 {
 	return mRenderTargetLib.at(name);
 }
 
-void RenderPrimitiveManager::InsertTextureToLib(std::string name , std::shared_ptr<RHIResource_Texture>texture)
+void RenderPrimitiveManager::InsertTextureToLib(std::string name , std::shared_ptr<Primitive_Texture>texture)
 {
-	mTextureLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Texture>>(name, texture));
+	mTextureLib.insert(std::pair<std::string, std::shared_ptr<Primitive_Texture>>(name, texture));
 
 }
 
-void RenderPrimitiveManager::InsertHeapToLib(std::string heapname, std::shared_ptr<RHIResource_Heap> heap)
+void RenderPrimitiveManager::InsertHeapToLib(std::string heapname, std::shared_ptr<Primitive_Heap> heap)
 {
-	mHeapsLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Heap>>(heapname, heap));
+	mHeapsLib.insert(std::pair<std::string, std::shared_ptr<Primitive_Heap>>(heapname, heap));
 }
 
-void RenderPrimitiveManager::InsertPipelineToLib(std::string name, std::shared_ptr<RHIResource_Pipeline>pipeline)
+void RenderPrimitiveManager::InsertPipelineToLib(std::string name, std::shared_ptr<Primitive_Pipeline>pipeline)
 {
-	mPipelineLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Pipeline>>(name, pipeline));
+	mPipelineLib.insert(std::pair<std::string, std::shared_ptr<Primitive_Pipeline>>(name, pipeline));
 }
 
-void RenderPrimitiveManager::InsertShaderToLib(std::string name, std::shared_ptr<RHIResource_Shader> shader)
+void RenderPrimitiveManager::InsertShaderToLib(std::string name, std::shared_ptr<Primitive_Shader> shader)
 {
-	mShaderLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_Shader>>(name, shader));
+	mShaderLib.insert(std::pair<std::string, std::shared_ptr<Primitive_Shader>>(name, shader));
 }
 
-void RenderPrimitiveManager::InsertRenderTargetToLib(std::string name, std::shared_ptr<RHIResource_RenderTarget>RenderTarget)
+void RenderPrimitiveManager::InsertRenderTargetToLib(std::string name, std::shared_ptr<Primitive_RenderTarget>RenderTarget)
 {
-	mRenderTargetLib.insert(std::pair<std::string, std::shared_ptr<RHIResource_RenderTarget>>(name, RenderTarget));
+	mRenderTargetLib.insert(std::pair<std::string, std::shared_ptr<Primitive_RenderTarget>>(name, RenderTarget));
 }

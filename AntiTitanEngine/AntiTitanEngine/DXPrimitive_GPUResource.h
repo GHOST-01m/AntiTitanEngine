@@ -1,9 +1,9 @@
 #pragma once
-#include "RHIResource_GPUResource.h"
-class DXRHIResource_GPUResource :public RHIResource_GPUResource
+#include "Primitive_GPUResource.h"
+class DXPrimitive_GPUResource :public Primitive_GPUResource
 {
 public:
-	~DXRHIResource_GPUResource();
+	~DXPrimitive_GPUResource();
 
 public:
 	std::string mResourceName;

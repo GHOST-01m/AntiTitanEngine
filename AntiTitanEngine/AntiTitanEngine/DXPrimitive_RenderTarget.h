@@ -1,19 +1,18 @@
 #pragma once
-#include "RHIResource_RenderTarget.h"
-#include "DXRHIResource_GPUResource.h"
+#include "Primitive_RenderTarget.h"
+#include "DXPrimitive_GPUResource.h"
 
-class DXRHIResource_RenderTarget :
-    public RHIResource_RenderTarget
+class DXPrimitive_RenderTarget :
+    public Primitive_RenderTarget
 {
 public:
-	~DXRHIResource_RenderTarget();
+	~DXPrimitive_RenderTarget();
 
 private:
 	int mCurrBackBufferIndex = 0;//当前这一帧的交换链Index,用于索引当前mSwapChainBuffer数组取值
 	static const int SwapChainBufferCount = 2;//交换链数量
 
 public:
-
 	void SetCurrBackBufferIndex(int Index);
 	int  GetCurrBackBufferIndex();
 	int  GetSwapChainBufferCount();
@@ -23,11 +22,11 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferCpuHandle()const;//	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 public:
-	std::shared_ptr<RHIResource_GPUResource> GetGpuResource() override;
+	std::shared_ptr<Primitive_GPUResource> GetGpuResource() override;
 
 public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
-	std::shared_ptr<RHIResource_GPUResource> mGPUResource;
+	std::shared_ptr<Primitive_GPUResource> mGPUResource;
 
 public:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuSrvHandle;
