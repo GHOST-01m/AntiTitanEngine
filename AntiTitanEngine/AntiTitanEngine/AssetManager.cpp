@@ -19,7 +19,7 @@ MapActorsInfo* AssetManager::GetMapActorInfo()
 {
 	return &mMapActor;
 }
-
+//
 std::map<int, std::string>* AssetManager::GetMapofGeosMesh()
 {
 	return &MapofGeosMesh;

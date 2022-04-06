@@ -9,7 +9,6 @@ public:
 	int GetTextureNum();
 
 public:
-
 	std::shared_ptr<Texture> GetTexture();
 	void LoadTexture();
 

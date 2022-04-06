@@ -138,7 +138,8 @@ float4 PS(VertexOut pin) : SV_Target
 
 	// Just pass vertex color into the pixel shader.
 	float shadowFactor = CalcShadowFactor(pin.ShadowPosH);
-	float4 FinalColor =  (shadowFactor + 0.1) * (pin.Color);
+	float4 FinalColor = (shadowFactor + 0.1) * (diffuseAlbedo);
+	//float4 FinalColor =  (shadowFactor + 0.1) * (pin.Color);
 	//pow(FinalColor, 1 / 2.2f)
 	return pow(FinalColor, 1 / 2.2f);
 	//return FinalColor;

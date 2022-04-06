@@ -171,9 +171,6 @@
     <ClInclude Include="MyStruct.h">
       <Filter>Header Files\Other</Filter>
     </ClInclude>
-    <ClInclude Include="MaterialSystem.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="Common\DDSTextureLoader.h">
       <Filter>Header Files\D3D</Filter>
     </ClInclude>
@@ -240,6 +237,12 @@
     <ClInclude Include="DXPrimitive_Pipeline.h">
       <Filter>Header Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
     </ClInclude>
+    <ClInclude Include="MaterialSystem.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="FMaterial.h">
+      <Filter>Header Files\Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -291,9 +294,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="MaterialSystem.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Common\DDSTextureLoader.cpp">
@@ -355,6 +355,12 @@
     </ClCompile>
     <ClCompile Include="DXPrimitive_Pipeline.cpp">
       <Filter>Source Files\Render\RenderPrimitiveManager\DXRHIResource</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialSystem.cpp">
+      <Filter>Source Files\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="FMaterial.cpp">
+      <Filter>Source Files\Asset</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -89,11 +89,12 @@ public:
 		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
 		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
 		std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) override;
+		std::shared_ptr<Primitive_Texture>CreateTexture(std::string, std::wstring Path, int currentHeapOffset) override;
 
 
 		void ResetCommandList() override;
 		//这个LoadTexture应该Load成一个Render的资源
-		void LoadDDSTextureToResource(std::wstring Path, int TextureIndex)override; //LoadTexture
+		void LoadDDSTextureToResource(std::wstring Path, std::shared_ptr<Primitive_Texture>texture)override; //LoadTexture
 
 		//这里BuildHeap还要重新做一下
 		void BuildDescriptorHeaps() override;

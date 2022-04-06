@@ -1,6 +1,8 @@
 #pragma once
 #include "Primitive_MeshBuffer.h"
 #include "MyStruct.h"
+#include "FMaterial.h"
+
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
@@ -19,14 +21,16 @@ public:
 
 class StaticMesh 
 {
-
 public:
 	StaticMeshInfo MeshInfo;
 	std::shared_ptr<Primitive_MeshBuffer> meshBuffer;
+	std::shared_ptr<FMaterial> material;
 
 public:
 	void LoadStaticMeshFromBat(const std::string& filepath);
 	void SetMeshBuffer(std::shared_ptr<Primitive_MeshBuffer>);
+
+public:
 
 public:
 	std::string GetMeshName();

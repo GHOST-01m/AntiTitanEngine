@@ -13,9 +13,9 @@ class RenderPrimitiveManager
 {
 public:
 	//std::vector<std::shared_ptr<Primitive_MeshBuffer>> MeshBuffers;
-	std::map<int,std::string> MeshMap;
+	//std::map<int,std::string> MeshMap;
 
-	std::map<std::string, std::shared_ptr<Primitive_Texture>>         mTextureLib;
+	//std::map<std::string, std::shared_ptr<Primitive_Texture>>         mTextureLib;
 	std::map<std::string, std::shared_ptr<Primitive_Heap>>            mHeapsLib;
 	std::map<std::string, std::shared_ptr<Primitive_Shader>>          mShaderLib;
 	std::map<std::string, std::shared_ptr<Primitive_Pipeline>>        mPipelineLib;
@@ -24,13 +24,13 @@ public:
 public:
 	//int GetMeshKeyByName(std::string name);
 	std::shared_ptr<Primitive_Heap>           GetHeapByName(std::string name);
-	std::shared_ptr<Primitive_Texture>        GetTextureByName(std::string name);
+	//std::shared_ptr<Primitive_Texture>        GetTextureByName(std::string name);
 	std::shared_ptr<Primitive_Pipeline>       GetPipelineByName(std::string name);
 	std::shared_ptr<Primitive_Shader>         GetShaderByName(std::string name);
 	std::shared_ptr<Primitive_RenderTarget>   GetRenderTargetByName(std::string name);
 
 
-	void InsertTextureToLib(std::string name, std::shared_ptr<Primitive_Texture>texture);
+	//void InsertTextureToLib(std::string name, std::shared_ptr<Primitive_Texture>texture);
 	void InsertHeapToLib(std::string, std::shared_ptr<Primitive_Heap>);
 	void InsertPipelineToLib(std::string, std::shared_ptr<Primitive_Pipeline>);
 	void InsertShaderToLib(std::string, std::shared_ptr<Primitive_Shader>);

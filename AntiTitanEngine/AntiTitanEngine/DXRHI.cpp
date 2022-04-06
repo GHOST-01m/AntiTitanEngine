@@ -282,7 +282,7 @@ void DXRHI::CreateSwapChain() {
 //	Engine::Get()->GetAssetManager()->mLight->InitProj();
 //}
 
-void DXRHI::LoadDDSTextureToResource(std::wstring Path, int TextureIndex)
+void DXRHI::LoadDDSTextureToResource(std::wstring Path,std::shared_ptr<Primitive_Texture>texture)
 {
 	Engine::Get()->GetMaterialSystem()->mTexture = std::make_shared<Texture>();
 	Engine::Get()->GetMaterialSystem()->mTexture->Name = "TestTexture";
@@ -708,6 +708,42 @@ std::shared_ptr<Primitive_MeshBuffer> DXRHI::CreateMeshBuffer(std::shared_ptr<St
 	return MeshBuffer;
 }
 
+std::shared_ptr<Primitive_Texture> DXRHI::CreateTexture(std::string name, std::wstring Path,int currentHeapOffset)
+{
+	std::shared_ptr<Primitive_Texture> mTexture = std::make_shared<DXPrimitive_Texture>();
+
+	auto texture = std::dynamic_pointer_cast<DXPrimitive_Texture>(mTexture);
+	texture->Name = name;//"TestTexture";
+	texture->Filename = Path;
+	texture->heapOffset = currentHeapOffset;
+
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(),
+		texture->Filename.c_str(),
+		texture->Resource,
+		texture->UploadHeap));
+
+	//=======================================================
+	//Heap偏移根据上面给的来偏移
+	//现在写的不确定有没有偏对
+	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+	auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	UINT ShaderResourceSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	heapCPUHandle.Offset(currentHeapOffset, ShaderResourceSize);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = texture->Resource->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = texture->Resource->GetDesc().MipLevels;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	md3dDevice->CreateShaderResourceView(texture->Resource.Get(), &srvDesc, heapCPUHandle);
+	//=======================================================
+	return texture;
+}
+
 void DXRHI::ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource, int AfterStateType)
 {
 	auto dxGpuResource = std::dynamic_pointer_cast<DXPrimitive_GPUResource>(myResource);
@@ -1086,14 +1122,6 @@ void DXRHI::ClearRenderTargetView(std::shared_ptr<Primitive_RenderTarget>renderT
 
 void DXRHI::ClearDepthStencilView(std::shared_ptr<Primitive_RenderTarget> renderTarget)
 {
-	//auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	//auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-	//auto mDsvHeaphandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//auto mshaodwDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"));
-	//auto mshadowDsvHeaphandle = mshaodwDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-	//
-	//mCommandList->ClearDepthStencilView(mDsvHeaphandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	mCommandList->ClearDepthStencilView(
 		std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(renderTarget)->mhCpuDsvHandle,
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
@@ -1101,14 +1129,6 @@ void DXRHI::ClearDepthStencilView(std::shared_ptr<Primitive_RenderTarget> render
 
 void DXRHI::OMSetRenderTargets(std::shared_ptr<Primitive_RenderTarget>renderTarget)
 {
-	//auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	//auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-	//auto mDsvHeapHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
-	//int mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	//auto mCurrentBackBuffer=std::dynamic_pointer_cast<DXRHIResource_RenderTarget>( mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"))->CurrentBackBufferCpuHandle(mRtvHeap, mRtvDescriptorSize);
-	//
-	//mCommandList->OMSetRenderTargets(1, &mCurrentBackBuffer, true, &mDsvHeapHandle);
 
 	auto dxRenderTarget = std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(renderTarget);
 	if (dxRenderTarget->rtvHeapName != ""){
@@ -1145,7 +1165,6 @@ void DXRHI::CommitShaderParameters()
 
 	auto dxshadowRT=std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
 	mCommandList->SetGraphicsRootDescriptorTable(4, dxshadowRT->mhGpuSrvHandle);
-
 	//-------------------------------------------------------------------------------
 }
 
@@ -1154,12 +1173,7 @@ void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-	//DrawMeshName.erase(DrawMeshName.size() - 1, 1);
-	//auto testGeoIndex = mRenderPrimitiveManager->GetMeshKeyByName(DrawMeshName);
-	//auto mVBIB = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->MeshBuffers[testGeoIndex]);
-	
-	//mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
-	//mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
+
 	auto mesh=Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
 	mCommandList->IASetVertexBuffers(0, 1, &std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetVertexBufferView());
 	mCommandList->IASetIndexBuffer(&std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetIndexBufferView());
@@ -1170,18 +1184,29 @@ void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 	heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
+
+	//贴图的View在哪设置的，重新设置。从Mesh里拿Material里的Texture。Texture已经在Renderer::LoadMeshAndSetBuffer()下面创建好
+	//=============================================
 	//贴图的Size要记得改下面的Offset
+	//auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	//GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size() + TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	//mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
+
+	////单独的Nromal图
+	//auto TextureHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	//mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
+	
 	auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size()+ TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	GPUHandle.Offset(mesh->material->GetTextureByName("TestTexture")->heapOffset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
 
 	//单独的Nromal图
 	auto TextureHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	TextureHandle.Offset(mesh->material->GetTextureByName("NormalTexture")->heapOffset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
-	//mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
-	mCommandList->DrawIndexedInstanced(mesh->MeshInfo.MeshIndexInfo.size(), 1, 0, 0, 0);
+	mCommandList->DrawIndexedInstanced(UINT(mesh->MeshInfo.MeshIndexInfo.size()), 1, 0, 0, 0);
 
 }
 
@@ -1448,38 +1473,38 @@ void DXRHI::BuildDescriptorHeaps()
 		md3dDevice->CreateConstantBufferView(&cbvDesc, heapCPUHandle);
 	}
 
-	for (int srvIndex = 0; srvIndex < Engine::Get()->GetMaterialSystem()->GetTextureNum(); srvIndex++)
-	{
-		auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-		auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	//for (int srvIndex = 0; srvIndex < Engine::Get()->GetMaterialSystem()->GetTextureNum(); srvIndex++)
+	//{
+	//	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+	//	auto heapCPUHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-		UINT HandleOffsetNum = srvIndex + Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size();//因为是在偏移了上面的CBV地址之后再做的偏移，所以这里要加上之前CBV已经偏移过的数量
-		heapCPUHandle.Offset(HandleOffsetNum, ShaderResourceSize);
+	//	UINT HandleOffsetNum = srvIndex + Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size();//因为是在偏移了上面的CBV地址之后再做的偏移，所以这里要加上之前CBV已经偏移过的数量
+	//	heapCPUHandle.Offset(HandleOffsetNum, ShaderResourceSize);
 
-		auto testTextureResource = Engine::Get()->GetMaterialSystem()->GetTexture()->Resource;
+	//	auto testTextureResource = Engine::Get()->GetMaterialSystem()->GetTexture()->Resource;
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Format = testTextureResource->GetDesc().Format;
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.MipLevels = testTextureResource->GetDesc().MipLevels;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-		md3dDevice->CreateShaderResourceView(testTextureResource.Get(), &srvDesc, heapCPUHandle);
+	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//	srvDesc.Format = testTextureResource->GetDesc().Format;
+	//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	//	srvDesc.Texture2D.MostDetailedMip = 0;
+	//	srvDesc.Texture2D.MipLevels = testTextureResource->GetDesc().MipLevels;
+	//	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+	//	md3dDevice->CreateShaderResourceView(testTextureResource.Get(), &srvDesc, heapCPUHandle);
 
-		auto TextureHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-		auto testNromalTexture = Engine::Get()->GetMaterialSystem()->mTextureNormal->Resource;
-		TextureHandle.Offset(1000, ShaderResourceSize);
+	//	auto TextureHandle = CD3DX12_CPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+	//	auto testNromalTexture = Engine::Get()->GetMaterialSystem()->mTextureNormal->Resource;
+	//	TextureHandle.Offset(1000, ShaderResourceSize);
 
-		D3D12_SHADER_RESOURCE_VIEW_DESC srv2Desc = {};
-		srv2Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srv2Desc.Format = testNromalTexture->GetDesc().Format;
-		srv2Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srv2Desc.Texture2D.MostDetailedMip = 0;
-		srv2Desc.Texture2D.MipLevels = testNromalTexture->GetDesc().MipLevels;
-		srv2Desc.Texture2D.ResourceMinLODClamp = 0.0f;
-		md3dDevice->CreateShaderResourceView(testNromalTexture.Get(), &srv2Desc, TextureHandle);
-	}
+	//	D3D12_SHADER_RESOURCE_VIEW_DESC srv2Desc = {};
+	//	srv2Desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//	srv2Desc.Format = testNromalTexture->GetDesc().Format;
+	//	srv2Desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	//	srv2Desc.Texture2D.MostDetailedMip = 0;
+	//	srv2Desc.Texture2D.MipLevels = testNromalTexture->GetDesc().MipLevels;
+	//	srv2Desc.Texture2D.ResourceMinLODClamp = 0.0f;
+	//	md3dDevice->CreateShaderResourceView(testNromalTexture.Get(), &srv2Desc, TextureHandle);
+	//}
 }
 
 void DXRHI::BuildRootSignature()
@@ -1554,35 +1579,6 @@ void DXRHI::BuildShadersAndInputLayout()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 44, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 }
-
-//ID3D12Resource* DXRHI::CurrentBackBuffer() const
-//{
-//	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
-//	auto mSwapChainBuffer = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->mSwapChainBuffer;
-//	auto mCurrBackBufferIndex = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetCurrBackBufferIndex();
-//
-//	return mSwapChainBuffer[mCurrBackBufferIndex].Get();
-//}
-//
-//D3D12_CPU_DESCRIPTOR_HANDLE DXRHI::CurrentBackBufferView() const
-//{
-//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-//	auto mRtvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mRtvHeap"));
-//	auto mRendertarget = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager()->mRenderTarget;
-//	auto mCurrBackBufferIndex = std::dynamic_pointer_cast<DXRHIResource_RenderTarget>(mRendertarget)->GetCurrBackBufferIndex();
-//
-//	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-//		mRtvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
-//		mCurrBackBufferIndex,
-//		mRtvDescriptorSize);
-//}
-
-//D3D12_CPU_DESCRIPTOR_HANDLE DXRHI::DepthStencilView()
-//{
-//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-//	auto mDsvHeap = std::dynamic_pointer_cast<DXRHIResource_Heap>(mRenderPrimitiveManager->GetHeapByName("mDsvHeap"));
-//	return mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-//}
 
 void DXRHI::OnMouseDown(WPARAM btnState, int x, int y)
 {

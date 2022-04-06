@@ -30,14 +30,11 @@ bool Renderer::Init()
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
 	mRHI->ResetCommandList();
-	mRHI->LoadDDSTextureToResource(TextureLoadPath,0);
 	mRHI->BuildDescriptorHeaps();
 	mRHI->BuildRootSignature();
 	CreateShader();
 	CreatePipeline();
 	LoadMeshAndSetBuffer();
-	//mRHI->LoadMeshAndSetBuffer();
-	//mRHI->CreateMeshBuffers();
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
 	return true;
@@ -121,7 +118,7 @@ void Renderer::LoadMeshAndSetBuffer()
 	std::string StaticMeshPath;
 	std::set<std::string> StaticMeshs;//用于去重
 	Engine::Get()->GetAssetManager()->GetGeometryLibrary()->resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
-	int MeshNum = 0;
+
 	//循环加入MeshGeometry
 	for (int i = 0; i < Engine::Get()->GetAssetManager()->Geos.size(); i++)
 	{
@@ -140,17 +137,20 @@ void Renderer::LoadMeshAndSetBuffer()
 		StaticMeshPath.erase(StaticMeshPath.length() - 1);
 		StaticMeshPath += ".bat";
 		mesh->LoadStaticMeshFromBat(StaticMeshPath);
-
-		//mRenderPrimitiveManager->MeshBuffers.push_back(mRHI->CreateMeshBuffer(mesh));
+		
 		mesh->SetMeshBuffer(mRHI->CreateMeshBuffer(mesh));
 
+		//Mesh添加Texture
+		mesh->material = std::make_shared<FMaterial>();
+		auto texture = mRHI->CreateTexture("TestTexture", TextureLoadPath,2000);
+		mesh->material->InsertTextureToTexLib("TestTexture", texture);
+
+		auto Normaltexture = mRHI->CreateTexture("NormalTexture", NormalLoadPath, 2001);
+		mesh->material->InsertTextureToTexLib("NormalTexture", Normaltexture);
+
+		//mRHI->LoadDDSTextureToResource(TextureLoadPath, texture);
+
 		Engine::Get()->GetAssetManager()->InsertStaticMeshToLib(mesh->GetMeshName(), mesh);
-
-		std::string MeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
-		MeshName.erase(MeshName.length() - 1);
-
-		mRenderPrimitiveManager->MeshMap.insert(std::make_pair(MeshNum, MeshName));
-		MeshNum++;
 	}
 }
 

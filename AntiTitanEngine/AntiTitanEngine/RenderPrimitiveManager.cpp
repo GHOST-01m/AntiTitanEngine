@@ -24,10 +24,10 @@ std::shared_ptr<Primitive_Heap> RenderPrimitiveManager::GetHeapByName(std::strin
 	return mHeapsLib.at(name);
 }
 
-std::shared_ptr<Primitive_Texture> RenderPrimitiveManager::GetTextureByName(std::string name)
-{
-	return mTextureLib.at(name);
-}
+//std::shared_ptr<Primitive_Texture> RenderPrimitiveManager::GetTextureByName(std::string name)
+//{
+//	return mTextureLib.at(name);
+//}
 
 std::shared_ptr<Primitive_Pipeline> RenderPrimitiveManager::GetPipelineByName(std::string name)
 {
@@ -45,10 +45,10 @@ std::shared_ptr<Primitive_RenderTarget> RenderPrimitiveManager::GetRenderTargetB
 	return mRenderTargetLib.at(name);
 }
 
-void RenderPrimitiveManager::InsertTextureToLib(std::string name , std::shared_ptr<Primitive_Texture>texture)
-{
-	mTextureLib.insert(std::pair<std::string, std::shared_ptr<Primitive_Texture>>(name, texture));
-}
+//void RenderPrimitiveManager::InsertTextureToLib(std::string name , std::shared_ptr<Primitive_Texture>texture)
+//{
+//	mTextureLib.insert(std::pair<std::string, std::shared_ptr<Primitive_Texture>>(name, texture));
+//}
 
 void RenderPrimitiveManager::InsertHeapToLib(std::string heapname, std::shared_ptr<Primitive_Heap> heap)
 {

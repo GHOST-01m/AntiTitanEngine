@@ -11,14 +11,14 @@ public:
 		virtual void OpenDebugLayer()=0;
 		virtual std::shared_ptr<Primitive_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors,int HeapType, int Flag) = 0;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		virtual void ResetCommandList() = 0;
-		virtual void LoadDDSTextureToResource(std::wstring Path,int TextureIndex) = 0;
+		virtual void LoadDDSTextureToResource(std::wstring Path, std::shared_ptr<Primitive_Texture>texture) = 0;
 		virtual void BuildDescriptorHeaps() = 0;
 		virtual void BuildRootSignature() = 0;
 		virtual std::shared_ptr<Primitive_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) = 0;//InputLayout暂时写死了
 		virtual std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>,int NumRenderTargets,int RenderTargetType,bool isShadowPipeline) = 0;//暂定type0是basepipeline用的，1是shadow用的
 		virtual std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int initialResourceType,int initialResourceStateType,std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap,int SwapChainCount,float Width,float Height)=0;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
 		virtual std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) = 0;
-
+		virtual std::shared_ptr<Primitive_Texture>CreateTexture(std::string,std::wstring Path, int currentHeapOffset) = 0;
 
 		virtual void ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource, int AfterStateType) = 0;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
 		//virtual void BuildShadow() = 0;
