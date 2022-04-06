@@ -1,20 +1,25 @@
 #pragma once
-#include "ActorsInfo.h"
+#include "MapActorsInfo.h"
 #include "map"
 #include "vector"
 #include "FLight.h"
 class AssetManager
 {
 public:
+	std::map<std::string,std::shared_ptr<StaticMesh>> StaticMeshLib;
+	std::shared_ptr<StaticMesh>   GetStaticMeshByName(std::string name);
+	void InsertStaticMeshToLib(std::string name, std::shared_ptr<StaticMesh> staticMesh);
+
+public:
 	std::vector<std::unique_ptr<MeshGeometry>>* GetGeometryLibrary();
-	ActorsInfo* GetMapActorInfo();
+	MapActorsInfo* GetMapActorInfo();
 	std::map<int, std::string>* GetMapofGeosMesh();
 	int GetGeoKeyByName(std::string name);
 
 	std::vector<std::unique_ptr<MeshGeometry>> Geos;
 
 public:
-	ActorsInfo mMapActor;
+	MapActorsInfo mMapActor;
 	std::shared_ptr<FLight> mLight;
 	std::map<int, std::string> MapofGeosMesh;//通过Mesh名字找到Geos数组里对应的MeshGeometry
 

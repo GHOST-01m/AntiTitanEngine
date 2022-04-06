@@ -1,47 +1,8 @@
 #pragma once
-
+#include "Primitive_MeshBuffer.h"
+#include "MyStruct.h"
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
-using namespace DirectX::PackedVector;
-
-
-struct FVector
-{
-	float X;
-	float Y;
-	float Z;
-
-	operator XMFLOAT3() const {
-		return { X,Y,Z };
-	}
-
-	//operator glm::vec3() const {
-	//	return { X,Y,Z };
-	//}
-};
-
-
-struct FVector2D
-{
-	float X;
-	float Y;
-};
-
-struct FVector4
-{
-	float X;
-	float Y;
-	float Z;
-	float W;
-
-	operator XMFLOAT4() const {
-		return { X,Y,Z,W };
-	}
-
-	//operator glm::vec4() const {
-	//	return { X,Y,Z,W };
-	//}
-};
 
 struct StaticMeshInfo
 {
@@ -58,13 +19,15 @@ public:
 
 class StaticMesh 
 {
-//New
+
 public:
 	StaticMeshInfo MeshInfo;
+	std::shared_ptr<Primitive_MeshBuffer> meshBuffer;
 
 public:
 	void LoadStaticMeshFromBat(const std::string& filepath);
+	void SetMeshBuffer(std::shared_ptr<Primitive_MeshBuffer>);
 
 public:
-	std::string getMeshName();
+	std::string GetMeshName();
 };

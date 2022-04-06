@@ -25,13 +25,18 @@ void StaticMesh::LoadStaticMeshFromBat(const std::string& StaticMeshPath) {
 	MeshInfo.MeshVertexNormalInfo.resize(DataLength);
 	BatFile.read((char*)MeshInfo.MeshVertexNormalInfo.data(), sizeof(FVector4) * DataLength);//MeshNormal
 
-	BatFile.read((char*)&DataLength, sizeof(int32_t));//MeshTexCoord长度
+	BatFile.read((char*)&DataLength, sizeof(int32_t));//MeshTexCoord长度(UV)
 	MeshInfo.MeshTexCoord.resize(DataLength);
 	BatFile.read((char*)MeshInfo.MeshTexCoord.data(), sizeof(FVector2D) * DataLength);//MeshTexCoord
 
 	BatFile.close();
 }
 
-std::string StaticMesh::getMeshName() {
+void StaticMesh::SetMeshBuffer(std::shared_ptr<Primitive_MeshBuffer> buffer)
+{
+	meshBuffer = buffer;
+}
+
+std::string StaticMesh::GetMeshName() {
 	return MeshInfo.MeshName;
 }

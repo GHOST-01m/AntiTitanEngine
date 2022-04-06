@@ -60,7 +60,7 @@
 #include "StaticMesh.h"
 #include "Camera.h"
 #include "MeshGeometry.h"
-#include "ActorsInfo.h"
+#include "MapActorsInfo.h"
 #include "AssetManager.h"
 #include "Renderer.h"
 #include "Engine.h"

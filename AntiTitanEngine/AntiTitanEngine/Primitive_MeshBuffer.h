@@ -1,4 +1,6 @@
 #pragma once
+#include "MyStruct.h"
+
 class Primitive_MeshBuffer {
 public:
 	virtual ~Primitive_MeshBuffer();

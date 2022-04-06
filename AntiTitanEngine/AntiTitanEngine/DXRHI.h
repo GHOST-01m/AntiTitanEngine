@@ -88,6 +88,8 @@ public:
 		std::shared_ptr<Primitive_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
 		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
 		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+		std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) override;
+
 
 		void ResetCommandList() override;
 		//这个LoadTexture应该Load成一个Render的资源
@@ -98,8 +100,8 @@ public:
 		void BuildRootSignature() override;
 		void ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource, int AfterStateType) override;//0COMMON;1DEPTH_WRITE;2RENDER_TARGET;3PRESENT;4GENERIC_READ;
 
-		void LoadMeshAndSetBuffer()override;
-		void CreateMeshBuffer()override;
+		//void LoadMeshAndSetBuffer()override;
+		//void CreateMeshBuffers()override;
 		void ExecuteCommandList()override;
 		void WaitCommandComplete()override;
 

@@ -12,6 +12,9 @@ public:
 	std::vector<int32_t> indices;
 
 public:
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
+
 	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
 

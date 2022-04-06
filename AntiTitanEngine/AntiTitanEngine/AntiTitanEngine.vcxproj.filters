@@ -147,7 +147,7 @@
     <ClInclude Include="AssetManager.h">
       <Filter>Header Files\Asset</Filter>
     </ClInclude>
-    <ClInclude Include="ActorsInfo.h">
+    <ClInclude Include="MapActorsInfo.h">
       <Filter>Header Files\Asset</Filter>
     </ClInclude>
     <ClInclude Include="StaticMesh.h">
@@ -272,7 +272,7 @@
     <ClCompile Include="Win32Window.cpp">
       <Filter>Source Files\Window\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="ActorsInfo.cpp">
+    <ClCompile Include="MapActorsInfo.cpp">
       <Filter>Source Files\Asset</Filter>
     </ClCompile>
     <ClCompile Include="AssetManager.cpp">

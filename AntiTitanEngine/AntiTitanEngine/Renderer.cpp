@@ -19,7 +19,7 @@ bool Renderer::Init()
 	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
 	mRenderPrimitiveManager = std::make_shared<RenderPrimitiveManager>();
 	mCamera = std::make_shared<Camera>();
-	mCamera->SetLens(0.25f * MathHelper::Pi, static_cast<float>(mClientWidth) / mClientHeight, 1.0f, 100000.0f);//这个应该放到GameLogic里
+	mCamera->SetLens(0.25f * MathHelper::Pi, static_cast<float>(mClientWidth) / mClientHeight, 1.0f, 100000.0f);
 	
 	mRHI = std::make_shared<DXRHI>();
 	mRHI->OpenDebugLayer();
@@ -35,8 +35,9 @@ bool Renderer::Init()
 	mRHI->BuildRootSignature();
 	CreateShader();
 	CreatePipeline();
-	mRHI->LoadMeshAndSetBuffer();
-	mRHI->CreateMeshBuffer();
+	LoadMeshAndSetBuffer();
+	//mRHI->LoadMeshAndSetBuffer();
+	//mRHI->CreateMeshBuffers();
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
 	return true;
@@ -115,6 +116,44 @@ void Renderer::CreateRenderTarget()
 	mRenderPrimitiveManager->InsertRenderTargetToLib("shadowRenderTarget", shadowRenderTarget);
 }
 
+void Renderer::LoadMeshAndSetBuffer()
+{
+	std::string StaticMeshPath;
+	std::set<std::string> StaticMeshs;//用于去重
+	Engine::Get()->GetAssetManager()->GetGeometryLibrary()->resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
+	int MeshNum = 0;
+	//循环加入MeshGeometry
+	for (int i = 0; i < Engine::Get()->GetAssetManager()->Geos.size(); i++)
+	{
+		std::shared_ptr<StaticMesh> mesh = std::make_shared<StaticMesh>();
+
+		//相同的StaticMesh不用重复建立
+		auto check = StaticMeshs.find(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
+		if (check == StaticMeshs.end()) {
+			StaticMeshs.insert(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
+			Engine::Get()->GetAssetManager()->GetMapofGeosMesh()->insert(std::pair<int, std::string>(i, Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]));
+		}
+		else { continue; }
+
+		//读取mesh信息
+		StaticMeshPath = "SplitMesh/" + Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
+		StaticMeshPath.erase(StaticMeshPath.length() - 1);
+		StaticMeshPath += ".bat";
+		mesh->LoadStaticMeshFromBat(StaticMeshPath);
+
+		//mRenderPrimitiveManager->MeshBuffers.push_back(mRHI->CreateMeshBuffer(mesh));
+		mesh->SetMeshBuffer(mRHI->CreateMeshBuffer(mesh));
+
+		Engine::Get()->GetAssetManager()->InsertStaticMeshToLib(mesh->GetMeshName(), mesh);
+
+		std::string MeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
+		MeshName.erase(MeshName.length() - 1);
+
+		mRenderPrimitiveManager->MeshMap.insert(std::make_pair(MeshNum, MeshName));
+		MeshNum++;
+	}
+}
+
 void Renderer::Update()
 {
 	//mRHI->Update();
@@ -129,10 +168,21 @@ void Renderer::Update()
 	mRHI->CalculateFrameStats();
 }
 
+void Renderer::Draw()
+{
+	mRHI->DrawReset();
+
+	ShadowPass();
+	DrawScenePass();
+
+	mRHI->DrawFinal();
+}
+
+
 void Renderer::UpdateMesh(int i, ObjectConstants& objConstants)
 {
-//UPDate Actor--------------------------------------------------------------------------------
-//auto world = MathHelper::Identity4x4();
+	//UPDate Actor--------------------------------------------------------------------------------
+	//auto world = MathHelper::Identity4x4();
 	auto location = XMMatrixTranslation(
 		Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.x,
 		Engine::Get()->GetAssetManager()->GetMapActorInfo()->ActorsTransformArray[i].translation.y,
@@ -248,15 +298,6 @@ void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
 	XMStoreFloat4x4(&objConstants.gLightMVPT, XMMatrixTranspose(LightworldViewProjT));
 }
 
-void Renderer::Draw()
-{
-	mRHI->DrawReset();
-
-	ShadowPass();
-	DrawScenePass();
-
-	mRHI->DrawFinal();
-}
 
 void Renderer::ShadowPass()
 {
@@ -276,7 +317,6 @@ void Renderer::ShadowPass()
 		mRHI->DrawMesh(ActorIndex, 0);
 		mRHI->CommitShaderParameters();//这个提交shader参数没有做完
 	}
-
 }
 
 void Renderer::DrawScenePass()

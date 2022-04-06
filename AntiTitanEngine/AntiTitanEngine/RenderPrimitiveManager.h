@@ -12,7 +12,7 @@
 class RenderPrimitiveManager
 {
 public:
-	std::vector<std::shared_ptr<Primitive_MeshBuffer>> VBIBBuffers;
+	//std::vector<std::shared_ptr<Primitive_MeshBuffer>> MeshBuffers;
 	std::map<int,std::string> MeshMap;
 
 	std::map<std::string, std::shared_ptr<Primitive_Texture>>         mTextureLib;
@@ -20,13 +20,9 @@ public:
 	std::map<std::string, std::shared_ptr<Primitive_Shader>>          mShaderLib;
 	std::map<std::string, std::shared_ptr<Primitive_Pipeline>>        mPipelineLib;
 	std::map<std::string, std::shared_ptr<Primitive_RenderTarget>>    mRenderTargetLib;
-	
-	//std::shared_ptr<RHIResource_Shader> mShader;
-	//std::shared_ptr<RHIResource_ShadowMap> mShadowMap;
-	//std::shared_ptr<RHIResource_RenderTarget> mRenderTarget;
 
 public:
-	int GetMeshKeyByName(std::string name);
+	//int GetMeshKeyByName(std::string name);
 	std::shared_ptr<Primitive_Heap>           GetHeapByName(std::string name);
 	std::shared_ptr<Primitive_Texture>        GetTextureByName(std::string name);
 	std::shared_ptr<Primitive_Pipeline>       GetPipelineByName(std::string name);

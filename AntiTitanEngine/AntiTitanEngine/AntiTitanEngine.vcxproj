@@ -144,7 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ActorsInfo.h" />
+    <ClInclude Include="MapActorsInfo.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Common\DDSTextureLoader.h" />
@@ -188,7 +188,7 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ActorsInfo.cpp" />
+    <ClCompile Include="MapActorsInfo.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Common\DDSTextureLoader.cpp" />

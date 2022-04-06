@@ -1,5 +1,7 @@
 #pragma once
-#include "stdafx.h"
+#include "DirectXMath.h"
+#include "glm/glm/gtx/quaternion.hpp"
+#include "glm/glm/gtc/type_ptr.hpp"
 
 struct Float3 
 {
@@ -86,11 +88,42 @@ struct Quat
 	float W;
 };
 
+//===============================================
+struct FVector
+{
+	float X;
+	float Y;
+	float Z;
+
+	operator DirectX::XMFLOAT3() const {
+		return { X,Y,Z };
+	}
+};
+
+
+struct FVector2D
+{
+	float X;
+	float Y;
+};
+
+struct FVector4
+{
+	float X;
+	float Y;
+	float Z;
+	float W;
+
+	operator DirectX::XMFLOAT4() const {
+		return { X,Y,Z,W };
+	}
+};
+//===========================================
 struct Vertex
 {
-	XMFLOAT3 Pos;
-	XMFLOAT4 Color;
-	XMFLOAT4 Normal;
+	DirectX::XMFLOAT3 Pos;
+	DirectX::XMFLOAT4 Color;
+	DirectX::XMFLOAT4 Normal;
 	FVector2D TexCoord;
 
 	Vertex SetValueFromFVector(FVector& a) {
@@ -103,14 +136,14 @@ struct Vertex
 
 struct ObjectConstants
 {
-	XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
+	DirectX::XMFLOAT4X4 WorldViewProj = MathHelper::Identity4x4();
 	glm::mat4  WorldViewProjMat4 = glm::identity<glm::mat4>();
-	XMFLOAT4X4 rotation;
-	XMFLOAT4X4 gWorld = MathHelper::Identity4x4();            //转置（世界矩阵）
-	XMFLOAT4X4 gLightVP = MathHelper::Identity4x4();          //转置            (光的V矩阵 * 光的P矩阵)
-	XMFLOAT4X4 gShadowTransform = MathHelper::Identity4x4();  //转置            (光的V矩阵 * 光的P矩阵 * T矩阵）
-	XMFLOAT4X4 gLightMVP= MathHelper::Identity4x4();          //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵)
-	XMFLOAT4X4 gLightMVPT = MathHelper::Identity4x4();        //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵 * T矩阵）
+	DirectX::XMFLOAT4X4 rotation;
+	DirectX::XMFLOAT4X4 gWorld = MathHelper::Identity4x4();            //转置（世界矩阵）
+	DirectX::XMFLOAT4X4 gLightVP = MathHelper::Identity4x4();          //转置            (光的V矩阵 * 光的P矩阵)
+	DirectX::XMFLOAT4X4 gShadowTransform = MathHelper::Identity4x4();  //转置            (光的V矩阵 * 光的P矩阵 * T矩阵）
+	DirectX::XMFLOAT4X4 gLightMVP= MathHelper::Identity4x4();          //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵)
+	DirectX::XMFLOAT4X4 gLightMVPT = MathHelper::Identity4x4();        //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵 * T矩阵）
 
 	//glm::mat4 rotation;
 	//int CanMove;

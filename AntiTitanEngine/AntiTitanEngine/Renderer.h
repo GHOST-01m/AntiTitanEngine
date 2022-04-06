@@ -26,6 +26,7 @@ public:
 		void CreateShader();
 		void CreatePipeline();
 		void CreateRenderTarget();
+		void LoadMeshAndSetBuffer();
 	void Update();
 		void UpdateMesh(int index, ObjectConstants& objConstants);
 		void UpdateShadow(int index, ObjectConstants& objConstants);

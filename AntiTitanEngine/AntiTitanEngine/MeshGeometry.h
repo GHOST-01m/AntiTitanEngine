@@ -10,11 +10,11 @@ public:
 		Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
 		Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
 
-		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
-		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
-
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
+		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
 
 		// Data about the buffers.
 		UINT VertexByteStride = 0;

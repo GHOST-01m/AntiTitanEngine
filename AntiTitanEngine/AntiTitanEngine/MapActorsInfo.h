@@ -3,7 +3,7 @@
 #include "vector"
 #include "MyStruct.h"
 
-class ActorsInfo
+class MapActorsInfo
 {
 public:
 	std::vector<std::string> ActorNameArray;

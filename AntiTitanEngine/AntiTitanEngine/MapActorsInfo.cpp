@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include "ActorsInfo.h"
+#include "MapActorsInfo.h"
 
-void ActorsInfo::SetSceneActorsInfoFromBat(const std::string& StaticMeshPath) {
+void MapActorsInfo::SetSceneActorsInfoFromBat(const std::string& StaticMeshPath) {
 
 	//std::string test = "E:/DX12Homework/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/MapActorInfo/MapActorInfo.bat";
 	std::string test = "MapActorInfo/MapActorInfo.bat";

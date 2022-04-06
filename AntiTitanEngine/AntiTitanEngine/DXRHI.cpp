@@ -197,7 +197,6 @@ std::shared_ptr<Primitive_Heap> DXRHI::CreateDescriptorHeap(std::string heapName
 	break;
 	}
 
-
 	D3D12_DESCRIPTOR_HEAP_DESC HeapDesc;
 	HeapDesc.NumDescriptors = NumDescriptors;
 	HeapDesc.Type = heapType;
@@ -390,110 +389,99 @@ std::shared_ptr<Primitive_Shader> DXRHI::CreateShader(std::string ShaderName, st
 
 	return dxshader;
 }
-
-void DXRHI::LoadMeshAndSetBuffer()
-{
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-
-	std::string StaticMeshPath;
-	std::set<std::string> StaticMeshs;//用于去重
-	StaticMesh mesh;
-	Engine::Get()->GetAssetManager()->GetGeometryLibrary()->resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
-	Vertex vertice;
-	//mRHIResourceManager->VBIBBuffers.resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
-	int MeshNum=0;
-	//循环加入MeshGeometry
-	for (int i = 0; i < Engine::Get()->GetAssetManager()->Geos.size(); i++)
-	{
-		std::vector<Vertex> vertices;
-		//相同的StaticMesh不用重复建立
-		auto check = StaticMeshs.find(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
-		if (check == StaticMeshs.end()) {
-			StaticMeshs.insert(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
-			Engine::Get()->GetAssetManager()->GetMapofGeosMesh()->insert(std::pair<int, std::string>(i, Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]));
-		}
-		else { continue; }
-
-		//读取mesh信息
-		StaticMeshPath = "SplitMesh/" + Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
-		StaticMeshPath.erase(StaticMeshPath.length() - 1);
-		StaticMeshPath += ".bat";
-		mesh.LoadStaticMeshFromBat(StaticMeshPath);
-
-		if (mesh.MeshInfo.MeshVertexInfo.size() < 3) { continue; }//没有StaticMesh就不读取
-		//--------------------------------------------------------------------------------
-
-		for (int j = 0; j < mesh.MeshInfo.MeshVertexInfo.size(); j++)
-		{
-			vertice.Pos = mesh.MeshInfo.MeshVertexInfo[j];
-			vertice.Color = {
-				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
-				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
-				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
-				1 };//初始化赋值为黑白色
-			vertice.Normal = mesh.MeshInfo.MeshVertexNormalInfo[j];
-			vertice.TexCoord = mesh.MeshInfo.MeshTexCoord[j];
-
-			vertices.push_back(vertice);
-		}
-		std::shared_ptr<DXPrimitive_MeshBuffer> buffer=std::make_shared<DXPrimitive_MeshBuffer>();
-		buffer->indices = mesh.MeshInfo.MeshIndexInfo;
-		buffer->vertices = vertices;
-		buffer->MeshName = mesh.getMeshName();
-
-		//mRHIResourceManager->VBIBBuffers[MeshNum] = std::make_shared<DXRHIRessource_VBIBBuffer>();
-		
-		mRenderPrimitiveManager->VBIBBuffers.push_back(buffer);
-		std::string MeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
-		MeshName.erase(MeshName.length() - 1);
-
-		mRenderPrimitiveManager->MeshMap.insert(std::make_pair(MeshNum,MeshName));
-		MeshNum++;
-	}
-}
-
-void DXRHI::CreateMeshBuffer() {
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-
-	for (int i = 0; i < mRenderPrimitiveManager->VBIBBuffers.size(); i++)
-	{
-		mRenderPrimitiveManager->VBIBBuffers;
-		mRenderPrimitiveManager->MeshMap;
-		auto test2Buffer =mRenderPrimitiveManager->VBIBBuffers;
-		auto testBuffer = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(test2Buffer[i]);
-		auto VIBuffer = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->VBIBBuffers[i]);
-		UINT vbByteSize;
-		UINT ibByteSize;
-		vbByteSize = (UINT)VIBuffer->vertices.size() * sizeof(Vertex);
-		ibByteSize = (UINT)VIBuffer->indices.size() * sizeof(std::uint32_t);
-
-		Engine::Get()->GetAssetManager()->Geos[i] = std::make_unique<MeshGeometry>();
-		Engine::Get()->GetAssetManager()->Geos[i]->Name = VIBuffer->MeshName;
-
-		ThrowIfFailed(D3DCreateBlob(vbByteSize, &Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferCPU));
-		CopyMemory(Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferCPU->GetBufferPointer(), VIBuffer->vertices.data(), vbByteSize);
-
-		ThrowIfFailed(D3DCreateBlob(ibByteSize, &Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferCPU));
-		CopyMemory(Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferCPU->GetBufferPointer(), VIBuffer->indices.data(), ibByteSize);
-
-		VIBuffer->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),mCommandList.Get(), VIBuffer->vertices.data(), vbByteSize, Engine::Get()->GetAssetManager()->Geos[i]->VertexBufferUploader);
-
-		VIBuffer->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),mCommandList.Get(), VIBuffer->indices.data(), ibByteSize, Engine::Get()->GetAssetManager()->Geos[i]->IndexBufferUploader);
-
-		VIBuffer->VertexByteStride=sizeof(Vertex);
-		VIBuffer->VertexBufferByteSize = vbByteSize;
-		VIBuffer->IndexFormat=DXGI_FORMAT_R32_UINT;
-		VIBuffer->IndexBufferByteSize = ibByteSize;
-
-		SubmeshGeometry submesh;
-		submesh.IndexCount = (UINT)VIBuffer->indices.size();
-		submesh.StartIndexLocation = 0;
-		submesh.BaseVertexLocation = 0;
-		
-		VIBuffer->DrawArgs[VIBuffer->MeshName] = submesh;
-		//Engine::Get()->GetAssetManager()->Geos[i]->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]] = submesh;
-	}
-}
+//
+//void DXRHI::LoadMeshAndSetBuffer()
+//{
+//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+//
+//	std::string StaticMeshPath;
+//	std::set<std::string> StaticMeshs;//用于去重
+//	StaticMesh mesh;
+//	Engine::Get()->GetAssetManager()->GetGeometryLibrary()->resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
+//	Vertex vertice;
+//	//mRHIResourceManager->VBIBBuffers.resize(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size());
+//	int MeshNum=0;
+//	//循环加入MeshGeometry
+//	for (int i = 0; i < Engine::Get()->GetAssetManager()->Geos.size(); i++)
+//	{
+//		std::vector<Vertex> vertices;
+//		//相同的StaticMesh不用重复建立
+//		auto check = StaticMeshs.find(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
+//		if (check == StaticMeshs.end()) {
+//			StaticMeshs.insert(Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]);
+//			Engine::Get()->GetAssetManager()->GetMapofGeosMesh()->insert(std::pair<int, std::string>(i, Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i]));
+//		}
+//		else { continue; }
+//
+//		//读取mesh信息
+//		StaticMeshPath = "SplitMesh/" + Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
+//		StaticMeshPath.erase(StaticMeshPath.length() - 1);
+//		StaticMeshPath += ".bat";
+//		mesh.LoadStaticMeshFromBat(StaticMeshPath);
+//
+//		if (mesh.MeshInfo.MeshVertexInfo.size() < 3) { continue; }//没有StaticMesh就不读取
+//		//--------------------------------------------------------------------------------
+//
+//		for (int j = 0; j < mesh.MeshInfo.MeshVertexInfo.size(); j++)
+//		{
+//			vertice.Pos = mesh.MeshInfo.MeshVertexInfo[j];
+//			vertice.Color = {
+//				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+//				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+//				float(j) / mesh.MeshInfo.MeshVertexInfo.size(),
+//				1 };//初始化赋值为黑白色
+//			vertice.Normal = mesh.MeshInfo.MeshVertexNormalInfo[j];
+//			vertice.TexCoord = mesh.MeshInfo.MeshTexCoord[j];
+//
+//			vertices.push_back(vertice);
+//		}
+//		std::shared_ptr<DXPrimitive_MeshBuffer> buffer=std::make_shared<DXPrimitive_MeshBuffer>();
+//		buffer->indices = mesh.MeshInfo.MeshIndexInfo;
+//		buffer->vertices = vertices;
+//		buffer->MeshName = mesh.getMeshName();
+//
+//		//mRHIResourceManager->VBIBBuffers[MeshNum] = std::make_shared<DXRHIRessource_VBIBBuffer>();
+//		
+//		mRenderPrimitiveManager->VBIBBuffers.push_back(buffer);
+//		std::string MeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
+//		MeshName.erase(MeshName.length() - 1);
+//
+//		mRenderPrimitiveManager->MeshMap.insert(std::make_pair(MeshNum,MeshName));
+//		MeshNum++;
+//	}
+//}
+//
+//void DXRHI::CreateMeshBuffers() {
+//	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
+//
+//	for (int i = 0; i < mRenderPrimitiveManager->VBIBBuffers.size(); i++)
+//	{
+//		mRenderPrimitiveManager->VBIBBuffers;
+//		mRenderPrimitiveManager->MeshMap;
+//
+//		auto VIBuffer = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->VBIBBuffers[i]);
+//
+//		UINT vbByteSize;
+//		UINT ibByteSize;
+//		vbByteSize = (UINT)VIBuffer->vertices.size() * sizeof(Vertex);
+//		ibByteSize = (UINT)VIBuffer->indices.size() * sizeof(std::uint32_t);
+//
+//		VIBuffer->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), VIBuffer->vertices.data(), vbByteSize, VIBuffer->VertexBufferUploader);
+//		VIBuffer->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), VIBuffer->indices.data(), ibByteSize, VIBuffer->IndexBufferUploader);
+//
+//		VIBuffer->VertexByteStride=sizeof(Vertex);
+//		VIBuffer->VertexBufferByteSize = vbByteSize;
+//		VIBuffer->IndexFormat=DXGI_FORMAT_R32_UINT;
+//		VIBuffer->IndexBufferByteSize = ibByteSize;
+//
+//		SubmeshGeometry submesh;
+//		submesh.IndexCount = (UINT)VIBuffer->indices.size();
+//		submesh.StartIndexLocation = 0;
+//		submesh.BaseVertexLocation = 0;
+//		
+//		VIBuffer->DrawArgs[VIBuffer->MeshName] = submesh;
+//	}
+//}
 
 std::shared_ptr<Primitive_Pipeline> DXRHI::CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader> shader, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline)
 {
@@ -671,6 +659,55 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(std::string Re
 	return Rendertarget;
 }
 
+std::shared_ptr<Primitive_MeshBuffer> DXRHI::CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh)
+{
+	std::shared_ptr<Primitive_MeshBuffer> MeshBuffer = std::make_shared<DXPrimitive_MeshBuffer>();
+	auto DXVIBuffer = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(MeshBuffer);
+	std::vector<Vertex> vertices;
+	Vertex vertice;
+
+	for (int meshIndex = 0; meshIndex < mesh->MeshInfo.MeshVertexInfo.size(); meshIndex++)
+	{
+		vertice.Pos = mesh->MeshInfo.MeshVertexInfo[meshIndex];
+		vertice.Color = {
+			float(meshIndex) / mesh->MeshInfo.MeshVertexInfo.size(),
+			float(meshIndex) / mesh->MeshInfo.MeshVertexInfo.size(),
+			float(meshIndex) / mesh->MeshInfo.MeshVertexInfo.size(),
+			1 };//初始化赋值为黑白色
+		vertice.Normal = mesh->MeshInfo.MeshVertexNormalInfo[meshIndex];
+		vertice.TexCoord = mesh->MeshInfo.MeshTexCoord[meshIndex];
+
+		vertices.push_back(vertice);
+	}
+
+	DXVIBuffer->MeshName = mesh->GetMeshName();
+	DXVIBuffer->vertices = vertices;
+	DXVIBuffer->indices = mesh->MeshInfo.MeshIndexInfo;
+
+	//不确定有没有创建好了这个Meshbuffer，创建好之后在Render里把这个Mehsbuffer插进去
+
+	UINT vbByteSize = (UINT)DXVIBuffer->vertices.size() * sizeof(Vertex);
+	UINT ibByteSize = (UINT)DXVIBuffer->indices.size() * sizeof(std::uint32_t);
+
+	DXVIBuffer->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), DXVIBuffer->vertices.data(), vbByteSize, DXVIBuffer->VertexBufferUploader);
+	DXVIBuffer->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), DXVIBuffer->indices.data(), ibByteSize, DXVIBuffer->IndexBufferUploader);
+
+	DXVIBuffer->VertexByteStride = sizeof(Vertex);
+	DXVIBuffer->VertexBufferByteSize = vbByteSize;
+	DXVIBuffer->IndexFormat = DXGI_FORMAT_R32_UINT;
+	DXVIBuffer->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)DXVIBuffer->indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	DXVIBuffer->DrawArgs[DXVIBuffer->MeshName] = submesh;
+
+	//mesh->meshBuffer = MeshBuffer;
+	return MeshBuffer;
+}
+
 void DXRHI::ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource, int AfterStateType)
 {
 	auto dxGpuResource = std::dynamic_pointer_cast<DXPrimitive_GPUResource>(myResource);
@@ -683,9 +720,8 @@ void DXRHI::ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource
 	case 2:afterType = D3D12_RESOURCE_STATE_RENDER_TARGET; break;
 	case 3:afterType = D3D12_RESOURCE_STATE_PRESENT; break;
 	case 4:afterType = D3D12_RESOURCE_STATE_GENERIC_READ; break;
-		//这里还要加两个shadow要用的，这个type的注释记得加到RHI里面
-	assert(0);
-		break;
+
+	assert(0);break;
 	}
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1118,12 +1154,16 @@ void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-	DrawMeshName.erase(DrawMeshName.size() - 1, 1);
-	auto testGeoIndex = mRenderPrimitiveManager->GetMeshKeyByName(DrawMeshName);
-	auto mVBIB = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->VBIBBuffers[testGeoIndex]);
+	//DrawMeshName.erase(DrawMeshName.size() - 1, 1);
+	//auto testGeoIndex = mRenderPrimitiveManager->GetMeshKeyByName(DrawMeshName);
+	//auto mVBIB = std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mRenderPrimitiveManager->MeshBuffers[testGeoIndex]);
 	
-	mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
-	mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
+	//mCommandList->IASetVertexBuffers(0, 1, &mVBIB->GetVertexBufferView());
+	//mCommandList->IASetIndexBuffer(&mVBIB->GetIndexBufferView());
+	auto mesh=Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+	mCommandList->IASetVertexBuffers(0, 1, &std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetVertexBufferView());
+	mCommandList->IASetIndexBuffer(&std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetIndexBufferView());
+
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -1140,7 +1180,9 @@ void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 	TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
-	mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
+	//mCommandList->DrawIndexedInstanced(mVBIB->DrawArgs[Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex]].IndexCount, 1, 0, 0, 0);
+	mCommandList->DrawIndexedInstanced(mesh->MeshInfo.MeshIndexInfo.size(), 1, 0, 0, 0);
+
 }
 
 void DXRHI::DrawFinal()

@@ -1,11 +1,21 @@
 #include "stdafx.h"
 
+std::shared_ptr<StaticMesh> AssetManager::GetStaticMeshByName(std::string name)
+{
+	return StaticMeshLib.at(name);
+}
+
+void AssetManager::InsertStaticMeshToLib(std::string name, std::shared_ptr<StaticMesh> staticMesh)
+{
+	StaticMeshLib.insert(std::pair<std::string, std::shared_ptr<StaticMesh>>(name, staticMesh));
+}
+
 std::vector<std::unique_ptr<MeshGeometry>>* AssetManager::GetGeometryLibrary()
 {
 	return &Geos;
 }
 
-ActorsInfo* AssetManager::GetMapActorInfo()
+MapActorsInfo* AssetManager::GetMapActorInfo()
 {
 	return &mMapActor;
 }
@@ -92,7 +102,7 @@ void AssetManager::LoadAsset(
 		ibByteSize = (UINT)indices.size() * sizeof(std::uint32_t);
 
 		Geos[i] = std::make_unique<MeshGeometry>();
-		Geos[i]->Name = mesh.getMeshName();
+		Geos[i]->Name = mesh.GetMeshName();
 
 		ThrowIfFailed(D3DCreateBlob(vbByteSize, &Geos[i]->VertexBufferCPU));
 		CopyMemory(Geos[i]->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
