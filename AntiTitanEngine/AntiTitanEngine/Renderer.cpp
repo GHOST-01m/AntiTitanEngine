@@ -54,14 +54,11 @@ void Renderer::CreateHeap()
 	mRenderPrimitiveManager->InsertHeapToLib(
 		"mCbvHeap",mRHI->CreateDescriptorHeap("mCbvHeap", 10000, CBVSRVUAV, 1));
 
-	mRenderPrimitiveManager->InsertHeapToLib(
-		"mTextureHeap",mRHI->CreateDescriptorHeap("mTextureHeap", 1, CBVSRVUAV, 0));
-
-	//单独给shadow用的SrvHeap，测试用
+	//单独给shadow用的SrvHeap
 	mRenderPrimitiveManager->InsertHeapToLib(
 		"mShadowSrvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowSrvDescriptorHeap", 10000, CBVSRVUAV, 1));
 
-	//单独给shadow用的SrvHeap，测试用
+	//单独给shadow用的SrvHeap
 	mRenderPrimitiveManager->InsertHeapToLib(
 		"mShadowDsvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowDsvDescriptorHeap", 10000, DSV, 0));
 }
@@ -147,8 +144,6 @@ void Renderer::LoadMeshAndSetBuffer()
 
 		auto Normaltexture = mRHI->CreateTexture("NormalTexture", NormalLoadPath, 2001);
 		mesh->material->InsertTextureToTexLib("NormalTexture", Normaltexture);
-
-		//mRHI->LoadDDSTextureToResource(TextureLoadPath, texture);
 
 		Engine::Get()->GetAssetManager()->InsertStaticMeshToLib(mesh->GetMeshName(), mesh);
 	}
@@ -333,6 +328,7 @@ void Renderer::DrawScenePass()
 	mRHI->OMSetRenderTargets(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
 	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
 	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+	
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
 		mRHI->DrawMesh(ActorIndex, 0);

@@ -23,12 +23,11 @@ public:
 
 public:
 	//int GetMeshKeyByName(std::string name);
-	std::shared_ptr<Primitive_Heap>           GetHeapByName(std::string name);
 	//std::shared_ptr<Primitive_Texture>        GetTextureByName(std::string name);
+	std::shared_ptr<Primitive_Heap>           GetHeapByName(std::string name);
 	std::shared_ptr<Primitive_Pipeline>       GetPipelineByName(std::string name);
 	std::shared_ptr<Primitive_Shader>         GetShaderByName(std::string name);
 	std::shared_ptr<Primitive_RenderTarget>   GetRenderTargetByName(std::string name);
-
 
 	//void InsertTextureToLib(std::string name, std::shared_ptr<Primitive_Texture>texture);
 	void InsertHeapToLib(std::string, std::shared_ptr<Primitive_Heap>);

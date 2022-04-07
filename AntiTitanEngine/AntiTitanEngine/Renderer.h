@@ -27,12 +27,15 @@ public:
 		void CreatePipeline();
 		void CreateRenderTarget();
 		void LoadMeshAndSetBuffer();
+
 	void Update();
 		void UpdateMesh(int index, ObjectConstants& objConstants);
 		void UpdateShadow(int index, ObjectConstants& objConstants);
+
 	void Draw();
 		void ShadowPass();
 		void DrawScenePass();
+
 	void Destroy();
 	
 public:

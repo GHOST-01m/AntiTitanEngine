@@ -1177,26 +1177,13 @@ void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 	auto mesh=Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
 	mCommandList->IASetVertexBuffers(0, 1, &std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetVertexBufferView());
 	mCommandList->IASetIndexBuffer(&std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetIndexBufferView());
-
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 
-
-	//贴图的View在哪设置的，重新设置。从Mesh里拿Material里的Texture。Texture已经在Renderer::LoadMeshAndSetBuffer()下面创建好
-	//=============================================
-	//贴图的Size要记得改下面的Offset
-	//auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	//GPUHandle.Offset(Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size() + TextureIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	//mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
-
-	////单独的Nromal图
-	//auto TextureHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	//TextureHandle.Offset(1000, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	//mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
-	
+	//贴图
 	auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	GPUHandle.Offset(mesh->material->GetTextureByName("TestTexture")->heapOffset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
