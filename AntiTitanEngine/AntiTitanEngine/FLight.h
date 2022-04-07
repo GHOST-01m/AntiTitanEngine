@@ -9,6 +9,8 @@ public:
 	float mLightNearZ = 0.0f;
 	float mLightFarZ = 0.0f;
 
+	DirectX::XMFLOAT4 Strength = { 1.0f,1.0f,1.0f,1.0f };
+
 	DirectX::XMFLOAT3 mRight = { 0.0f, -1.0f, 0.0f };
 	DirectX::XMFLOAT3 mUp = { 0.0f, 0.0f, -1.0f };
 	DirectX::XMFLOAT3 mLook = { -1.0f, 0.0f, 0.0f };

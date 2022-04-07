@@ -16,7 +16,7 @@ public:
 	void SetCurrBackBufferIndex(int Index);
 	int  GetCurrBackBufferIndex();
 	int  GetSwapChainBufferCount();
-	std::string rtvHeapName="";//用于索引自己这个RenderTarget在哪个rtvHeap里,其实还应该有一个偏移记录
+	std::string rtvHeapName="";
 	int mRtvDescriptorSize;
 	ID3D12Resource* CurrentBackBuffer()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferCpuHandle()const;//	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -26,7 +26,8 @@ public:
 
 public:
 	Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
-	std::shared_ptr<Primitive_GPUResource> mGPUResource;
+	//std::vector<std::shared_ptr<Primitive_GPUResource>> mSwapChainResource;
+	std::shared_ptr<Primitive_GPUResource> mGPUResource; 
 
 public:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuSrvHandle;

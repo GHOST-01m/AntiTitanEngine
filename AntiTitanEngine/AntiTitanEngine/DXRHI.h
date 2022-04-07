@@ -91,7 +91,6 @@ public:
 		std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) override;
 		std::shared_ptr<Primitive_Texture>CreateTexture(std::string, std::wstring Path, int currentHeapOffset) override;
 
-
 		void ResetCommandList() override;
 		//这个LoadTexture应该Load成一个Render的资源
 		void LoadDDSTextureToResource(std::wstring Path, std::shared_ptr<Primitive_Texture>texture)override; //LoadTexture

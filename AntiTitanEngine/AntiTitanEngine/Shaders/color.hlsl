@@ -28,8 +28,16 @@ cbuffer cbPerObject : register(b0)
 	float4x4 gShadowTransform;        //转置            (光的V矩阵 * 光的P矩阵 * T矩阵）
 	float4x4 gLightWorldViewProj;     //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵)
 	float4x4 gLightWorldViewProjT;    //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵 * T矩阵）
+	float4 LightDirection;
+	float4 LightStrength;
+	float4 gDiffuseAlbedo;
+	float3 gFresnelR0;
+	float  gRoughness;
+	float3 CameraLocation;
+
 	//float    Time;
 };
+
 
 struct VertexIn
 {
@@ -48,7 +56,6 @@ struct VertexOut
 	float2 TexCoord  : TEXCOORD;
 	float3 NormalW : NORMAL;//Nromal做了M变换
 };
-
 
 float CalcShadowFactor(float4 shadowPosH)//试着加个: SV_Position?
 {
@@ -91,6 +98,54 @@ float CalcShadowFactor(float4 shadowPosH)//试着加个: SV_Position?
 	//return currentDepth > depthInMap ? 0 : 1;
 }
 
+float3 SchlickFresnel(float3 R0, float3 normal, float3 lightVec)
+{
+	float cosIncidentAngle = saturate(dot(normal, lightVec));
+
+	float f0 = 1.0f - cosIncidentAngle;
+	float3 reflectPercent = R0 + (1.0f - R0) * (f0 * f0 * f0 * f0 * f0);
+
+	return reflectPercent;
+}
+
+float3 BlinnPhong(
+	float3 lightStrength,	float3 lightVec,
+	float3 normal,	float3 toEye, 
+	float4 gDiffuseAlbedo,	float3 gFresnelR0,	float gRoughness)
+{
+	const float shininess = 1.0f - gRoughness;
+	const float m = shininess * 256.0f;
+	float3 halfVec = normalize(toEye + lightVec);
+
+	float roughnessFactor = (m + 8.0f) * pow(max(dot(halfVec, normal), 0.0f), m) / 8.0f;
+	float3 fresnelFactor = SchlickFresnel(gFresnelR0, halfVec, lightVec);
+
+	float3 specAlbedo = fresnelFactor * roughnessFactor;
+
+	// Our spec formula goes outside [0,1] range, but we are 
+	// doing LDR rendering.  So scale it down a bit.
+	specAlbedo = specAlbedo / (specAlbedo + 1.0f);
+
+	return (gDiffuseAlbedo.rgb + specAlbedo) * lightStrength;
+}
+
+float3 ComputeDirectionalLight(
+	float3 LightDirection, float3 LightStrength,
+	float4 gDiffuseAlbedo,float3 gFresnelR0,float gRoughness,
+	float3 normal, float3 toEye)
+{
+	// The light vector aims opposite the direction the light rays travel.
+	float3 lightVec = -LightDirection;
+
+	// Scale light down by Lambert's cosine law.
+	float ndotl = max(dot(lightVec, normal), 0.0f);
+	float3 lightStrength = LightStrength * ndotl;
+
+	return BlinnPhong(lightStrength, lightVec, normal, toEye, gDiffuseAlbedo, gFresnelR0, gRoughness);
+}
+
+
+//VS=================================================================================
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
@@ -131,6 +186,7 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
 
+//PS====================================================================================
 float4 PS(VertexOut pin) : SV_Target
 {
 	float4 diffuseAlbedo = gDiffuseMap.Sample(gsamAnisotropicWrap, pin.TexCoord);
@@ -138,12 +194,24 @@ float4 PS(VertexOut pin) : SV_Target
 
 	// Just pass vertex color into the pixel shader.
 	float shadowFactor = CalcShadowFactor(pin.ShadowPosH);
-	float4 FinalColor = (shadowFactor + 0.1) * (diffuseAlbedo);
-	//float4 FinalColor =  (shadowFactor + 0.1) * (pin.Color);
-	//pow(FinalColor, 1 / 2.2f)
+	//float4 FinalColor = (shadowFactor + 0.1) * (diffuseAlbedo);
+	//float4 FinalColor = (shadowFactor + 0.1) * (pin.Color);
+
+	//float4 FinalColor = diffuseAlbedo;
+	float4 FinalColor = (pin.Color);
+
+	//DiffuseAlbedo用原本的颜色
+	float4 directLight = float4(ComputeDirectionalLight(
+		LightDirection, LightStrength,
+		FinalColor, gFresnelR0, gRoughness,
+		//NormalMap, CameraLocation), 1);
+		pin.NormalW, CameraLocation), 1);
+
+
+	float4 DiffuseAlbedo = FinalColor * 0.01;
+	FinalColor = (shadowFactor + 0.1) * (DiffuseAlbedo + directLight);
+	//return FinalColor+directLight;
 	return pow(FinalColor, 1 / 2.2f);
-	//return FinalColor;
-	//return pow(pin.Color, 1 / 2.2f);
 	//return diffuseAlbedo+ NormalMap;
 }
 

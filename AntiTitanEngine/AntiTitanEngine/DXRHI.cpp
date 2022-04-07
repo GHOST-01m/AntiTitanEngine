@@ -1194,7 +1194,6 @@ void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
 	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
 
 	mCommandList->DrawIndexedInstanced(UINT(mesh->MeshInfo.MeshIndexInfo.size()), 1, 0, 0, 0);
-
 }
 
 void DXRHI::DrawFinal()

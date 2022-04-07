@@ -144,7 +144,12 @@ struct ObjectConstants
 	DirectX::XMFLOAT4X4 gShadowTransform = MathHelper::Identity4x4();  //转置            (光的V矩阵 * 光的P矩阵 * T矩阵）
 	DirectX::XMFLOAT4X4 gLightMVP= MathHelper::Identity4x4();          //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵)
 	DirectX::XMFLOAT4X4 gLightMVPT = MathHelper::Identity4x4();        //转置（世界矩阵  * 光的V矩阵 * 光的P矩阵 * T矩阵）
-
+	DirectX::XMFLOAT4 LightDirection;
+	DirectX::XMFLOAT4 LightStrength;
+	DirectX::XMFLOAT4 gDiffuseAlbedo;
+	DirectX::XMFLOAT3 gFresnelR0;
+	float  gRoughness;
+	DirectX::XMFLOAT3 CameraLocation;
 	//glm::mat4 rotation;
 	//int CanMove;
 	//float mTime;

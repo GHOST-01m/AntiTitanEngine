@@ -4,7 +4,7 @@
 bool GameLogic::InitGameLogic()
 {
 	Engine::Get()->GetRenderer()->GetCamera()->SetPosition(300.0f, -3000.0f, 1000.0f);
-	Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed = 2;
+	Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed = 0.5;
 
 	//Engine::Get()->GetAssetManager()->LoadExternalMapActor("MapActorInfo/MapActorInfo.bat");
 	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
@@ -16,7 +16,7 @@ bool GameLogic::InitGameLogic()
 }
 
 void GameLogic::Tick() {
-	Engine::Get()->GetAssetManager()->mLight->Yaw(0.0002f);
+	//Engine::Get()->GetAssetManager()->mLight->Yaw(0.0005f);
 	MoveCamera();
 };
 

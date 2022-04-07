@@ -159,7 +159,6 @@ void Renderer::Update()
 		UpdateShadow(index, objConstants);
 		mRHI->CommitResourceToGPU(index,objConstants);
 	}
-
 	mRHI->CalculateFrameStats();
 }
 
@@ -172,7 +171,6 @@ void Renderer::Draw()
 
 	mRHI->DrawFinal();
 }
-
 
 void Renderer::UpdateMesh(int i, ObjectConstants& objConstants)
 {
@@ -240,6 +238,19 @@ void Renderer::UpdateMesh(int i, ObjectConstants& objConstants)
 	//objConstants.mTime = Engine::Get()->gt.TotalTime();
 	XMStoreFloat4x4(&objConstants.rotation, XMMatrixTranspose(mrotation));
 
+	objConstants.LightDirection.x = Engine::Get()->GetAssetManager()->GetLight()->mLook.x;
+	objConstants.LightDirection.y = Engine::Get()->GetAssetManager()->GetLight()->mLook.y;
+	objConstants.LightDirection.z = Engine::Get()->GetAssetManager()->GetLight()->mLook.z;
+	objConstants.LightDirection.w = 1.0f;
+
+	auto meshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
+	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(meshName);
+
+	objConstants.LightStrength  = Engine::Get()->GetAssetManager()->GetLight()->Strength;
+	objConstants.gDiffuseAlbedo = mesh->material->DiffuseAlbedo;
+	objConstants.gFresnelR0= mesh->material->FresnelR0;
+	objConstants.gRoughness= mesh->material->Roughness;
+	objConstants.CameraLocation = GetCamera()->GetPosition3f();
 }
 
 void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
@@ -292,7 +303,6 @@ void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
 	XMStoreFloat4x4(&objConstants.gLightMVP, XMMatrixTranspose(LightworldViewProj));
 	XMStoreFloat4x4(&objConstants.gLightMVPT, XMMatrixTranspose(LightworldViewProjT));
 }
-
 
 void Renderer::ShadowPass()
 {
