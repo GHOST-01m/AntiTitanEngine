@@ -37,7 +37,14 @@
 		"StaticMeshActor_28",
 		"StaticMeshActor_0",
 		"StaticMeshActor_30",
-		"StaticMeshActor_31"
+		"StaticMeshActor_31",
+		"StaticMeshActor_32",
+		"StaticMeshActor_33",
+		"StaticMeshActor_34",
+		"StaticMeshActor_35",
+		"StaticMeshActor_37",
+		"StaticMeshActor_38",
+		"StaticMeshActor_39"
 	],
 	"meshNameArray": [
 		"Floor_400x400",
@@ -75,6 +82,13 @@
 		"Shape_Cube",
 		"Shape_Cube",
 		"Shape_Cube",
+		"Shape_Cube",
+		"Shape_Cube",
+		"Shape_Cube",
+		"Shape_Sphere",
+		"Shape_Sphere",
+		"Shape_Sphere",
+		"Shape_Sphere",
 		"Shape_Cube",
 		"Shape_Cube",
 		"Shape_Cube"
@@ -877,6 +891,153 @@
 				"y": 5,
 				"z": 1
 			}
+		},
+		{
+			"rotation":
+			{
+				"x": 0,
+				"y": 0,
+				"z": 0,
+				"w": 1
+			},
+			"translation":
+			{
+				"x": 40,
+				"y": 1440,
+				"z": -800
+			},
+			"scale3D":
+			{
+				"x": 5,
+				"y": 5,
+				"z": 5
+			}
+		},
+		{
+			"rotation":
+			{
+				"x": 0,
+				"y": 0,
+				"z": 0,
+				"w": 1
+			},
+			"translation":
+			{
+				"x": 40,
+				"y": 1440,
+				"z": -250
+			},
+			"scale3D":
+			{
+				"x": 4,
+				"y": 4,
+				"z": 4
+			}
+		},
+		{
+			"rotation":
+			{
+				"x": 0,
+				"y": 0,
+				"z": 0,
+				"w": 1
+			},
+			"translation":
+			{
+				"x": 40,
+				"y": 1440,
+				"z": 200
+			},
+			"scale3D":
+			{
+				"x": 2,
+				"y": 2,
+				"z": 2
+			}
+		},
+		{
+			"rotation":
+			{
+				"x": 0,
+				"y": 0,
+				"z": 0,
+				"w": 1
+			},
+			"translation":
+			{
+				"x": 40,
+				"y": -20,
+				"z": 880
+			},
+			"scale3D":
+			{
+				"x": 4,
+				"y": 4,
+				"z": 4
+			}
+		},
+		{
+			"rotation":
+			{
+				"x": 0,
+				"y": 0,
+				"z": 0,
+				"w": 1
+			},
+			"translation":
+			{
+				"x": -2520,
+				"y": -330,
+				"z": -1350
+			},
+			"scale3D":
+			{
+				"x": 1,
+				"y": 43.25,
+				"z": 11
+			}
+		},
+		{
+			"rotation":
+			{
+				"x": 0,
+				"y": -0,
+				"z": 0.70710813999176025,
+				"w": 0.70710539817810059
+			},
+			"translation":
+			{
+				"x": 20,
+				"y": 2320,
+				"z": -1350
+			},
+			"scale3D":
+			{
+				"x": 1,
+				"y": 43.25,
+				"z": 11
+			}
+		},
+		{
+			"rotation":
+			{
+				"x": -0,
+				"y": 0,
+				"z": -0.70710843801498413,
+				"w": 0.70710504055023193
+			},
+			"translation":
+			{
+				"x": 1040,
+				"y": -3010,
+				"z": -1350
+			},
+			"scale3D":
+			{
+				"x": 1,
+				"y": 43.25,
+				"z": 11
+			}
 		}
 	],
 	"actorsQuatArray": [
@@ -1107,6 +1268,48 @@
 			"y": -0.50000089406967163,
 			"z": 0.50000089406967163,
 			"w": 0.49999907612800598
+		},
+		{
+			"x": 0,
+			"y": 0,
+			"z": 0,
+			"w": 1
+		},
+		{
+			"x": 0,
+			"y": 0,
+			"z": 0,
+			"w": 1
+		},
+		{
+			"x": 0,
+			"y": 0,
+			"z": 0,
+			"w": 1
+		},
+		{
+			"x": 0,
+			"y": 0,
+			"z": 0,
+			"w": 1
+		},
+		{
+			"x": 0,
+			"y": 0,
+			"z": 0,
+			"w": 1
+		},
+		{
+			"x": 0,
+			"y": -0,
+			"z": 0.70710813999176025,
+			"w": 0.70710539817810059
+		},
+		{
+			"x": -0,
+			"y": 0,
+			"z": -0.70710843801498413,
+			"w": 0.70710504055023193
 		}
 	]
 }

@@ -149,7 +149,10 @@ struct ObjectConstants
 	DirectX::XMFLOAT4 gDiffuseAlbedo;
 	DirectX::XMFLOAT3 gFresnelR0;
 	float  gRoughness;
+	Location LightLocation;
+	float LightLocationW;
 	DirectX::XMFLOAT3 CameraLocation;
+	float CameraLocationW;
 	//glm::mat4 rotation;
 	//int CanMove;
 	//float mTime;

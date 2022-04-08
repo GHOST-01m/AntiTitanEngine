@@ -33,7 +33,10 @@ cbuffer cbPerObject : register(b0)
 	float4 gDiffuseAlbedo;
 	float3 gFresnelR0;
 	float  gRoughness;
+	float3 LightLocation;
+	float LightLocationW;
 	float3 CameraLocation;
+	float CameraLocationW;
 
 	//float    Time;
 };
@@ -122,8 +125,6 @@ float3 BlinnPhong(
 
 	float3 specAlbedo = fresnelFactor * roughnessFactor;
 
-	// Our spec formula goes outside [0,1] range, but we are 
-	// doing LDR rendering.  So scale it down a bit.
 	specAlbedo = specAlbedo / (specAlbedo + 1.0f);
 
 	return (gDiffuseAlbedo.rgb + specAlbedo) * lightStrength;
@@ -134,11 +135,10 @@ float3 ComputeDirectionalLight(
 	float4 gDiffuseAlbedo,float3 gFresnelR0,float gRoughness,
 	float3 normal, float3 toEye)
 {
-	// The light vector aims opposite the direction the light rays travel.
-	float3 lightVec = -LightDirection;
+	//float3 lightVec = LightLocation;
 
-	// Scale light down by Lambert's cosine law.
-	float ndotl = max(dot(lightVec, normal), 0.0f);
+	float3 lightVec = -LightDirection;
+	float  ndotl = max(dot(lightVec, normal), 0.0f);
 	float3 lightStrength = LightStrength * ndotl;
 
 	return BlinnPhong(lightStrength, lightVec, normal, toEye, gDiffuseAlbedo, gFresnelR0, gRoughness);
@@ -191,28 +191,30 @@ float4 PS(VertexOut pin) : SV_Target
 {
 	float4 diffuseAlbedo = gDiffuseMap.Sample(gsamAnisotropicWrap, pin.TexCoord);
 	float4 NormalMap = gNormalMap.Sample(gsamAnisotropicWrap, pin.TexCoord);
-
+	NormalMap = NormalMap * 2 - 1;
+	//NormalMap.xyz = mul(NormalMap.xyz, Rotator);
 	// Just pass vertex color into the pixel shader.
 	float shadowFactor = CalcShadowFactor(pin.ShadowPosH);
 	//float4 FinalColor = (shadowFactor + 0.1) * (diffuseAlbedo);
 	//float4 FinalColor = (shadowFactor + 0.1) * (pin.Color);
 
-	//float4 FinalColor = diffuseAlbedo;
-	float4 FinalColor = (pin.Color);
+	//float4 FinalColor = diffuseAlbedo;//用贴图作为颜色
+	float4 FinalColor = (pin.Color);//用Normal作为颜色
 
 	//DiffuseAlbedo用原本的颜色
 	float4 directLight = float4(ComputeDirectionalLight(
 		LightDirection, LightStrength,
 		FinalColor, gFresnelR0, gRoughness,
-		//NormalMap, CameraLocation), 1);
-		pin.NormalW, CameraLocation), 1);
+		//normalize(NormalMap), normalize(CameraLocation-pin.PosW)), 1);//用Normal贴图
+		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//用原本导出的Normal
 
 
-	float4 DiffuseAlbedo = FinalColor * 0.01;
-	FinalColor = (shadowFactor + 0.1) * (DiffuseAlbedo + directLight);
+	float4 AmbientAlbedo = FinalColor * 0.02;
+	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * ( directLight);
 	//return FinalColor+directLight;
 	return pow(FinalColor, 1 / 2.2f);
-	//return diffuseAlbedo+ NormalMap;
+	//return FinalColor;
+
 }
 
 

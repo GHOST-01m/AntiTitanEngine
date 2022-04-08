@@ -241,7 +241,7 @@ void Renderer::UpdateMesh(int i, ObjectConstants& objConstants)
 	objConstants.LightDirection.x = Engine::Get()->GetAssetManager()->GetLight()->mLook.x;
 	objConstants.LightDirection.y = Engine::Get()->GetAssetManager()->GetLight()->mLook.y;
 	objConstants.LightDirection.z = Engine::Get()->GetAssetManager()->GetLight()->mLook.z;
-	objConstants.LightDirection.w = 1.0f;
+	objConstants.LightDirection.w = 0.0f;
 
 	auto meshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[i];
 	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(meshName);
@@ -250,7 +250,10 @@ void Renderer::UpdateMesh(int i, ObjectConstants& objConstants)
 	objConstants.gDiffuseAlbedo = mesh->material->DiffuseAlbedo;
 	objConstants.gFresnelR0= mesh->material->FresnelR0;
 	objConstants.gRoughness= mesh->material->Roughness;
+	objConstants.LightLocation = Engine::Get()->GetAssetManager()->GetLight()->mLightInfo.mTransform.translation;
+	objConstants.LightLocationW = 1;
 	objConstants.CameraLocation = GetCamera()->GetPosition3f();
+	objConstants.CameraLocationW = 1;
 }
 
 void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
