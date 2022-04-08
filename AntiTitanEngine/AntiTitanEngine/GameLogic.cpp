@@ -16,7 +16,7 @@ bool GameLogic::InitGameLogic()
 }
 
 void GameLogic::Tick() {
-	//Engine::Get()->GetAssetManager()->mLight->Yaw(0.0005f);
+	Engine::Get()->GetAssetManager()->mLight->Yaw(0.0005f);
 	MoveCamera();
 };
 

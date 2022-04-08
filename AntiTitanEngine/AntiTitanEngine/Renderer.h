@@ -51,10 +51,10 @@ private:
 	static const int SwapChainBufferCount = 2;
 
 	std::string MapActorLoadPath = "MapActorInfo/MapActorInfo.bat";
-	//std::wstring TextureLoadPath = L"Texture/Stone_Texture.dds";
-	//std::wstring NormalLoadPath = L"Texture/Stone_Normal.dds";
-	std::wstring TextureLoadPath = L"Texture/jacket_diff.dds";
-	std::wstring NormalLoadPath = L"Texture/jacket_norm.dds";
+	std::wstring TextureLoadPath = L"Texture/Stone_Texture.dds";
+	std::wstring NormalLoadPath = L"Texture/Stone_Normal.dds";
+	//std::wstring TextureLoadPath = L"Texture/jacket_diff.dds";
+	//std::wstring NormalLoadPath = L"Texture/jacket_norm.dds";
 	//std::wstring TextureLoadPath = L"Texture/Hex_Texture.dds";
 	//std::wstring NormalLoadPath = L"Texture/Hex_Normal.dds";
 
