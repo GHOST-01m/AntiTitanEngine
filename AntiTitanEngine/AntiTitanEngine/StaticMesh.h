@@ -16,6 +16,8 @@ public:
 	std::vector<FVector> MeshVertexInfo;
 	std::vector<int32_t> MeshIndexInfo;
 	std::vector<FVector4> MeshVertexNormalInfo;
+	std::vector<FVector4> MeshVertexTangentInfo;
+	std::vector<FVector4> MeshVertexBitangentInfo;
 	std::vector<FVector2D> MeshTexCoord;
 };
 

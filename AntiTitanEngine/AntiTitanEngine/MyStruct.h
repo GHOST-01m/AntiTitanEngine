@@ -124,6 +124,8 @@ struct Vertex
 	DirectX::XMFLOAT3 Pos;
 	DirectX::XMFLOAT4 Color;
 	DirectX::XMFLOAT4 Normal;
+	DirectX::XMFLOAT4 Tangent;
+	DirectX::XMFLOAT4 Bitangent;
 	FVector2D TexCoord;
 
 	Vertex SetValueFromFVector(FVector& a) {

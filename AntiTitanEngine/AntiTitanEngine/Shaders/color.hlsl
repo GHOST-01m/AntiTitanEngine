@@ -47,6 +47,8 @@ struct VertexIn
 	float3 PosL      : POSITION;
     float4 Color     : COLOR;
 	float4 Normal    : NORMAL;
+	float4 Tangent   : TANGENT;
+	float4 Bitangent  : BITANGENT;
 	float2 TexCoord  : TEXCOORD;
 };
 
@@ -58,6 +60,8 @@ struct VertexOut
 	float3 PosW    : POSITION1;//顶点做了M变换
 	float2 TexCoord  : TEXCOORD;
 	float3 NormalW : NORMAL;//Nromal做了M变换
+	float3 TangentW : TANGENT;//Tangent做了M变换
+	float3 BitangentW : BITANGENT;//Bitangent做了M变换
 };
 
 float CalcShadowFactor(float4 shadowPosH)//试着加个: SV_Position?
@@ -171,8 +175,10 @@ VertexOut VS(VertexIn vin)
 	//ColorChange.z = vin.Normal.z ;
 	//ColorChange.w = vin.Normal.w ;
 
-	//对normal做正确的旋转处理
-	vin.Normal            = mul(vin.Normal, Rotator);
+	//对NTB做正确的旋转处理
+	vin.Normal = mul(vin.Normal, Rotator);
+	vin.Tangent = mul(vin.Tangent, Rotator);
+	vin.Bitangent = mul(vin.Bitangent, Rotator);
 	//vin.Normal = normalize(vin.Normal);
 
 	//vout.Color = (ColorChange * 0.5f + 0.5f);//动颜色
@@ -183,6 +189,9 @@ VertexOut VS(VertexIn vin)
 	vout.PosW             = posw.xyz;
 	vout.ShadowPosH       = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
 	vout.NormalW          = vin.Normal.xyz;
+	vout.TangentW         = vin.Tangent.xyz;
+	vout.BitangentW       = vin.Bitangent.xyz;
+
     return vout;
 }
 
@@ -191,25 +200,34 @@ float4 PS(VertexOut pin) : SV_Target
 {
 	float4 diffuseAlbedo = gDiffuseMap.Sample(gsamAnisotropicWrap, pin.TexCoord);
 	float4 NormalMap = gNormalMap.Sample(gsamAnisotropicWrap, pin.TexCoord);
+
 	NormalMap = NormalMap * 2 - 1;
+	float3x3 worldToTangent = float3x3(pin.TangentW, pin.BitangentW, pin.NormalW);
+
+	NormalMap.xyz = normalize(mul(NormalMap.xyz, worldToTangent));
 	//NormalMap.xyz = mul(NormalMap.xyz, Rotator);
 	// Just pass vertex color into the pixel shader.
 	float shadowFactor = CalcShadowFactor(pin.ShadowPosH);
 	//float4 FinalColor = (shadowFactor + 0.1) * (diffuseAlbedo);
 	//float4 FinalColor = (shadowFactor + 0.1) * (pin.Color);
 
-	//float4 FinalColor = diffuseAlbedo;//用贴图作为颜色
-	float4 FinalColor = (pin.Color);//用Normal作为颜色
+	float3 Fresnel = gFresnelR0;
+	//float3 Fresnel = float3(0.95, 0.93, 0.88);//换着玩的Fresnel
+
+	float4 FinalColor = diffuseAlbedo;//用贴图作为颜色
+	//float4 FinalColor = (pin.Color);//用Normal作为颜色
+	//float4 FinalColor = (float4( 0.98 ,0.97 ,0.95 ,1.0));//换着玩的基础颜色
+
 
 	//DiffuseAlbedo用原本的颜色
 	float4 directLight = float4(ComputeDirectionalLight(
 		LightDirection, LightStrength,
-		FinalColor, gFresnelR0, gRoughness,
-		//normalize(NormalMap), normalize(CameraLocation-pin.PosW)), 1);//用Normal贴图
-		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//用原本导出的Normal
+		FinalColor, Fresnel, gRoughness,
+		NormalMap, normalize(CameraLocation-pin.PosW)), 1);//用Normal贴图
+		//normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//用原本导出的Normal
 
 
-	float4 AmbientAlbedo = FinalColor * 0.02;
+	float4 AmbientAlbedo = FinalColor * 0.03;
 	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * ( directLight);
 	//return FinalColor+directLight;
 	return pow(FinalColor, 1 / 2.2f);
