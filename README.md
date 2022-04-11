@@ -2,7 +2,6 @@
 
 1.wsad移动，QE上下移动，按住鼠标右键旋转视角；
 
-2.WinMain（）在LaunchWindows.cpp里面；
+2.按住空格旋转光；
 
-3.里面遗留了很多原来的旧代码没有删除（带Obsolete的文件夹），但需要的结构基本都分出来了。
-
+3.WinMain（）在LaunchWindows.cpp里面；
