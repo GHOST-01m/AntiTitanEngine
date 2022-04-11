@@ -16,7 +16,7 @@ bool GameLogic::InitGameLogic()
 }
 
 void GameLogic::Tick() {
-	Engine::Get()->GetAssetManager()->mLight->Yaw(0.0005f);
+	//Engine::Get()->GetAssetManager()->mLight->Yaw(0.0005f);
 	MoveCamera();
 };
 
@@ -47,6 +47,15 @@ void GameLogic::MoveCamera()
 		if (GetAsyncKeyState('E') & 0x8000) {
 			Engine::Get()->GetRenderer()->GetCamera()->Fly(Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed * dt);
 		}
+		if (GetAsyncKeyState(0x31) & 0x8000) {
+			Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed += 0.01f;
+		}
+		if (GetAsyncKeyState(0x32) & 0x8000) {
+			Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed -= 0.01f;
+		}
+		if (GetAsyncKeyState(VK_SPACE) & 0x8000) {
+			Engine::Get()->GetAssetManager()->mLight->Yaw(0.002f);
+		}
 		Engine::Get()->GetRenderer()->GetCamera()->UpdateViewMatrix();
-
+		//MOUSEEVENTF_MOVE
 }

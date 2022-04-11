@@ -7,7 +7,7 @@ public:
     ~DXPrimitive_Pipeline();
 
 public:
-    ComPtr<ID3D12PipelineState> GetPipeline();
+    ComPtr<ID3D12PipelineState> GetDXPipeline();
     ComPtr<ID3D12PipelineState> mPipeline;
 };
 

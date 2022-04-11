@@ -42,15 +42,14 @@ public:
 	bool m4xMsaaState = false;
 
 private:
-	ObjectConstants objConstants;
 	Color mClearColor = { 0,0,0,0 };
 
 	int m4xMsaaQuality = 0;
 	float mClientWidth = 1920;
 	float mClientHeight = 1080;
-	static const int SwapChainBufferCount = 2;
 
 	std::string MapActorLoadPath = "MapActorInfo/MapActorInfo.bat";
+
 	std::wstring TextureLoadPath = L"Texture/Stone_Texture.dds";
 	std::wstring NormalLoadPath = L"Texture/Stone_Normal.dds";
 	//std::wstring TextureLoadPath = L"Texture/jacket_diff.dds";

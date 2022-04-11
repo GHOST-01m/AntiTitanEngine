@@ -124,7 +124,7 @@ float3 BlinnPhong(
 	const float m = shininess * 256.0f;
 	float3 halfVec = normalize(toEye + lightVec);
 
-	float roughnessFactor = (m + 8.0f) * pow(max(dot(halfVec, normal), 0.0f), m) / 8.0f;
+	float roughnessFactor = (m + 8.0f) * pow(max(dot(halfVec, normal), 0.00000001f), m) / 8.0f;
 	float3 fresnelFactor = SchlickFresnel(gFresnelR0, halfVec, lightVec);
 
 	float3 specAlbedo = fresnelFactor * roughnessFactor;
@@ -213,22 +213,22 @@ float4 PS(VertexOut pin) : SV_Target
 
 	float3 Fresnel = gFresnelR0;
 	//float3 Fresnel = float3(0.95, 0.93, 0.88);//换着玩的Fresnel
+	//float4 FinalColor = (float4( 0.98 ,0.97 ,0.95 ,1.0));//换着玩的基础颜色
 
 	float4 FinalColor = diffuseAlbedo;//用贴图作为颜色
 	//float4 FinalColor = (pin.Color);//用Normal作为颜色
-	//float4 FinalColor = (float4( 0.98 ,0.97 ,0.95 ,1.0));//换着玩的基础颜色
 
 
 	//DiffuseAlbedo用原本的颜色
 	float4 directLight = float4(ComputeDirectionalLight(
-		LightDirection, LightStrength,
+		LightDirection.xyz, LightStrength.xyz,
 		FinalColor, Fresnel, gRoughness,
-		NormalMap, normalize(CameraLocation-pin.PosW)), 1);//用Normal贴图
+		NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);//用Normal贴图
 		//normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//用原本导出的Normal
 
 
 	float4 AmbientAlbedo = FinalColor * 0.03;
-	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * ( directLight);
+	FinalColor = AmbientAlbedo + (shadowFactor) * (directLight);
 	//return FinalColor+directLight;
 	return pow(FinalColor, 1 / 2.2f);
 	//return FinalColor;

@@ -6,7 +6,7 @@ DXPrimitive_Pipeline::~DXPrimitive_Pipeline()
 
 }
 
-ComPtr<ID3D12PipelineState> DXPrimitive_Pipeline::GetPipeline()
+ComPtr<ID3D12PipelineState> DXPrimitive_Pipeline::GetDXPipeline()
 {
 	return mPipeline;
 }

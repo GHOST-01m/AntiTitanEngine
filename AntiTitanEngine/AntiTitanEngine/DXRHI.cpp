@@ -500,11 +500,14 @@ std::shared_ptr<Primitive_Pipeline> DXRHI::CreatePipeline(std::string pipelineNa
 		reinterpret_cast<BYTE*>(dxShader->mvsByteCode->GetBufferPointer()),
 		dxShader->mvsByteCode->GetBufferSize()
 	};
-	psoDesc.PS =
+	if (NumRenderTargets>0)
 	{
-		reinterpret_cast<BYTE*>(dxShader->mpsByteCode->GetBufferPointer()),
-		dxShader->mpsByteCode->GetBufferSize()
-	};
+		psoDesc.PS =
+		{
+			reinterpret_cast<BYTE*>(dxShader->mpsByteCode->GetBufferPointer()),
+			dxShader->mpsByteCode->GetBufferSize()
+		};
+	}
 
 	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
@@ -1416,6 +1419,8 @@ void DXRHI::CalculateFrameStats()
 		std::wstring mCameraY = std::to_wstring(mCamera->mPosition.y);
 		std::wstring mCameraZ = std::to_wstring(mCamera->mPosition.z);
 		std::wstring totaltime = std::to_wstring(Engine::Get()->gt.TotalTime());
+		std::wstring CameraSpeed = std::to_wstring(Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed);
+
 
 		std::wstring windowText = Engine::Get()->GetWindow()->mMainWndCaption +
 			L"    fps: " + fpsStr +
@@ -1424,7 +1429,8 @@ void DXRHI::CalculateFrameStats()
 			L"   x: " + mCameraX +
 			L"   y: " + mCameraY +
 			L"   z: " + mCameraZ +
-			L"   -TotalTime:" + totaltime
+			L"   -TotalTime:" + totaltime +
+			L"   CameraSpeed: " + CameraSpeed
 			;
 
 		SetWindowText(std::dynamic_pointer_cast<Win32Window>(Engine::Get()->GetWindow())->mhMainWnd, windowText.c_str());

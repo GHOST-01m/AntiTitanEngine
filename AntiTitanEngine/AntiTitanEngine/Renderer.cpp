@@ -323,7 +323,7 @@ void Renderer::ShadowPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
 		mRHI->DrawMesh(ActorIndex, 0);
-		mRHI->CommitShaderParameters();//这个提交shader参数没有做完
+		mRHI->CommitShaderParameters();//这个提交shader函数没有做完
 	}
 }
 
@@ -346,7 +346,6 @@ void Renderer::DrawScenePass()
 	{
 		mRHI->DrawMesh(ActorIndex, 0);
 	}
-
 }
 
 void Renderer::Destroy()
