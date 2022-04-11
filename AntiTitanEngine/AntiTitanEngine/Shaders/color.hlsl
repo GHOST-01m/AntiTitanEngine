@@ -218,7 +218,6 @@ float4 PS(VertexOut pin) : SV_Target
 	float4 FinalColor = diffuseAlbedo;//用贴图作为颜色
 	//float4 FinalColor = (pin.Color);//用Normal作为颜色
 
-
 	//DiffuseAlbedo用原本的颜色
 	float4 directLight = float4(ComputeDirectionalLight(
 		LightDirection.xyz, LightStrength.xyz,
@@ -228,7 +227,7 @@ float4 PS(VertexOut pin) : SV_Target
 
 
 	float4 AmbientAlbedo = FinalColor * 0.03;
-	FinalColor = AmbientAlbedo + (shadowFactor) * (directLight);
+	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * (directLight);
 	//return FinalColor+directLight;
 	return pow(FinalColor, 1 / 2.2f);
 	//return FinalColor;

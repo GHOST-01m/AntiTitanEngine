@@ -155,8 +155,8 @@ void Renderer::Update()
 	for (int index = 0; index < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); index++)
 	{
 		ObjectConstants objConstants;
-		UpdateMesh(index, objConstants);
 		UpdateShadow(index, objConstants);
+		UpdateMesh(index, objConstants);
 		mRHI->CommitResourceToGPU(index,objConstants);
 	}
 	mRHI->CalculateFrameStats();
@@ -166,7 +166,7 @@ void Renderer::Draw()
 {
 	mRHI->DrawReset();
 
-	ShadowPass();
+	DrawShadowPass();
 	DrawScenePass();
 
 	mRHI->DrawFinal();
@@ -307,7 +307,7 @@ void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
 	XMStoreFloat4x4(&objConstants.gLightMVPT, XMMatrixTranspose(LightworldViewProjT));
 }
 
-void Renderer::ShadowPass()
+void Renderer::DrawShadowPass()
 {
 	mRHI->SetScreenSetViewPort(
 		mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget")->width,

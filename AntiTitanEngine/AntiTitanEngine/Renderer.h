@@ -33,7 +33,7 @@ public:
 		void UpdateShadow(int index, ObjectConstants& objConstants);
 
 	void Draw();
-		void ShadowPass();
+		void DrawShadowPass();
 		void DrawScenePass();
 
 	void Destroy();

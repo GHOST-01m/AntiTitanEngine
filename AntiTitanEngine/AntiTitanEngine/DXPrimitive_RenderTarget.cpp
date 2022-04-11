@@ -21,9 +21,14 @@ int DXPrimitive_RenderTarget::GetSwapChainBufferCount()
 }
 
 
-ID3D12Resource* DXPrimitive_RenderTarget::CurrentBackBuffer() const
+//ID3D12Resource* DXPrimitive_RenderTarget::CurrentBackBuffer() const
+//{
+//	return mSwapChainBuffer[mCurrBackBufferIndex].Get();
+//}
+
+std::shared_ptr<Primitive_GPUResource> DXPrimitive_RenderTarget::CurrentSwapChainBuffer() const
 {
-	return mSwapChainBuffer[mCurrBackBufferIndex].Get();
+	return mSwapChainResource[mCurrBackBufferIndex];
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE DXPrimitive_RenderTarget::CurrentBackBufferCpuHandle() const
@@ -36,7 +41,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE DXPrimitive_RenderTarget::CurrentBackBufferCpuHandle
 			mRtvDescriptorSize);
 }
 
-std::shared_ptr<Primitive_GPUResource> DXPrimitive_RenderTarget::GetGpuResource()
+std::shared_ptr<Primitive_GPUResource> DXPrimitive_RenderTarget::GetDSVResource()
 {
-	return mGPUResource;
+	return mDSVResource;
 }

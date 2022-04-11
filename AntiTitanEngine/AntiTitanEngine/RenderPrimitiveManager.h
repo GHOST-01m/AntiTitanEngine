@@ -14,7 +14,6 @@ class RenderPrimitiveManager
 public:
 	//std::vector<std::shared_ptr<Primitive_MeshBuffer>> MeshBuffers;
 	//std::map<int,std::string> MeshMap;
-
 	//std::map<std::string, std::shared_ptr<Primitive_Texture>>         mTextureLib;
 	std::map<std::string, std::shared_ptr<Primitive_Heap>>            mHeapsLib;
 	std::map<std::string, std::shared_ptr<Primitive_Shader>>          mShaderLib;
@@ -34,5 +33,4 @@ public:
 	void InsertPipelineToLib(std::string, std::shared_ptr<Primitive_Pipeline>);
 	void InsertShaderToLib(std::string, std::shared_ptr<Primitive_Shader>);
 	void InsertRenderTargetToLib(std::string, std::shared_ptr<Primitive_RenderTarget>);
-
 };
