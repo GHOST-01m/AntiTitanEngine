@@ -206,8 +206,76 @@ typedef
 enum ResourceStateType
 {
 	STATE_COMMON          = 0,
-	STATE_DEPTH_WRITE = 1,
-	STATE_RENDER_TARGET = 2,
-	STATE_PRESENT = 3,
-	STATE_GENERIC_READ = 4
+	STATE_DEPTH_WRITE     = 1,
+	STATE_RENDER_TARGET   = 2,
+	STATE_PRESENT         = 3,
+	STATE_GENERIC_READ    = 4
+
 }ResourceStateType;
+
+typedef
+enum Pipeline_FillMode
+{
+	FILL_MODE_WIREFRAME = 2,
+	FILL_MODE_SOLID = 3
+
+}Pipeline_FillMode;
+
+typedef
+enum Pipeline_CullMode
+{
+	CULL_MODE_NONE = 1,
+	CULL_MODE_FRONT = 2,
+	CULL_MODE_BACK = 3
+}Pipeline_CullMode;
+
+typedef
+struct Pipeline_Rasterizer_DESC
+{
+	//D3D12_FILL_MODE FillMode;
+	Pipeline_FillMode FillMode;
+	//D3D12_CULL_MODE CullMode;
+	Pipeline_CullMode CullMode;
+	bool FrontCounterClockwise;
+	int DepthBias;
+	float DepthBiasClamp;
+	float SlopeScaledDepthBias;
+	bool DepthClipEnable;
+	bool MultisampleEnable;
+	bool AntialiasedLineEnable;
+	int ForcedSampleCount;
+	int ConservativeRasterizationMode;
+} Pipeline_Rasterizer_DESC;
+
+
+typedef
+enum Pipeline_Blend_DESC
+{
+
+}Pipeline_Blend_DESC;
+
+
+typedef
+enum RenderTargetFormats
+{
+	RenderTargetFormat_R8G8B8A8_UNORM = 0,
+	RenderTargetFormat_UNKNOWN = 1,
+	RenderTargetFormat_R32G32B32A32_FLOAT= 2
+
+}RenderTargetFormats;
+
+typedef
+enum DescriptorHeapFlags
+{
+	NONE = 0,
+	SHADER_VISIBLE = 1
+}DescriptorHeapFlags;
+
+
+typedef
+enum ResourceFormat
+{
+	R8G8B8A8_UNORM = 0,
+	R16G16B16A16_FLOAT = 1,
+	D24_UNORM_S8_UINT=2
+}ResourceFormat;

@@ -43,24 +43,38 @@ bool Renderer::Init()
 void Renderer::CreateHeap()
 {//Heap创建
 
+	//base===============================================================================
+
 	//基础Rtv
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", 2, RTV, 0));
+		"mRtvHeap",mRHI->CreateDescriptorHeap("mRtvHeap", 2, RTV, NONE));
 
 	//基础Dsv
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mDsvHeap",mRHI->CreateDescriptorHeap("mDsvHeap", 100, DSV, 0));
+		"mDsvHeap",mRHI->CreateDescriptorHeap("mDsvHeap", 100, DSV, NONE));
 
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mCbvHeap",mRHI->CreateDescriptorHeap("mCbvHeap", 10000, CBVSRVUAV, 1));
-
-	//单独给shadow用的SrvHeap
-	mRenderPrimitiveManager->InsertHeapToLib(
-		"mShadowSrvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowSrvDescriptorHeap", 10000, CBVSRVUAV, 1));
+		"mCbvHeap",mRHI->CreateDescriptorHeap("mCbvHeap", 10000, CBVSRVUAV, SHADER_VISIBLE));
+	//shadow===============================================================================
 
 	//单独给shadow用的SrvHeap
 	mRenderPrimitiveManager->InsertHeapToLib(
-		"mShadowDsvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowDsvDescriptorHeap", 10000, DSV, 0));
+		"mShadowSrvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowSrvDescriptorHeap", 10000, CBVSRVUAV, SHADER_VISIBLE));
+
+	//单独给shadow用的SrvHeap
+	mRenderPrimitiveManager->InsertHeapToLib(
+		"mShadowDsvDescriptorHeap",mRHI->CreateDescriptorHeap("mShadowDsvDescriptorHeap", 10000, DSV, NONE));
+
+	//bloom===============================================================================
+	//BloomRtvHeap
+	mRenderPrimitiveManager->InsertHeapToLib(
+		"BloomRtvHeap", mRHI->CreateDescriptorHeap("BloomRtvHeap", 2, RTV, NONE));
+	//BloomDsvHeap
+	mRenderPrimitiveManager->InsertHeapToLib(
+		"BloomDsvHeap", mRHI->CreateDescriptorHeap("BloomDsvHeap", 100, DSV, NONE));
+	//BloomSrvHeap
+	mRenderPrimitiveManager->InsertHeapToLib(
+		"BloomSrvHeap", mRHI->CreateDescriptorHeap("BloomSrvHeap", 10000, CBVSRVUAV, SHADER_VISIBLE));
 }
 
 void Renderer::CreateShader()
@@ -70,26 +84,42 @@ void Renderer::CreateShader()
 
 	mRenderPrimitiveManager->InsertShaderToLib("shadow", 
 		mRHI->CreateShader("shadow", L"Shaders\\Shadows.hlsl"));
+
+	mRenderPrimitiveManager->InsertShaderToLib("bloom",
+		mRHI->CreateShader("bloom", L"Shaders\\bloom.hlsl"));
 }
 
 void Renderer::CreatePipeline()
 {
 	//基础管线====================================================================
+	//PipelineState_DESC basePipDesc;
+	//basePipDesc.rasterizeDesc.FrontCounterClockwise = true;
+
 	auto baseShader = mRenderPrimitiveManager->GetShaderByName("color");
 	mRenderPrimitiveManager->InsertPipelineToLib("basePipeline",
-		mRHI->CreatePipeline("basePipeline", baseShader, 1, 0, false));
+		mRHI->CreatePipeline("basePipeline", baseShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
 
 	//阴影管线=====================================================================
+	//PipelineState_DESC shadowPipDesc;
+	//shadowPipDesc.rasterizeDesc.FrontCounterClockwise = true;
+	//shadowPipDesc.rasterizeDesc.DepthBias = 40000;
+	//shadowPipDesc.rasterizeDesc.DepthBiasClamp = 0.0f;
+	//shadowPipDesc.rasterizeDesc.SlopeScaledDepthBias = 1.0f;
 	auto shadowShader = mRenderPrimitiveManager->GetShaderByName("shadow");
 	mRenderPrimitiveManager->InsertPipelineToLib("shadowPipeline",
-		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, 1, true));
+		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, RenderTargetFormat_UNKNOWN, true));
+
+	//Bloom管线===================================================================
+	auto bloomShader = mRenderPrimitiveManager->GetShaderByName("bloom");
+	mRenderPrimitiveManager->InsertPipelineToLib("bloomPipeline",
+		mRHI->CreatePipeline("bloomPipeline", bloomShader, 1, RenderTargetFormat_R32G32B32A32_FLOAT, false));
 }
 
 void Renderer::CreateRenderTarget()
 {
 	//基础RenderTarget=======================================================
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
-		"baseRenderTarget", TEXTURE2D , STATE_DEPTH_WRITE ,
+		"baseRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
 		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
@@ -100,14 +130,27 @@ void Renderer::CreateRenderTarget()
 	
 	//阴影RenderTarget=====================================================
 	auto shadowRenderTarget = mRHI->CreateRenderTarget(
-		"shadowRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE ,
+		"shadowRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE , D24_UNORM_S8_UINT,
 		nullptr,
 		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"),
 		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"),
-		2,
+		0,
 		2048,
 		2048);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("shadowRenderTarget", shadowRenderTarget);
+
+	//BloomRenderTarget=====================================================
+	//auto bloomRenderTarget = mRHI->CreateRenderTarget(
+	//	"bloomRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+	//	mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"),
+	//	mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"),
+	//	mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"),
+	//	1,
+	//	mClientWidth,
+	//	mClientHeight);
+	//mRenderPrimitiveManager->InsertRenderTargetToLib("bloomRenderTarget", shadowRenderTarget);
+	//不确定这个RenderTarget能不能用，刚创建完这个RenderTarget
+	//接下来渲染成一个Srv传到BaseShader里
 }
 
 void Renderer::LoadMeshAndSetBuffer()
@@ -309,14 +352,15 @@ void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
 
 void Renderer::DrawShadowPass()
 {
+	auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget");
 	mRHI->SetScreenSetViewPort(
-		mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget")->width,
-		mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget")->height);
+		Rendertarget->width,
+		Rendertarget->height);
 	mRHI->SetScissorRect(
-		long(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget")->width),
-		long(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget")->height));
-	mRHI->ClearDepthStencilView(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
-	mRHI->OMSetRenderTargets(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
+		long(Rendertarget->width),
+		long(Rendertarget->height));
+	mRHI->ClearDepthStencilView(Rendertarget);
+	mRHI->OMSetRenderTargets(Rendertarget);
 
 	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 	{
@@ -329,16 +373,18 @@ void Renderer::DrawShadowPass()
 
 void Renderer::DrawScenePass()
 {
+	auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
+
 	mRHI->SetScreenSetViewPort(
-		mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget")->width,
-		mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget")->height);
+		Rendertarget->width,
+		Rendertarget->height);
 	mRHI->SetScissorRect(
-		long(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget")->width),
-		long(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget")->height));
+		long(Rendertarget->width),
+		long(Rendertarget->height));
 	mRHI->ResourceBarrier();
-	mRHI->ClearRenderTargetView(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"), mClearColor, 0);
-	mRHI->ClearDepthStencilView(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
-	mRHI->OMSetRenderTargets(mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget"));
+	mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
+	mRHI->ClearDepthStencilView(Rendertarget);
+	mRHI->OMSetRenderTargets(Rendertarget);
 	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
 	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 	

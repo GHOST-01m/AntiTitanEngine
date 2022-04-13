@@ -10,4 +10,3 @@ public:
     ComPtr<ID3D12PipelineState> GetDXPipeline();
     ComPtr<ID3D12PipelineState> mPipeline;
 };
-

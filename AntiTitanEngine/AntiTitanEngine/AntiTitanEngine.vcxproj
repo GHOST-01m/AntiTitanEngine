@@ -162,6 +162,7 @@
     <ClInclude Include="Engine.h" />
     <ClInclude Include="FSingleton.h" />
     <ClInclude Include="FLight.h" />
+    <ClInclude Include="PipelineState_DESC.h" />
     <ClInclude Include="Primitive_Heap.h" />
     <ClInclude Include="Primitive_Pipeline.h" />
     <ClInclude Include="Primitive_RenderTarget.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="FLight.cpp" />
     <ClCompile Include="MaterialSystem.cpp" />
     <ClCompile Include="OpenGLRHI.cpp" />
+    <ClCompile Include="PipelineState_DESC.cpp" />
     <ClCompile Include="RHI.cpp" />
     <ClCompile Include="RenderPrimitiveManager.cpp" />
     <ClCompile Include="Primitive_Heap.cpp" />

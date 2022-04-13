@@ -60,6 +60,8 @@ public:
 
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+
 	//DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	ComPtr<ID3D12RootSignature> mRootSignature = nullptr;
@@ -86,8 +88,8 @@ public:
 		void OpenDebugLayer()override;
 		std::shared_ptr<Primitive_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		std::shared_ptr<Primitive_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
-		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>, int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
-		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>,int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
+		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType, int ResourceFormat, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
 		std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) override;
 		std::shared_ptr<Primitive_Texture>CreateTexture(std::string, std::wstring Path, int currentHeapOffset) override;
 
@@ -107,7 +109,7 @@ public:
 
 	void InitDX_CreateCommandObjects();
 	void CreateSwapChain()override;
-
+	DXGI_FORMAT SwitchFormat(int);
 public:
 	void OnResize();
 		void resetRenderTarget()override;

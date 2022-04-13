@@ -19,16 +19,16 @@ public:
 	std::string rtvHeapName="";
 	int mRtvDescriptorSize;
 	//ID3D12Resource* CurrentBackBuffer()const;
-	std::shared_ptr<Primitive_GPUResource> CurrentSwapChainBuffer()const;
-	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferCpuHandle()const;//	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	std::shared_ptr<Primitive_GPUResource> GetCurrentSwapChainBuffer()const;
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferCpuHandle()const;//	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 public:
-	std::shared_ptr<Primitive_GPUResource> GetDSVResource() override;
+	std::shared_ptr<Primitive_GPUResource> GetCommonResource() override;
 
 public:
 	//Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
 	std::vector<std::shared_ptr<Primitive_GPUResource>> mSwapChainResource;
-	std::shared_ptr<Primitive_GPUResource> mDSVResource; 
+	std::shared_ptr<Primitive_GPUResource> mCommonResource;
 
 public:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuSrvHandle;

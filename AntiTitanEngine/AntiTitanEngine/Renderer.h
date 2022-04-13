@@ -3,6 +3,7 @@
 #include "DXRHI.h"
 #include "RenderPrimitiveManager.h"
 #include "MyStruct.h"
+#include "PipelineState_DESC.h"
 
 class Renderer
 {
