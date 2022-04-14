@@ -260,7 +260,8 @@ enum RenderTargetFormats
 {
 	RenderTargetFormat_R8G8B8A8_UNORM = 0,
 	RenderTargetFormat_UNKNOWN = 1,
-	RenderTargetFormat_R32G32B32A32_FLOAT= 2
+	RenderTargetFormat_R16G16B16A16_FLOAT= 2,
+	RenderTargetFormat_R32G32B32A32_FLOAT= 3
 
 }RenderTargetFormats;
 

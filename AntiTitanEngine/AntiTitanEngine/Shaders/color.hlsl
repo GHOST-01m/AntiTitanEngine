@@ -218,15 +218,15 @@ float4 PS(VertexOut pin) : SV_Target
 	//float3 Fresnel = float3(0.95, 0.93, 0.88);//�������Fresnel
 	//float4 FinalColor = (float4( 0.98 ,0.97 ,0.95 ,1.0));//������Ļ�����ɫ
 
-	float4 FinalColor = diffuseAlbedo;//����ͼ��Ϊ��ɫ
-	//float4 FinalColor = (pin.Color);//��Normal��Ϊ��ɫ
+	//float4 FinalColor = diffuseAlbedo;//����ͼ��Ϊ��ɫ
+	float4 FinalColor = (pin.Color);//��Normal��Ϊ��ɫ
 
 	//DiffuseAlbedo��ԭ������ɫ
 	float4 directLight = float4(ComputeDirectionalLight(
 		LightDirection.xyz, LightStrength.xyz,
 		FinalColor, Fresnel, gRoughness,
-		NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);//��Normal��ͼ
-		//normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//��ԭ��������Normal
+		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);//��Normal��ͼ
+		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//��ԭ��������Normal
 
 
 	float4 AmbientAlbedo = FinalColor * 0.03;

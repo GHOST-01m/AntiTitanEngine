@@ -89,9 +89,9 @@ public:
 		std::shared_ptr<Primitive_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		std::shared_ptr<Primitive_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
 		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>,int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
-		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceType, int initialResourceStateType, int ResourceFormat, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceDimension, int initialResourceStateType, int ResourceFormat, std::shared_ptr<Primitive_Heap>rtvHeap, int rtvOffset, std::shared_ptr<Primitive_Heap>srvHeap, int srvOffset, std::shared_ptr<Primitive_Heap>dsvHeap, int dsvOffset, bool rtvBindToSwapChain, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
 		std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) override;
-		std::shared_ptr<Primitive_Texture>CreateTexture(std::string, std::wstring Path, int currentHeapOffset) override;
+		std::shared_ptr<Primitive_Texture> CreateTexture(std::string, std::wstring Path, int currentHeapOffset) override;
 
 		void ResetCommandList() override;
 		//这个LoadTexture应该Load成一个Render的资源
@@ -109,7 +109,13 @@ public:
 
 	void InitDX_CreateCommandObjects();
 	void CreateSwapChain()override;
-	DXGI_FORMAT SwitchFormat(int);
+
+private:
+	DXGI_FORMAT                 SwitchFormat(int);
+	D3D12_RESOURCE_DIMENSION    SwitchDimension(int);
+	D3D12_RESOURCE_FLAGS        SwitchFlags(int);
+	D3D12_RESOURCE_STATES       SwitchInitialResourceStateType(int);
+	void CreateResource(std::shared_ptr<DXPrimitive_GPUResource>,int ResourceFormat,int resourceDimension,int ResourceTnitStateType,int Width,int Height, bool UseClearColor);
 public:
 	void OnResize();
 		void resetRenderTarget()override;
@@ -126,12 +132,18 @@ public:
 		void ResourceBarrier()override;
 		void ClearRenderTargetView(std::shared_ptr<Primitive_RenderTarget>renderTarget, Color mClearColor, int NumRects) override;
 		void ClearDepthStencilView(std::shared_ptr<Primitive_RenderTarget> renderTarget) override;
+		void ClearRenderTarget(std::shared_ptr<Primitive_RenderTarget>, std::string heapName)override;
 		void CommitShaderParameters()override;
 		void OMSetRenderTargets(std::shared_ptr<Primitive_RenderTarget>renderTarget)override;
 		void SetDescriptorHeap(std::shared_ptr<Primitive_Heap> heap) override;
 		void SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline)override;
 		void DrawMesh(int ActorIndex, int TextureIndex)override;
 		void DrawFinal()override;
+	
+	//Postprocess
+	std::shared_ptr<Primitive_MeshBuffer> CreateTriangleMeshBuffer() override;
+	void BuildCBVHeapForTirangle() override;
+	void BuildTriangleAndDraw(std::shared_ptr<Primitive_MeshBuffer> Triangle) override;
 
 	void FlushCommandQueue();
 	void SetSwapChain();

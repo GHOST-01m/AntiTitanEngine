@@ -5,10 +5,10 @@ class Primitive_RenderTarget
 public:
 	virtual ~Primitive_RenderTarget();
 
-	virtual std::shared_ptr<Primitive_GPUResource> GetCommonResource()=0;
+	virtual std::shared_ptr<Primitive_GPUResource> GetDSVResource() = 0;
+
 public:
 	std::string name;
 	float width;
 	float height;
 };
-

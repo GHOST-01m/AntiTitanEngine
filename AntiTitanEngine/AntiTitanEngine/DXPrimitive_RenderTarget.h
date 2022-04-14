@@ -23,12 +23,13 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentBackBufferCpuHandle()const;//	mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
 public:
-	std::shared_ptr<Primitive_GPUResource> GetCommonResource() override;
+	std::shared_ptr<Primitive_GPUResource> GetDSVResource() override;
+//	std::shared_ptr<Primitive_GPUResource> GetSRVResource() override;
 
 public:
 	//Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
 	std::vector<std::shared_ptr<Primitive_GPUResource>> mSwapChainResource;
-	std::shared_ptr<Primitive_GPUResource> mCommonResource;
+	std::shared_ptr<Primitive_GPUResource> mDSVResource;
 
 public:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuSrvHandle;

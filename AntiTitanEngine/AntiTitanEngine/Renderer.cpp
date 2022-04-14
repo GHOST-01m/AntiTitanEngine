@@ -35,6 +35,11 @@ bool Renderer::Init()
 	CreateShader();
 	CreatePipeline();
 	LoadMeshAndSetBuffer();
+	
+	std::shared_ptr<StaticMesh> triangle = std::make_shared<StaticMesh>();
+	triangle->meshBuffer = mRHI->CreateTriangleMeshBuffer();
+	Engine::Get()->GetAssetManager()->InsertStaticMeshToLib("triangle", triangle);
+
 	mRHI->ExecuteCommandList();
 	mRHI->WaitCommandComplete();
 	return true;
@@ -112,43 +117,48 @@ void Renderer::CreatePipeline()
 	//Bloom管线===================================================================
 	auto bloomShader = mRenderPrimitiveManager->GetShaderByName("bloom");
 	mRenderPrimitiveManager->InsertPipelineToLib("bloomPipeline",
-		mRHI->CreatePipeline("bloomPipeline", bloomShader, 1, RenderTargetFormat_R32G32B32A32_FLOAT, false));
+		mRHI->CreatePipeline("bloomPipeline", bloomShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
 }
 
 void Renderer::CreateRenderTarget()
 {
 	//基础RenderTarget=======================================================
+	{
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
 		"baseRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
-		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
-		nullptr,
-		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
-		2,
-		mClientWidth,
-		mClientHeight);
+		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),0,
+		nullptr,0,
+		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),0,
+		true, 2, mClientWidth,mClientHeight);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("baseRenderTarget", baseRenderTarget);
-	
+	}
 	//阴影RenderTarget=====================================================
+	{
 	auto shadowRenderTarget = mRHI->CreateRenderTarget(
 		"shadowRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE , D24_UNORM_S8_UINT,
-		nullptr,
-		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"),
-		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"),
-		0,
-		2048,
-		2048);
+		nullptr, 0,
+		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"), 0,
+		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"), 0,
+		false, 0, 2048,2048);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("shadowRenderTarget", shadowRenderTarget);
-
+	}
 	//BloomRenderTarget=====================================================
-	//auto bloomRenderTarget = mRHI->CreateRenderTarget(
-	//	"bloomRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+	//auto bloomBaseRenderTarget = mRHI->CreateRenderTarget(
+	//	"bloomBaseRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
 	//	mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"),
 	//	mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"),
 	//	mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"),
-	//	1,
-	//	mClientWidth,
-	//	mClientHeight);
-	//mRenderPrimitiveManager->InsertRenderTargetToLib("bloomRenderTarget", shadowRenderTarget);
+	//	false, 1, mClientWidth, mClientHeight);
+	//mRenderPrimitiveManager->InsertRenderTargetToLib("bloomBaseRenderTarget", bloomBaseRenderTarget);
+
+	auto bloomRenderTarget = mRHI->CreateRenderTarget(
+		"bloomRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+		mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 1,
+		mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 1,
+		mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 1,
+		false,1,mClientWidth,mClientHeight);
+	mRenderPrimitiveManager->InsertRenderTargetToLib("bloomRenderTarget", bloomRenderTarget);
+
 	//不确定这个RenderTarget能不能用，刚创建完这个RenderTarget
 	//接下来渲染成一个Srv传到BaseShader里
 }
@@ -210,7 +220,9 @@ void Renderer::Draw()
 	mRHI->DrawReset();
 
 	DrawShadowPass();
+	DrawBloomPass();
 	DrawScenePass();
+
 
 	mRHI->DrawFinal();
 }
@@ -369,6 +381,27 @@ void Renderer::DrawShadowPass()
 		mRHI->DrawMesh(ActorIndex, 0);
 		mRHI->CommitShaderParameters();//这个提交shader函数没有做完
 	}
+}
+
+void Renderer::DrawBloomPass()
+{
+// 	mRHI->BuildCBVHeapForTirangle();
+	auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomRenderTarget");
+
+	mRHI->SetScreenSetViewPort(
+		Rendertarget->width,
+		Rendertarget->height);
+	mRHI->SetScissorRect(
+		long(Rendertarget->width),
+		long(Rendertarget->height));
+	//mRHI->ClearRenderTarget(Rendertarget, "BloomRtvHeap");
+	mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
+	mRHI->ClearDepthStencilView(Rendertarget);
+	mRHI->OMSetRenderTargets(Rendertarget);
+	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomPipeline"));
+	mRHI->BuildTriangleAndDraw(
+		Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer
+	);
 }
 
 void Renderer::DrawScenePass()
