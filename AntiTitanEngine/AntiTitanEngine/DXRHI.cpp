@@ -1122,7 +1122,7 @@ void DXRHI::DrawFinal()
 	auto CurrentBackBufferResource = std::dynamic_pointer_cast<DXPrimitive_GPUResource>(currentBackBuffer)->mResource;
 
 	auto mCamera = Engine::Get()->GetRenderer()->GetCamera();
-	mCommandList->SetGraphicsRoot32BitConstants(2, 3, &mCamera->GetPosition(), 0);
+	mCommandList->SetGraphicsRoot32BitConstants(2, 4, &mCamera->GetPosition(), 0);
 
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBufferResource.Get(),
 		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
@@ -1211,6 +1211,25 @@ void DXRHI::BuildTriangleAndDraw(std::shared_ptr<Primitive_MeshBuffer> Triangle 
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	mCommandList->DrawIndexedInstanced(3, 1, 0, 0, 0);
+}
+
+void DXRHI::CommitShaderParameter_Table(int rootParameterIndex,std::shared_ptr<Primitive_RenderTarget> rendertarget)
+{
+	auto dxshadowRT = std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(rendertarget);
+	mCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, dxshadowRT->mhGpuSrvHandle);
+}
+
+void DXRHI::CommitShaderParameter_Constant(int rootParameterIndex, int numValue, int4 value)
+{
+	mCommandList->SetGraphicsRoot32BitConstants(rootParameterIndex, numValue, &value, 0);
+}
+
+void DXRHI::CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap)
+{
+	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(heap);
+	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	heapHandle.Offset(offset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
 }
 
 void DXRHI::FlushCommandQueue()
@@ -1357,7 +1376,7 @@ void DXRHI::BuildRootSignature()
 
 	// Root parameter can be a table, root descriptor or root constants.
 
-	CD3DX12_ROOT_PARAMETER slotRootParameter[5];
+	CD3DX12_ROOT_PARAMETER slotRootParameter[6];
 
 	// Create a single descriptor table of CBVs.
 	CD3DX12_DESCRIPTOR_RANGE cbvTable;
@@ -1370,7 +1389,7 @@ void DXRHI::BuildRootSignature()
 	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 	slotRootParameter[1].InitAsDescriptorTable(1, &srvTable);
 
-	slotRootParameter[2].InitAsConstants(3, 1);
+	slotRootParameter[2].InitAsConstants(4, 1);
 
 	srvTable2.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
 	slotRootParameter[3].InitAsDescriptorTable(1, &srvTable2);
@@ -1378,10 +1397,13 @@ void DXRHI::BuildRootSignature()
 	srvTable3.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);
 	slotRootParameter[4].InitAsDescriptorTable(1, &srvTable3);
 
+	slotRootParameter[5].InitAsConstants(4, 2);
+
+
 	auto staticSamplers = GetStaticSamplers();	//获得静态采样器集合
 
 	// A root signature is an array of root parameters.
-	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(5, slotRootParameter,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(6, slotRootParameter,
 		(UINT)staticSamplers.size(), staticSamplers.data(),
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 

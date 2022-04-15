@@ -17,7 +17,7 @@ SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
 
 float4 CameraLoc:register(b1);
-
+int2 RenderTargetSize:register(b2);
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorldViewProj; 

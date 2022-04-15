@@ -10,6 +10,14 @@ struct Float3
 	float z;
 };
 
+struct int4
+{
+	int x;
+	int y;
+	int z;
+	int w;
+};
+
 struct Color
 {
 	float r;
@@ -155,6 +163,7 @@ struct ObjectConstants
 	float LightLocationW;
 	DirectX::XMFLOAT3 CameraLocation;
 	float CameraLocationW;
+	int4 RenderTargetSize;
 	//glm::mat4 rotation;
 	//int CanMove;
 	//float mTime;

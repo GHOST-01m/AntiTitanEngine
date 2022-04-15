@@ -17,7 +17,7 @@ SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
 
 float4 CameraLoc:register(b1);
-
+int2 RenderTargetSize:register(b2);
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorldViewProj; 
@@ -131,7 +131,7 @@ float3 BlinnPhong(
 
 	specAlbedo = specAlbedo / (specAlbedo + 1.0f);
 
-	return (gDiffuseAlbedo.rgb + specAlbedo) * lightStrength;
+	return (gDiffuseAlbedo.rgb + specAlbedo*50) * lightStrength;
 }
 
 float3 ComputeDirectionalLight(
@@ -156,7 +156,29 @@ float Luminance(float3 InColor)
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
+	float QuickSpeed = 15;
+	float MidSpeed   = 10;
+	float SlowSpeed  = 5;
 
+	//float3 PosW;
+	//PosW.x = vin.PosL.x + sin(Time * 1.5)* 75;
+	//PosW.y = vin.PosL.y + sin(Time * MidSpeed);
+	//PosW.z = vin.PosL.z + sin(Time * SlowSpeed);
+
+	//Transform to homogeneous clip space.
+	//vout.PosH = mul(float4(PosW, 1.0f), gWorldViewProj);
+
+	//vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProjMat4);
+
+	//float4 ColorChange;
+	//float frequency=2;
+
+	//ColorChange.x = vin.Normal.x * sin(Time*20)+0.5;
+	//ColorChange.y = vin.Normal.y ;
+	//ColorChange.z = vin.Normal.z ;
+	//ColorChange.w = vin.Normal.w ;
+
+	//��NTB����ȷ����ת����
 	vin.Normal = mul(vin.Normal, Rotator);
 	vin.Tangent = mul(vin.Tangent, Rotator);
 	vin.Bitangent = mul(vin.Bitangent, Rotator);
@@ -165,8 +187,7 @@ VertexOut VS(VertexIn vin)
 	//vout.Color = (ColorChange * 0.5f + 0.5f);//����ɫ
 	vout.Color            = (vin.Normal * 0.5f + 0.5f);
 	vout.TexCoord         = vin.TexCoord;
-	//vout.PosH             = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
-	vout.PosH             = float4(vin.PosL, 1.0f);
+	vout.PosH             = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 	float4 posw = mul(float4(vin.PosL, 1.0f), gWorld);
 	vout.PosW             = posw.xyz;
 	vout.ShadowPosH       = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
@@ -204,7 +225,7 @@ float4 PS(VertexOut pin) : SV_Target
 	float4 directLight = float4(ComputeDirectionalLight(
 		LightDirection.xyz, LightStrength.xyz,
 		FinalColor, Fresnel, gRoughness,
-		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1)*2;//��Normal��ͼ
+		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);//��Normal��ͼ
 		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//��ԭ��������Normal
 
 
