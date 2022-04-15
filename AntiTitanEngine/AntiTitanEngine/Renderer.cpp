@@ -98,6 +98,9 @@ void Renderer::CreateShader()
 
 	mRenderPrimitiveManager->InsertShaderToLib("bloomUp",
 		mRHI->CreateShader("bloomUp", L"Shaders\\bloomUp.hlsl"));
+
+	mRenderPrimitiveManager->InsertShaderToLib("bloomMerge",
+		mRHI->CreateShader("bloomMerge", L"Shaders\\bloomMerge.hlsl"));
 }
 
 void Renderer::CreatePipeline()
@@ -133,6 +136,10 @@ void Renderer::CreatePipeline()
 	mRenderPrimitiveManager->InsertPipelineToLib("bloomUpPipeline",
 		mRHI->CreatePipeline("bloomUpPipeline", bloomUpShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
 
+	auto bloomMergeShader = mRenderPrimitiveManager->GetShaderByName("bloomMerge");
+	mRenderPrimitiveManager->InsertPipelineToLib("bloomMergePipeline",
+		mRHI->CreatePipeline("bloomMergePipeline", bloomMergeShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
+	
 }
 
 void Renderer::CreateRenderTarget()
@@ -230,13 +237,13 @@ void Renderer::CreateRenderTarget()
 		}
 		//------------------------------------
 		{
-			auto bloomUp3RenderTarget = mRHI->CreateRenderTarget(
-				"bloomUp3RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+			auto bloomMergeRenderTarget = mRHI->CreateRenderTarget(
+				"bloomMergeRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 7,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 7,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 7,
 				false, 1, (1920 / 4) , (1080 / 4) );
-			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomUp3RenderTarget", bloomUp3RenderTarget);
+			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomMergeRenderTarget", bloomMergeRenderTarget);
 		}
 	}
 }
@@ -684,23 +691,23 @@ void Renderer::DrawBloomPass()
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
 	}
-	//Draw Up2 Scene================================================
+	//Draw Up3 Scene================================================
 	{
 		auto DownRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDownRenderTarget");
 		auto Up2Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomUp2RenderTarget");
 
-		auto Up3Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomUp3RenderTarget");
+		auto bloomMergeRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomMergeRenderTarget");
 		mRHI->SetScreenSetViewPort(
-			Up3Rendertarget->width,
-			Up3Rendertarget->height);
+			bloomMergeRendertarget->width,
+			bloomMergeRendertarget->height);
 		mRHI->SetScissorRect(
-			long(Up3Rendertarget->width),
-			long(Up3Rendertarget->height));
+			long(bloomMergeRendertarget->width),
+			long(bloomMergeRendertarget->height));
 		//mRHI->ClearRenderTarget(Rendertarget, "BloomRtvHeap");
-		mRHI->ClearRenderTargetView(Up3Rendertarget, mClearColor, 0);
-		mRHI->ClearDepthStencilView(Up3Rendertarget);
-		mRHI->OMSetRenderTargets(Up3Rendertarget);
-		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomUpPipeline"));
+		mRHI->ClearRenderTargetView(bloomMergeRendertarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(bloomMergeRendertarget);
+		mRHI->OMSetRenderTargets(bloomMergeRendertarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomMergePipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
