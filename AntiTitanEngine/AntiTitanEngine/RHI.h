@@ -62,6 +62,8 @@ public:
 		virtual void CommitShaderParameter_Constant(int rootParameterIndex, int numValue,int4 value) = 0;
 		virtual void CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap) = 0;
 
+		virtual void RenderDocBeginEvent(std::string)=0;
+		virtual void RenderDocEndEvent()=0;
 
 		virtual void BuildTriangleAndDraw(std::shared_ptr<Primitive_MeshBuffer> Triangle) = 0;
 };

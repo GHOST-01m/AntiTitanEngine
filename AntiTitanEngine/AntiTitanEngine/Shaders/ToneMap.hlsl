@@ -4,8 +4,8 @@
 // Transforms and colors geometry.
 //***************************************************************************************
 
-Texture2D    gDiffuseMap : register(t0);
-Texture2D    gNormalMap  : register(t1);
+Texture2D    gSceneColor : register(t0);
+Texture2D    gSunMergeColor  : register(t1);
 Texture2D    gShadowMap  : register(t2);
 
 SamplerState gsamPointWrap        : register(s0);
@@ -39,6 +39,7 @@ cbuffer cbPerObject : register(b0)
 	float3 CameraLocation;
 	float CameraLocationW;
 	int4 gRenderTargetSize;
+
 	//float    Time;
 };
 
@@ -65,10 +66,24 @@ struct VertexOut
 };
 
 
-float Luminance(float3 InColor)
+float2 Circle(float Start, float Points, float Point)
 {
-	return dot(InColor, float3(0.3f, 0.59f, 0.11f));
+	float Radians = (2.0f * 3.141592f * (1.0f / Points)) * (Start + Point);
+	return float2(cos(Radians), sin(Radians));
 }
+
+float3 ACESToneMapping(float3 color, float adapted_lum)
+{
+	const float A = 2.51f;
+	const float B = 0.03f;
+	const float C = 2.43f;
+	const float D = 0.59f;
+	const float E = 0.14f;
+
+	color *= adapted_lum;
+	return (color * (A * color + B)) / (color * (C * color + D) + E);
+}
+
 //VS=================================================================================
 VertexOut VS(VertexIn vin)
 {
@@ -97,40 +112,21 @@ VertexOut VS(VertexIn vin)
 //PS====================================================================================
 float4 PS(VertexOut pin) : SV_Target
 {
-
-	//float Width = RenderTargetSize[0] ;
-	//float Height = RenderTargetSize[1] ;
-
-	//float DeltaU = 1.0f / RenderTargetSize[0];
-	//float DeltaV = 1.0f / RenderTargetSize[1];
-	
-	float Width = gRenderTargetSize[0] ;
-	float Height = gRenderTargetSize[1] ;
-
-	float DeltaU = 1.0f / gRenderTargetSize[0];
-	float DeltaV = 1.0f / gRenderTargetSize[1];
-
 	int X = floor(pin.PosH.x);
 	int Y = floor(pin.PosH.y);
 
 	float2 Tex;
-	Tex.x = 1.0f * X / Width;
-	Tex.y = 1.0f * Y / Height;
+	Tex.x = 1.0f * X / RenderTargetSize[0];
+	Tex.y = 1.0f * Y / RenderTargetSize[1];
 
-	float4 Color0 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(-DeltaU, -DeltaV));
-	float4 Color1 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(+DeltaU, -DeltaV));
-	float4 Color2 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(-DeltaU, +DeltaV));
-	float4 Color3 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(+DeltaU, +DeltaV));
+	float4 SceneColor = gSceneColor.Sample(gsamLinearWrap, Tex);
+	float4 BloomColor = gSunMergeColor.Sample(gsamLinearWrap, Tex);
 
-	float4 AvailableColor = Color0 * 0.25f + Color1 * 0.25f + Color2 * 0.25f + Color3 * 0.25f;
+	half3 LinearColor = SceneColor.rgb + BloomColor.rgb;
 
-	float TotalLuminance = Luminance(AvailableColor.rgb);
-	float BloomLuminance = TotalLuminance - 1.0f;
-	float Amount = saturate(BloomLuminance * 0.5f);
-	float4 OutColor;
-	OutColor.rgb = AvailableColor.rgb;
-	OutColor.rgb *= Amount;
-	OutColor.a = 0.0f;
+	float4 OutColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	OutColor.rgb = ACESToneMapping(LinearColor, 1.0f);
+	OutColor.a = SceneColor.a;
 
 	return OutColor;
 };

@@ -4,6 +4,7 @@
 #include "RenderPrimitiveManager.h"
 #include "MyStruct.h"
 #include "PipelineState_DESC.h"
+#include <pix.h>
 
 class Renderer
 {

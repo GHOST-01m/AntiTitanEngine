@@ -101,6 +101,9 @@ void Renderer::CreateShader()
 
 	mRenderPrimitiveManager->InsertShaderToLib("bloomMerge",
 		mRHI->CreateShader("bloomMerge", L"Shaders\\bloomMerge.hlsl"));
+
+	mRenderPrimitiveManager->InsertShaderToLib("ToneMap",
+		mRHI->CreateShader("ToneMap", L"Shaders\\ToneMap.hlsl"));
 }
 
 void Renderer::CreatePipeline()
@@ -114,11 +117,6 @@ void Renderer::CreatePipeline()
 		mRHI->CreatePipeline("basePipeline", baseShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
 
 	//阴影管线=====================================================================
-	//PipelineState_DESC shadowPipDesc;
-	//shadowPipDesc.rasterizeDesc.FrontCounterClockwise = true;
-	//shadowPipDesc.rasterizeDesc.DepthBias = 40000;
-	//shadowPipDesc.rasterizeDesc.DepthBiasClamp = 0.0f;
-	//shadowPipDesc.rasterizeDesc.SlopeScaledDepthBias = 1.0f;
 	auto shadowShader = mRenderPrimitiveManager->GetShaderByName("shadow");
 	mRenderPrimitiveManager->InsertPipelineToLib("shadowPipeline",
 		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, RenderTargetFormat_UNKNOWN, true));
@@ -140,6 +138,9 @@ void Renderer::CreatePipeline()
 	mRenderPrimitiveManager->InsertPipelineToLib("bloomMergePipeline",
 		mRHI->CreatePipeline("bloomMergePipeline", bloomMergeShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
 	
+	auto ToneMapShader = mRenderPrimitiveManager->GetShaderByName("ToneMap");
+	mRenderPrimitiveManager->InsertPipelineToLib("ToneMapPipeline",
+		mRHI->CreatePipeline("ToneMapPipeline", ToneMapShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
 }
 
 void Renderer::CreateRenderTarget()
@@ -245,6 +246,16 @@ void Renderer::CreateRenderTarget()
 				false, 1, (1920 / 4) , (1080 / 4) );
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomMergeRenderTarget", bloomMergeRenderTarget);
 		}
+		{
+			auto ToneMapRenderTarget = mRHI->CreateRenderTarget(
+				"ToneMapRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 8,
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 8,
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 8,
+				false, 1, 1920 , 1080 );
+			mRenderPrimitiveManager->InsertRenderTargetToLib("ToneMapRenderTarget", ToneMapRenderTarget);
+		}
+
 	}
 }
 
@@ -691,7 +702,7 @@ void Renderer::DrawBloomPass()
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
 	}
-	//Draw Up3 Scene================================================
+	//Draw Merge Scene================================================
 	{
 		auto DownRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDownRenderTarget");
 		auto Up2Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomUp2RenderTarget");
@@ -730,25 +741,90 @@ void Renderer::DrawBloomPass()
 
 void Renderer::DrawScenePass()
 {
-	auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
-
-	mRHI->SetScreenSetViewPort(
-		Rendertarget->width,
-		Rendertarget->height);
-	mRHI->SetScissorRect(
-		long(Rendertarget->width),
-		long(Rendertarget->height));
-	mRHI->ResourceBarrier();
-	mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
-	mRHI->ClearDepthStencilView(Rendertarget);
-	mRHI->OMSetRenderTargets(Rendertarget);
-	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
-	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-	
-	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+	//Draw Merge Scene================================================
+	/*
 	{
-		mRHI->DrawMesh(ActorIndex, 0);
+		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
+		auto MergeRenderTarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomMergeRenderTarget");
+
+		auto ToneMapRenderTarget = mRenderPrimitiveManager->GetRenderTargetByName("ToneMapRenderTarget");
+		mRHI->SetScreenSetViewPort(
+			ToneMapRenderTarget->width,
+			ToneMapRenderTarget->height);
+		mRHI->SetScissorRect(
+			long(ToneMapRenderTarget->width),
+			long(ToneMapRenderTarget->height));
+		//mRHI->ClearRenderTarget(Rendertarget, "BloomRtvHeap");
+		mRHI->ClearRenderTargetView(ToneMapRenderTarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(ToneMapRenderTarget);
+		mRHI->OMSetRenderTargets(ToneMapRenderTarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+		int4 screenSize;
+		screenSize.x = 1920 ;
+		screenSize.y = 1080 ;
+		screenSize.z = 10;
+		screenSize.w = 10;
+		ObjectConstants objConstant;
+		objConstant.RenderTargetSize = screenSize;
+		mRHI->CommitResourceToGPU(3, objConstant);
+		mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
+
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
+		mRHI->CommitShaderParameter_Table(1, HDRRendertarget);
+		mRHI->CommitShaderParameter_Table(3, MergeRenderTarget);
+		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
 	}
+	*/
+
+	//原本的DrawScene
+
+	{
+		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
+		auto bloomMergeRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomMergeRenderTarget");
+
+		auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
+
+		mRHI->SetScreenSetViewPort(
+			Rendertarget->width,
+			Rendertarget->height);
+		mRHI->SetScissorRect(
+			long(Rendertarget->width),
+			long(Rendertarget->height));
+		mRHI->ResourceBarrier();
+		mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(Rendertarget);
+		mRHI->OMSetRenderTargets(Rendertarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
+
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+		int4 screenSize;
+		screenSize.x = 1920 ;
+		screenSize.y = 1080 ;
+		screenSize.z = 10;
+		screenSize.w = 10;
+		ObjectConstants objConstant;
+		objConstant.RenderTargetSize = screenSize;
+		mRHI->CommitResourceToGPU(3, objConstant);
+		mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
+
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
+		mRHI->CommitShaderParameter_Table(1, bloomMergeRendertarget);
+		mRHI->CommitShaderParameter_Table(3, HDRRendertarget);
+		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+
+		//mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+
+		//for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+		//{
+		//	mRHI->DrawMesh(ActorIndex, 0);
+		//}
+	}
+
 }
 
 void Renderer::Destroy()

@@ -152,6 +152,9 @@ public:
 	void SetSwapChain();
 	//void LoadAsset();
 	void CalculateFrameStats()override;
+public:
+	void RenderDocBeginEvent(std::string) override;
+	void RenderDocEndEvent() override;
 
 public:
 	//void SetDescriptorHeaps();//往Heap里面灌数据
@@ -170,6 +173,7 @@ public://这一部分应该写到Game里
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
 	//void OnKeyboardInput(const GameTimer& gt);
+
 
 public:
 	POINT mLastMousePos;

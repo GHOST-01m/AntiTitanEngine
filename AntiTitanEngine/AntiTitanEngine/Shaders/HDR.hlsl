@@ -226,7 +226,7 @@ float4 PS(VertexOut pin) : SV_Target
 		LightDirection.xyz, LightStrength.xyz,
 		FinalColor, Fresnel, gRoughness,
 		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);//��Normal��ͼ
-		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);//��ԭ��������Normal
+		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1)*2;//��ԭ��������Normal
 
 
 	float4 AmbientAlbedo = FinalColor * 0.03;

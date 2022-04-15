@@ -1338,6 +1338,16 @@ void DXRHI::CalculateFrameStats()
 	}
 }
 
+void DXRHI::RenderDocBeginEvent(std::string a)
+{
+	PIXBeginEvent(mCommandList.Get(), 0, a.c_str());
+}
+
+void DXRHI::RenderDocEndEvent()
+{
+	PIXEndEvent(mCommandList.Get());
+}
+
 
 void DXRHI::BuildDescriptorHeaps()
 {
