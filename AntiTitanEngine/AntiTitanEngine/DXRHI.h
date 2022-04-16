@@ -144,7 +144,7 @@ public:
 	std::shared_ptr<Primitive_MeshBuffer> CreateTriangleMeshBuffer() override;
 	void BuildCBVHeapForTirangle() override;
 	void BuildTriangleAndDraw(std::shared_ptr<Primitive_MeshBuffer> Triangle) override;
-	void CommitShaderParameter_Table(int rootParameterIndex, std::shared_ptr<Primitive_RenderTarget> rendertarget) override;
+	void CommitShaderParameter_Texture(int rootParameterIndex, std::shared_ptr<Primitive_RenderTarget> rendertarget) override;
 	void CommitShaderParameter_Constant(int rootParameterIndex, int numValue, int4 value)override;
 	void CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap)override;
 	

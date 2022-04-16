@@ -17,7 +17,8 @@ SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
 
 float4 CameraLoc:register(b1);
-int2 RenderTargetSize:register(b2);
+int4 RenderTargetSize:register(b2);
+
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorldViewProj; 
@@ -37,7 +38,7 @@ cbuffer cbPerObject : register(b0)
 	float LightLocationW;
 	float3 CameraLocation;
 	float CameraLocationW;
-
+	int4 gRenderTargetSize;
 	//float    Time;
 };
 
@@ -201,6 +202,7 @@ VertexOut VS(VertexIn vin)
 	vout.Color            = (vin.Normal * 0.5f + 0.5f);
 	vout.TexCoord         = vin.TexCoord;
 	vout.PosH             = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+	//vout.PosH = float4(vin.PosL, 1.0f);
 	float4 posw = mul(float4(vin.PosL, 1.0f), gWorld);
 	vout.PosW             = posw.xyz;
 	vout.ShadowPosH       = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
@@ -220,6 +222,9 @@ float4 PS(VertexOut pin) : SV_Target
 	float2 Tex;
 	Tex.x = 1.0f * X / RenderTargetSize[0];
 	Tex.y = 1.0f * Y / RenderTargetSize[1];
+	
+	//Tex.x = 1.0f * X / gRenderTargetSize[0];
+	//Tex.y = 1.0f * Y / gRenderTargetSize[1];
 
 	float4 SceneColor = gSceneColor.Sample(gsamLinearWrap, Tex);
 	float4 BloomColor = gSunMergeColor.Sample(gsamLinearWrap, Tex);

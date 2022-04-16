@@ -58,7 +58,7 @@ public:
 
 		virtual std::shared_ptr<Primitive_MeshBuffer> CreateTriangleMeshBuffer()=0;
 		virtual void BuildCBVHeapForTirangle() = 0;
-		virtual void CommitShaderParameter_Table(int rootParameterIndex, std::shared_ptr<Primitive_RenderTarget> rendertarget) = 0;
+		virtual void CommitShaderParameter_Texture(int rootParameterIndex, std::shared_ptr<Primitive_RenderTarget> rendertarget) = 0;
 		virtual void CommitShaderParameter_Constant(int rootParameterIndex, int numValue,int4 value) = 0;
 		virtual void CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap) = 0;
 

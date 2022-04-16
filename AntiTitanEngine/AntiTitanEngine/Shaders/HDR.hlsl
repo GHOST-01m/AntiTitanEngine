@@ -17,7 +17,8 @@ SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
 
 float4 CameraLoc:register(b1);
-int2 RenderTargetSize:register(b2);
+int4 RenderTargetSize:register(b2);
+
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorldViewProj; 
@@ -37,6 +38,7 @@ cbuffer cbPerObject : register(b0)
 	float LightLocationW;
 	float3 CameraLocation;
 	float CameraLocationW;
+	int4 gRenderTargetSize;
 
 	//float    Time;
 };
@@ -215,36 +217,20 @@ float4 PS(VertexOut pin) : SV_Target
 	//float4 FinalColor = (shadowFactor + 0.1) * (pin.Color);
 
 	float3 Fresnel = gFresnelR0;
-	//float3 Fresnel = float3(0.95, 0.93, 0.88);//�������Fresnel
-	//float4 FinalColor = (float4( 0.98 ,0.97 ,0.95 ,1.0));//������Ļ�����ɫ
+	//float3 Fresnel = float3(0.95, 0.93, 0.88);
+	//float4 FinalColor = (float4( 0.98 ,0.97 ,0.95 ,1.0));
 
-	//float4 FinalColor = diffuseAlbedo;//����ͼ��Ϊ��ɫ
-	float4 FinalColor = (pin.Color);//��Normal��Ϊ��ɫ
+	//float4 FinalColor = diffuseAlbedo;
+	float4 FinalColor = (pin.Color);
 
-	//DiffuseAlbedo��ԭ������ɫ
 	float4 directLight = float4(ComputeDirectionalLight(
 		LightDirection.xyz, LightStrength.xyz,
 		FinalColor, Fresnel, gRoughness,
-		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);//��Normal��ͼ
-		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1)*2;//��ԭ��������Normal
-
+		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);
+		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1)*2;
 
 	float4 AmbientAlbedo = FinalColor * 0.03;
 	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * (directLight);
-	//return FinalColor+directLight;
-
-	float TotalLuminance = Luminance(FinalColor.rgb);
-	float BloomLuminance = TotalLuminance - 1.0f;
-	float Amount = saturate(BloomLuminance * 0.5f);
-	float4 OutColor;
-	OutColor.rgb = FinalColor.rgb;
-	OutColor.rgb *= Amount;
-	OutColor.a = 0.0f;
-
-	// if(FinalColor.x<1 && FinalColor.y<1 && FsinalColor.z<1){
-	// 	FinalColor.xyz=0;
-	// }
-	
 
 	return pow(FinalColor, 1 / 2.2f);
 	//return FinalColor;

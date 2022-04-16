@@ -93,6 +93,9 @@ void Renderer::CreateShader()
 	mRenderPrimitiveManager->InsertShaderToLib("HDR",
 		mRHI->CreateShader("HDR", L"Shaders\\HDR.hlsl"));
 
+	mRenderPrimitiveManager->InsertShaderToLib("bloomSetup",
+		mRHI->CreateShader("bloomSetup", L"Shaders\\bloomSetup.hlsl"));
+	
 	mRenderPrimitiveManager->InsertShaderToLib("bloomDown",
 		mRHI->CreateShader("bloomDown", L"Shaders\\bloomDown1.hlsl"));
 
@@ -109,9 +112,6 @@ void Renderer::CreateShader()
 void Renderer::CreatePipeline()
 {
 	//基础管线====================================================================
-	//PipelineState_DESC basePipDesc;
-	//basePipDesc.rasterizeDesc.FrontCounterClockwise = true;
-
 	auto baseShader = mRenderPrimitiveManager->GetShaderByName("color");
 	mRenderPrimitiveManager->InsertPipelineToLib("basePipeline",
 		mRHI->CreatePipeline("basePipeline", baseShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
@@ -125,6 +125,10 @@ void Renderer::CreatePipeline()
 	auto HDRShader = mRenderPrimitiveManager->GetShaderByName("HDR");
 	mRenderPrimitiveManager->InsertPipelineToLib("HDRPipeline",
 		mRHI->CreatePipeline("HDRPipeline", HDRShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
+
+	auto bloomSetUpShader = mRenderPrimitiveManager->GetShaderByName("bloomSetup");
+	mRenderPrimitiveManager->InsertPipelineToLib("bloomSetupPipeline",
+		mRHI->CreatePipeline("bloomSetupPipeline", bloomSetUpShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
 
 	auto bloomDownShader = mRenderPrimitiveManager->GetShaderByName("bloomDown");
 	mRenderPrimitiveManager->InsertPipelineToLib("bloomDownPipeline",
@@ -148,7 +152,7 @@ void Renderer::CreateRenderTarget()
 	//基础RenderTarget=======================================================
 	{
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
-		"baseRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+		"baseRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R8G8B8A8_UNORM,
 		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),0,
 		nullptr,0,
 		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),0,
@@ -169,7 +173,7 @@ void Renderer::CreateRenderTarget()
 	{ 
 		{
 			auto HDRRenderTarget = mRHI->CreateRenderTarget(
-				"HDRRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"HDRRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 0,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 0,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 0,
@@ -178,84 +182,83 @@ void Renderer::CreateRenderTarget()
 		}
 		//------------------------------------
 		{
-			auto bloomDownRenderTarget = mRHI->CreateRenderTarget(
-				"bloomDownRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+			auto bloomSetupRenderTarget = mRHI->CreateRenderTarget(
+				"bloomSetupRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 1,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 1,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 1,
-				false, 1, 1920 / 4, 1080 / 4);
-			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDownRenderTarget", bloomDownRenderTarget);
+				false, 1, mClientWidth / 4, mClientHeight / 4);
+			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomSetupRenderTarget", bloomSetupRenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomDown2RenderTarget = mRHI->CreateRenderTarget(
-				"bloomDown2RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"bloomDown2RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 2,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 2,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 2,
-				false, 1, (1920 / 4) / 4, (1080 / 4) / 4);
+				false, 1, (mClientWidth / 4) / 2, (mClientHeight / 4) / 2);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDown2RenderTarget", bloomDown2RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomDown3RenderTarget = mRHI->CreateRenderTarget(
-				"bloomDown3RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"bloomDown3RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 3,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 3,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 3,
-				false, 1, ((1920 / 4) / 4)/4, ((1080 / 4) / 4)/4);
+				false, 1, ((mClientWidth / 4) / 2)/2, ((mClientHeight / 4) / 2)/2);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDown3RenderTarget", bloomDown3RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomDown4RenderTarget = mRHI->CreateRenderTarget(
-				"bloomDown4RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"bloomDown4RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 4,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 4,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 4,
-				false, 1, (((1920 / 4) / 4) / 4)/2, (((1080 / 4) / 4) / 4)/2);
+				false, 1, (((mClientWidth / 4) / 2) / 2)/2, (((mClientHeight / 4) / 2) / 2)/2);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDown4RenderTarget", bloomDown4RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomUpRenderTarget = mRHI->CreateRenderTarget(
-				"bloomUpRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"bloomUpRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 5,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 5,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 5,
-				false, 1, (((1920 / 4) / 4) / 4), (((1080 / 4) / 4) / 4));
+				false, 1, (((mClientWidth / 4) / 2) / 2), (((mClientHeight / 4) / 2) / 2));
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomUpRenderTarget", bloomUpRenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomUp2RenderTarget = mRHI->CreateRenderTarget(
-				"bloomUp2RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"bloomUp2RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 6,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 6,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 6,
-				false, 1, (1920 / 4)/4, (1080 / 4)/4 );
+				false, 1, (mClientWidth / 4)/2, (mClientHeight / 4)/2 );
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomUp2RenderTarget", bloomUp2RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomMergeRenderTarget = mRHI->CreateRenderTarget(
-				"bloomMergeRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"bloomMergeRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 7,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 7,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 7,
-				false, 1, (1920 / 4) , (1080 / 4) );
+				false, 1, (mClientWidth / 4) , (mClientHeight / 4) );
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomMergeRenderTarget", bloomMergeRenderTarget);
 		}
 		{
 			auto ToneMapRenderTarget = mRHI->CreateRenderTarget(
-				"ToneMapRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, D24_UNORM_S8_UINT,
+				"ToneMapRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R8G8B8A8_UNORM,
 				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 8,
 				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 8,
 				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 8,
-				false, 1, 1920 , 1080 );
+				false, 1, mClientWidth, mClientHeight);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("ToneMapRenderTarget", ToneMapRenderTarget);
 		}
-
 	}
 }
 
@@ -461,6 +464,7 @@ void Renderer::UpdateShadow(int i, ObjectConstants& objConstants)
 
 void Renderer::DrawShadowPass()
 {
+	mRHI->RenderDocBeginEvent("Shadow");
 	auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget");
 	mRHI->SetScreenSetViewPort(
 		Rendertarget->width,
@@ -478,11 +482,14 @@ void Renderer::DrawShadowPass()
 		mRHI->DrawMesh(ActorIndex, 0);
 		mRHI->CommitShaderParameters();//这个提交shader函数没有做完
 	}
+	mRHI->RenderDocEndEvent();
 }
 
 void Renderer::DrawBloomPass()
 {
-	{
+	mRHI->RenderDocBeginEvent("Bloom");
+	{	
+		mRHI->RenderDocBeginEvent("DrawHDRScene");
 		// Draw HDR Scene ================================================
 		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
 
@@ -497,48 +504,52 @@ void Renderer::DrawBloomPass()
 		mRHI->OMSetRenderTargets(HDRRendertarget);
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("HDRPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-
 		for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 		{
 			mRHI->DrawMesh(ActorIndex, 0);
 		}
+		mRHI->RenderDocEndEvent();
 	}
-	//Draw Down1 Scene================================================
+	//Draw Setup Scene================================================
 	{
+		mRHI->RenderDocBeginEvent("BloomSetup");
 		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
-		auto DownRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDownRenderTarget");
+		auto SetupRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomSetupRenderTarget");
 		mRHI->SetScreenSetViewPort(
-			DownRendertarget->width,
-			DownRendertarget->height);
+			SetupRendertarget->width,
+			SetupRendertarget->height);
 		mRHI->SetScissorRect(
-			long(DownRendertarget->width),
-			long(DownRendertarget->height));
+			long(SetupRendertarget->width),
+			long(SetupRendertarget->height));
 		//mRHI->ClearRenderTarget(Rendertarget, "BloomRtvHeap");
-		mRHI->ClearRenderTargetView(DownRendertarget, mClearColor, 0);
-		mRHI->ClearDepthStencilView(DownRendertarget);
-		mRHI->OMSetRenderTargets(DownRendertarget);
-		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomDownPipeline"));
+		mRHI->ClearRenderTargetView(SetupRendertarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(SetupRendertarget);
+		mRHI->OMSetRenderTargets(SetupRendertarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomSetupPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = 1920/4;
-		screenSize.y = 1080/4;
+		screenSize.x = int(mClientWidth);
+		screenSize.y = int(mClientHeight);
 		screenSize.z = -1;
 		screenSize.w = -1;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(0, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(0, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(0, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(0, cbvheap);
 
  		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
- 		mRHI->CommitShaderParameter_Table(1, HDRRendertarget);
+ 		mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		mRHI->RenderDocEndEvent();
 	}
 	//Draw Down2 Scene================================================
 	{
-		auto Down1Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDownRenderTarget");
+		mRHI->RenderDocBeginEvent("BloomDown");
+
+		auto SetupRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomSetupRenderTarget");
 		auto Down2Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown2RenderTarget");
 		mRHI->SetScreenSetViewPort(
 			Down2Rendertarget->width,
@@ -554,22 +565,26 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = (1920 /4)/ 4;
-		screenSize.y = (1080 /4)/ 4;
+		screenSize.x = int(mClientWidth /4);
+		screenSize.y = int(mClientHeight /4);
 		screenSize.z = -1;
 		screenSize.w = -1;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(1, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(1, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(1, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(1, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, Down1Rendertarget);
+		mRHI->CommitShaderParameter_Texture(1, SetupRendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		
+		mRHI->RenderDocEndEvent();
 	}
 	//Draw Down3 Scene================================================
 	{
+		mRHI->RenderDocBeginEvent("BloomDown");
+
 		auto Down2Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown2RenderTarget");
 		auto Down3Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown3RenderTarget");
 		mRHI->SetScreenSetViewPort(
@@ -586,22 +601,26 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = ((1920/4) / 4) / 2;
-		screenSize.y = ((1080/4) / 4) / 2;
+		screenSize.x = int((mClientWidth /4) / 2);
+		screenSize.y = int((mClientHeight /4) / 2);
 		screenSize.z = -1;
 		screenSize.w = -1;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(2, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(2, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(2, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(2, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, Down2Rendertarget);
+		mRHI->CommitShaderParameter_Texture(1, Down2Rendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		
+		mRHI->RenderDocEndEvent();
 	}
 	//Draw Down4 Scene================================================
 	{
+		mRHI->RenderDocBeginEvent("BloomDown");
+
 		auto Down3Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown3RenderTarget");
 		auto Down4Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown4RenderTarget");
 		mRHI->SetScreenSetViewPort(
@@ -618,22 +637,26 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = (((1920 / 4) / 4) / 4)/4;
-		screenSize.y = (((1080 / 4) / 4) / 4)/4;
+		screenSize.x =int (((mClientWidth / 4) / 2) / 2);
+		screenSize.y =int (((mClientHeight / 4) / 2) / 2);
 		screenSize.z = -1;
 		screenSize.w = -1;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(2, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(2, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(3, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, Down3Rendertarget);
+		mRHI->CommitShaderParameter_Texture(1, Down3Rendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		
+		mRHI->RenderDocEndEvent();
 	}
 	//Draw Up Scene================================================
 	{
+		mRHI->RenderDocBeginEvent("BloomUp");
+
 		auto Down3Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown3RenderTarget");
 		auto Down4Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown4RenderTarget");
 		
@@ -652,23 +675,27 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = ((1920 / 4) / 4)/4;
-		screenSize.y = ((1080 / 4) / 4)/4;
+		screenSize.x = int(((mClientWidth / 4) / 2)/2);
+		screenSize.y = int(((mClientHeight / 4) / 2)/2);
 		screenSize.z = 10;
 		screenSize.w = 10;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(3, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(4, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(4, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, Down4Rendertarget);
-		mRHI->CommitShaderParameter_Table(3, Down3Rendertarget);
+		mRHI->CommitShaderParameter_Texture(1, Down4Rendertarget);
+		mRHI->CommitShaderParameter_Texture(3, Down3Rendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		
+		mRHI->RenderDocEndEvent();
 	}
 	//Draw Up2 Scene================================================
 	{
+		mRHI->RenderDocBeginEvent("BloomUp");
+
 		auto Down2Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDown2RenderTarget");
 		auto UpRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomUpRenderTarget");
 
@@ -687,24 +714,28 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = ((1920 / 4) )/4;
-		screenSize.y = ((1080 / 4) )/4 ;
+		screenSize.x = int((mClientWidth / 4)/2);
+		screenSize.y = int((mClientHeight / 4)/2);
 		screenSize.z = 10;
 		screenSize.w = 10;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(3, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(5, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(5, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, UpRendertarget);
-		mRHI->CommitShaderParameter_Table(3, Down2Rendertarget);
+		mRHI->CommitShaderParameter_Texture(1, UpRendertarget);
+		mRHI->CommitShaderParameter_Texture(3, Down2Rendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		
+		mRHI->RenderDocEndEvent();
 	}
 	//Draw Merge Scene================================================
 	{
-		auto DownRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomDownRenderTarget");
+		mRHI->RenderDocBeginEvent("BloomMerge");
+
+		auto SetupRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomSetupRenderTarget");
 		auto Up2Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomUp2RenderTarget");
 
 		auto bloomMergeRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomMergeRenderTarget");
@@ -722,21 +753,24 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = (1920 / 4);
-		screenSize.y = (1080 / 4);
+		screenSize.x = int(mClientWidth / 4); 
+		screenSize.y = int(mClientHeight / 4);
 		screenSize.z = 10;
 		screenSize.w = 10;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(3, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(6, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(6, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, Up2Rendertarget);
-		mRHI->CommitShaderParameter_Table(3, DownRendertarget);
+		mRHI->CommitShaderParameter_Texture(1, Up2Rendertarget);
+		mRHI->CommitShaderParameter_Texture(3, SetupRendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		
+		mRHI->RenderDocEndEvent();
 	}
+	mRHI->RenderDocEndEvent();
 }
 
 void Renderer::DrawScenePass()
@@ -779,9 +813,10 @@ void Renderer::DrawScenePass()
 	}
 	*/
 
-	//原本的DrawScene
-
+	
 	{
+		mRHI->RenderDocBeginEvent("ToneMap");
+
 		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
 		auto bloomMergeRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomMergeRenderTarget");
 
@@ -797,34 +832,28 @@ void Renderer::DrawScenePass()
 		mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
 		mRHI->ClearDepthStencilView(Rendertarget);
 		mRHI->OMSetRenderTargets(Rendertarget);
-		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("basePipeline"));
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
 		int4 screenSize;
-		screenSize.x = 1920 ;
-		screenSize.y = 1080 ;
+		screenSize.x = int(mClientWidth);
+		screenSize.y = int(mClientHeight);
 		screenSize.z = 10;
 		screenSize.w = 10;
-		ObjectConstants objConstant;
-		objConstant.RenderTargetSize = screenSize;
-		mRHI->CommitResourceToGPU(3, objConstant);
-		mRHI->CommitShaderParameter_ConstantBuffer(3, cbvheap);
+		//ObjectConstants objConstant;
+		//objConstant.RenderTargetSize = screenSize;
+		//mRHI->CommitResourceToGPU(7, objConstant);
+		//mRHI->CommitShaderParameter_ConstantBuffer(7, cbvheap);
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-		mRHI->CommitShaderParameter_Table(1, bloomMergeRendertarget);
-		mRHI->CommitShaderParameter_Table(3, HDRRendertarget);
+		mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
+		mRHI->CommitShaderParameter_Texture(3, bloomMergeRendertarget);
 		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
 
-		//mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-
-		//for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
-		//{
-		//	mRHI->DrawMesh(ActorIndex, 0);
-		//}
+		mRHI->RenderDocEndEvent();
 	}
-
 }
 
 void Renderer::Destroy()

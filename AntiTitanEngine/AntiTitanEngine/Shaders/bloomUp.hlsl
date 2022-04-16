@@ -115,13 +115,11 @@ float4 PS(VertexOut pin) : SV_Target
 	float2 Tex;
 	Tex.x = 1.0f * X / RenderTargetSize[0];
 	Tex.y = 1.0f * Y / RenderTargetSize[1];
-
 	float DeltaU = 1.0f / RenderTargetSize[0];
 	float DeltaV = 1.0f / RenderTargetSize[1];
-	//float2 Tex;
+
 	//Tex.x = 1.0f * X / gRenderTargetSize[0];
 	//Tex.y = 1.0f * Y / gRenderTargetSize[1];
-
 	//float DeltaU = 1.0f / gRenderTargetSize[0];
 	//float DeltaV = 1.0f / gRenderTargetSize[1];
 

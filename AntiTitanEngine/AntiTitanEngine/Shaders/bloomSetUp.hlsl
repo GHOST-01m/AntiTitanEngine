@@ -4,8 +4,8 @@
 // Transforms and colors geometry.
 //***************************************************************************************
 
-Texture2D    gBloomUp : register(t0);
-Texture2D    gBloomDown  : register(t1);
+Texture2D    gDiffuseMap : register(t0);
+Texture2D    gNormalMap  : register(t1);
 Texture2D    gShadowMap  : register(t2);
 
 SamplerState gsamPointWrap        : register(s0);
@@ -39,7 +39,6 @@ cbuffer cbPerObject : register(b0)
 	float3 CameraLocation;
 	float CameraLocationW;
 	int4 gRenderTargetSize;
-
 	//float    Time;
 };
 
@@ -66,12 +65,10 @@ struct VertexOut
 };
 
 
-float2 Circle(float Start, float Points, float Point)
+float Luminance(float3 InColor)
 {
-	float Radians = (2.0f * 3.141592f * (1.0f / Points)) * (Start + Point);
-	return float2(cos(Radians), sin(Radians));
+	return dot(InColor, float3(0.3f, 0.59f, 0.11f));
 }
-
 //VS=================================================================================
 VertexOut VS(VertexIn vin)
 {
@@ -100,52 +97,39 @@ VertexOut VS(VertexIn vin)
 //PS====================================================================================
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 OutColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	float ScaleUV = 0.66f / 2.0f;
-	float4 BloomColor1 = float4(0.5016f, 0.5016f, 0.5016f, 0.0f);
+	float Width = RenderTargetSize[0] * 0.25f;
+	float Height = RenderTargetSize[1] * 0.25f;
+
+	float DeltaU = 1.0f / RenderTargetSize[0];
+	float DeltaV = 1.0f / RenderTargetSize[1];
+	
+	//float Width = gRenderTargetSize[0] * 0.25f;
+	//float Height = gRenderTargetSize[1] * 0.25f;
+
+	//float DeltaU = 1.0f / (gRenderTargetSize[0]);
+	//float DeltaV = 1.0f / (gRenderTargetSize[1]);
 
 	int X = floor(pin.PosH.x);
 	int Y = floor(pin.PosH.y);
 
 	float2 Tex;
-	Tex.x = 1.0f * X / RenderTargetSize[0];
-	Tex.y = 1.0f * Y / RenderTargetSize[1];
-	float DeltaU = 1.0f / RenderTargetSize[0];
-	float DeltaV = 1.0f / RenderTargetSize[1];
+	Tex.x = 1.0f * X / Width;
+	Tex.y = 1.0f * Y / Height;
 
-	//Tex.x = 1.0f * X / gRenderTargetSize[0];
-	//Tex.y = 1.0f * Y / gRenderTargetSize[1];
-	//float DeltaU = 1.0f / gRenderTargetSize[0];
-	//float DeltaV = 1.0f / gRenderTargetSize[1];
-	
-	float2 DeltaUV = float2(DeltaU, DeltaV);
+	float4 Color0 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(-DeltaU, -DeltaV));
+	float4 Color1 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(+DeltaU, -DeltaV));
+	float4 Color2 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(-DeltaU, +DeltaV));
+	float4 Color3 = gDiffuseMap.Sample(gsamLinearWrap, Tex + float2(+DeltaU, +DeltaV));
 
-	float Start = 2.0f / 6.0f;
-	float4 Color0 = gBloomDown.Sample(gsamLinearWrap, Tex + DeltaUV * ScaleUV * Circle(Start, 6.0, 0.0f));
-	float4 Color1 = gBloomDown.Sample(gsamLinearWrap, Tex + DeltaUV * ScaleUV * Circle(Start, 6.0, 1.0f));
-	float4 Color2 = gBloomDown.Sample(gsamLinearWrap, Tex + DeltaUV * ScaleUV * Circle(Start, 6.0, 2.0f));
-	float4 Color3 = gBloomDown.Sample(gsamLinearWrap, Tex + DeltaUV * ScaleUV * Circle(Start, 6.0, 3.0f));
-	float4 Color4 = gBloomDown.Sample(gsamLinearWrap, Tex + DeltaUV * ScaleUV * Circle(Start, 6.0, 4.0f));
-	float4 Color5 = gBloomDown.Sample(gsamLinearWrap, Tex + DeltaUV * ScaleUV * Circle(Start, 6.0, 5.0f));
-	float4 Color6 = gBloomDown.Sample(gsamLinearWrap, Tex);
+	float4 AvailableColor = Color0 * 0.25f + Color1 * 0.25f + Color2 * 0.25f + Color3 * 0.25f;
 
-	float ScaleColor1 = 1.0f / 7.0f;
-	float ScaleColor2 = 1.0f / 7.0f;
-	float4 BloomColor = Color6 * ScaleColor1 +
-		Color0 * ScaleColor2 +
-		Color1 * ScaleColor2 +
-		Color2 * ScaleColor2 +
-		Color3 * ScaleColor2 +
-		Color4 * ScaleColor2 +
-		Color4 * ScaleColor2 * rcp(ScaleColor1 * 1.0f + ScaleColor2 * 6.0f);
-
-	OutColor.rgb = gBloomUp.Sample(gsamLinearWrap, Tex).rgb;
-
-	float ScaleColor3 = 1.0f / 5.0f;
-	OutColor.rgb *= ScaleColor3;
-
-	OutColor.rgb += (BloomColor * ScaleColor3 * BloomColor1).rgb;
+	float TotalLuminance = Luminance(AvailableColor.rgb);
+	float BloomLuminance = TotalLuminance - 1.0f;
+	float Amount = saturate(BloomLuminance * 0.5f);
+	float4 OutColor;
+	OutColor.rgb = AvailableColor.rgb;
+	OutColor.rgb *= Amount;
 	OutColor.a = 1.0f;
 
 	return OutColor;

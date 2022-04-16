@@ -118,6 +118,8 @@ float4 PS(VertexOut pin) : SV_Target
 	float2 Tex;
 	Tex.x = 1.0f * X / RenderTargetSize[0];
 	Tex.y = 1.0f * Y / RenderTargetSize[1];
+	//Tex.x = 1.0f * X / gRenderTargetSize[0];
+	//Tex.y = 1.0f * Y / gRenderTargetSize[1];
 
 	float4 SceneColor = gSceneColor.Sample(gsamLinearWrap, Tex);
 	float4 BloomColor = gSunMergeColor.Sample(gsamLinearWrap, Tex);

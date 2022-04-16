@@ -695,12 +695,12 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 			{
 				CreateResource(
 					std::dynamic_pointer_cast<DXPrimitive_GPUResource>(dxRendertarget->mSwapChainResource[i]),
-					R16G16B16A16_FLOAT, resourceDimension,
+					ResourceFormat, resourceDimension, 
 					STATE_RENDER_TARGET,
 					int(Width), int(Height),true);
 
 				D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-				rtvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+				rtvDesc.Format = SwitchFormat(ResourceFormat);
 				rtvDesc.Texture2D.PlaneSlice = 0;
 				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
@@ -720,7 +720,7 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 	{
 		CreateResource(
 			std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource()),
-			ResourceFormat, resourceDimension,
+			D24_UNORM_S8_UINT, resourceDimension,
 			initialResourceStateType,
 			int(Width), int(Height),false);
 
@@ -751,7 +751,7 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 			srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 		}
 		else{
-			srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+			srvDesc.Format = SwitchFormat(ResourceFormat);
 		}
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MostDetailedMip = 0;
@@ -1213,7 +1213,7 @@ void DXRHI::BuildTriangleAndDraw(std::shared_ptr<Primitive_MeshBuffer> Triangle 
 	mCommandList->DrawIndexedInstanced(3, 1, 0, 0, 0);
 }
 
-void DXRHI::CommitShaderParameter_Table(int rootParameterIndex,std::shared_ptr<Primitive_RenderTarget> rendertarget)
+void DXRHI::CommitShaderParameter_Texture(int rootParameterIndex,std::shared_ptr<Primitive_RenderTarget> rendertarget)
 {
 	auto dxshadowRT = std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(rendertarget);
 	mCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, dxshadowRT->mhGpuSrvHandle);
