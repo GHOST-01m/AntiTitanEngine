@@ -181,7 +181,7 @@ VertexOut VS(VertexIn vin)
 	//ColorChange.w = vin.Normal.w ;
 
 	//��NTB����ȷ����ת����
-	vin.Normal = mul(vin.Normal, Rotator);
+	vin.Normal = normalize(mul(vin.Normal, Rotator));
 	vin.Tangent = mul(vin.Tangent, Rotator);
 	vin.Bitangent = mul(vin.Bitangent, Rotator);
 	//vin.Normal = normalize(vin.Normal);
@@ -227,7 +227,7 @@ float4 PS(VertexOut pin) : SV_Target
 		LightDirection.xyz, LightStrength.xyz,
 		FinalColor, Fresnel, gRoughness,
 		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);
-		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1)*2;
+		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);
 
 	float4 AmbientAlbedo = FinalColor * 0.03;
 	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * (directLight);
