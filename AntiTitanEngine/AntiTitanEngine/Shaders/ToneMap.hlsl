@@ -16,8 +16,8 @@ SamplerState gsamAnisotropicWrap  : register(s4);
 SamplerState gsamAnisotropicClamp : register(s5);
 SamplerComparisonState gsamShadow : register(s6);
 
-float4 CameraLoc:register(b1);
-int4 RenderTargetSize:register(b2);
+float4 RenderTargetSize:register(b1);
+int4 bagabaga:register(b2);
 
 cbuffer cbPerObject : register(b0)
 {

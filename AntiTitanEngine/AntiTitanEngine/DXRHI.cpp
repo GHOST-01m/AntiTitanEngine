@@ -1219,9 +1219,9 @@ void DXRHI::CommitShaderParameter_Texture(int rootParameterIndex,std::shared_ptr
 	mCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, dxshadowRT->mhGpuSrvHandle);
 }
 
-void DXRHI::CommitShaderParameter_Constant(int rootParameterIndex, int numValue, int4 value)
+void DXRHI::CommitShaderParameter_Constant(int rootParameterIndex, int numValue, void* value)
 {
-	mCommandList->SetGraphicsRoot32BitConstants(rootParameterIndex, numValue, &value, 0);
+	mCommandList->SetGraphicsRoot32BitConstants(rootParameterIndex, numValue, value, 0);
 }
 
 void DXRHI::CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap)

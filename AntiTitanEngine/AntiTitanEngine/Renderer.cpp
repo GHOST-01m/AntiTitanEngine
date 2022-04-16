@@ -528,20 +528,28 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomSetupPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int(mClientWidth);
-		screenSize.y = int(mClientHeight);
-		screenSize.z = -1;
-		screenSize.w = -1;
+		FVector4* screenSize=new FVector4();
+		screenSize->X = mClientWidth;
+		screenSize->Y = mClientHeight;
+		screenSize->Z = -1.0f;
+		screenSize->W = -1.0f;
+
+		//FVector4* a = new FVector4();
+		//a->X = mClientWidth;
+		//a->Y = mClientHeight;
+		//a->Z = mClientWidth;
+		//a->W = mClientHeight;
+
 		//ObjectConstants objConstant;
-		//objConstant.RenderTargetSize = screenSize;
+		//objConstant.RenderTargetSize = *screenSize;
 		//mRHI->CommitResourceToGPU(0, objConstant);
 		//mRHI->CommitShaderParameter_ConstantBuffer(0, cbvheap);
 
  		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
  		mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
-
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, a);
+		delete screenSize;
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
 		mRHI->RenderDocEndEvent();
 	}
@@ -564,11 +572,18 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomDownPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int(mClientWidth /4);
-		screenSize.y = int(mClientHeight /4);
-		screenSize.z = -1;
-		screenSize.w = -1;
+		//int4* screenSize=new int4();
+		//screenSize->x = int(mClientWidth /4);
+		//screenSize->y = int(mClientHeight /4);
+		//screenSize->z = -1;
+		//screenSize->w = -1;
+
+		FVector4* screenSize = new FVector4();
+		screenSize->X = mClientWidth/4;
+		screenSize->Y = mClientHeight/4;
+		screenSize->Z = -1.0f;
+		screenSize->W = -1.0f;
+
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(1, objConstant);
@@ -576,9 +591,10 @@ void Renderer::DrawBloomPass()
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, SetupRendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 	//Draw Down3 Scene================================================
@@ -600,11 +616,18 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomDownPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int((mClientWidth /4) / 2);
-		screenSize.y = int((mClientHeight /4) / 2);
-		screenSize.z = -1;
-		screenSize.w = -1;
+		//int4* screenSize = new int4();
+		//screenSize->x = int((mClientWidth /4) / 2);
+		//screenSize->y = int((mClientHeight /4) / 2);
+		//screenSize->z = -1;
+		//screenSize->w = -1;
+
+		FVector4* screenSize = new FVector4();
+		screenSize->X = (mClientWidth / 4)/2;
+		screenSize->Y = (mClientHeight / 4)/2;
+		screenSize->Z = -1.0f;
+		screenSize->W = -1.0f;
+
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(2, objConstant);
@@ -612,9 +635,11 @@ void Renderer::DrawBloomPass()
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, Down2Rendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 	//Draw Down4 Scene================================================
@@ -636,11 +661,18 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomDownPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x =int (((mClientWidth / 4) / 2) / 2);
-		screenSize.y =int (((mClientHeight / 4) / 2) / 2);
-		screenSize.z = -1;
-		screenSize.w = -1;
+		//int4* screenSize = new int4();
+		//screenSize->x =int (((mClientWidth / 4) / 2) / 2);
+		//screenSize->y =int (((mClientHeight / 4) / 2) / 2);
+		//screenSize->z = -1;
+		//screenSize->w = -1;
+		
+		FVector4* screenSize = new FVector4();
+		screenSize->X = ((mClientWidth / 4) / 2)/2;
+		screenSize->Y = ((mClientHeight / 4) / 2)/2;
+		screenSize->Z = -1.0f;
+		screenSize->W = -1.0f;
+		
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(3, objConstant);
@@ -648,9 +680,10 @@ void Renderer::DrawBloomPass()
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, Down3Rendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 	//Draw Up Scene================================================
@@ -674,11 +707,18 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomUpPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int(((mClientWidth / 4) / 2)/2);
-		screenSize.y = int(((mClientHeight / 4) / 2)/2);
-		screenSize.z = 10;
-		screenSize.w = 10;
+		//int4 screenSize;
+		//screenSize.x = int(((mClientWidth / 4) / 2)/2);
+		//screenSize.y = int(((mClientHeight / 4) / 2)/2);
+		//screenSize.z = 10;
+		//screenSize.w = 10;
+
+		FVector4* screenSize = new FVector4();
+		screenSize->X = ((mClientWidth / 4) / 2) / 2;
+		screenSize->Y = ((mClientHeight / 4) / 2) / 2;
+		screenSize->Z = 10.0f;
+		screenSize->W = 10.0f;
+
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(4, objConstant);
@@ -687,9 +727,10 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, Down4Rendertarget);
 		mRHI->CommitShaderParameter_Texture(3, Down3Rendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 	//Draw Up2 Scene================================================
@@ -713,11 +754,18 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomUpPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int((mClientWidth / 4)/2);
-		screenSize.y = int((mClientHeight / 4)/2);
-		screenSize.z = 10;
-		screenSize.w = 10;
+		//int4 screenSize;
+		//screenSize.x = int((mClientWidth / 4)/2);
+		//screenSize.y = int((mClientHeight / 4)/2);
+		//screenSize.z = 10;
+		//screenSize.w = 10;
+
+		FVector4* screenSize = new FVector4();
+		screenSize->X = ((mClientWidth / 4) / 2) ;
+		screenSize->Y = ((mClientHeight / 4) / 2) ;
+		screenSize->Z = 10.0f;
+		screenSize->W = 10.0f;
+
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(5, objConstant);
@@ -726,9 +774,10 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, UpRendertarget);
 		mRHI->CommitShaderParameter_Texture(3, Down2Rendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 	//Draw Merge Scene================================================
@@ -752,11 +801,18 @@ void Renderer::DrawBloomPass()
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomMergePipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int(mClientWidth / 4); 
-		screenSize.y = int(mClientHeight / 4);
-		screenSize.z = 10;
-		screenSize.w = 10;
+		//int4 screenSize;
+		//screenSize.x = int(mClientWidth / 4); 
+		//screenSize.y = int(mClientHeight / 4);
+		//screenSize.z = 10;
+		//screenSize.w = 10;
+		
+		FVector4* screenSize = new FVector4();
+		screenSize->X = (mClientWidth / 4) ;
+		screenSize->Y = (mClientHeight / 4) ;
+		screenSize->Z = 10.0f;
+		screenSize->W = 10.0f;
+
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(6, objConstant);
@@ -765,9 +821,10 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, Up2Rendertarget);
 		mRHI->CommitShaderParameter_Texture(3, SetupRendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 	mRHI->RenderDocEndEvent();
@@ -836,11 +893,18 @@ void Renderer::DrawScenePass()
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		auto cbvheap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		int4 screenSize;
-		screenSize.x = int(mClientWidth);
-		screenSize.y = int(mClientHeight);
-		screenSize.z = 10;
-		screenSize.w = 10;
+		//int4 screenSize;
+		//screenSize.x = int(mClientWidth);
+		//screenSize.y = int(mClientHeight);
+		//screenSize.z = 10;
+		//screenSize.w = 10;
+		
+		FVector4* screenSize = new FVector4();
+		screenSize->X = mClientWidth ;
+		screenSize->Y = mClientHeight;
+		screenSize->Z = 10.0f;
+		screenSize->W = 10.0f;
+		
 		//ObjectConstants objConstant;
 		//objConstant.RenderTargetSize = screenSize;
 		//mRHI->CommitResourceToGPU(7, objConstant);
@@ -849,9 +913,11 @@ void Renderer::DrawScenePass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
 		mRHI->CommitShaderParameter_Texture(3, bloomMergeRendertarget);
-		mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		//mRHI->CommitShaderParameter_Constant(5, 4, screenSize);
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
 
+		delete screenSize;
 		mRHI->RenderDocEndEvent();
 	}
 }
