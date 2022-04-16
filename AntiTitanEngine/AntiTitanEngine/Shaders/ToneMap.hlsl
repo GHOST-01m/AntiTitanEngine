@@ -55,14 +55,7 @@ struct VertexIn
 
 struct VertexOut
 {
-	float4 PosH  : SV_POSITION;//��������MVP�任
-    float4 Color : COLOR;
-	float4 ShadowPosH : POSITION0;//����������Ӱ�任
-	float3 PosW    : POSITION1;//��������M�任
-	float2 TexCoord  : TEXCOORD;
-	float3 NormalW : NORMAL;//Nromal����M�任
-	float3 TangentW : TANGENT;//Tangent����M�任
-	float3 BitangentW : BITANGENT;//Bitangent����M�任
+	float4 PosH  : SV_POSITION;
 };
 
 
@@ -89,22 +82,7 @@ VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
 
-	vin.Normal = mul(vin.Normal, Rotator);
-	vin.Tangent = mul(vin.Tangent, Rotator);
-	vin.Bitangent = mul(vin.Bitangent, Rotator);
-	//vin.Normal = normalize(vin.Normal);
-
-	//vout.Color = (ColorChange * 0.5f + 0.5f);//����ɫ
-	vout.Color            = (vin.Normal * 0.5f + 0.5f);
-	vout.TexCoord         = vin.TexCoord;
-	//vout.PosH             = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
 	vout.PosH             = float4(vin.PosL, 1.0f);
-	float4 posw = mul(float4(vin.PosL, 1.0f), gWorld);
-	vout.PosW             = posw.xyz;
-	vout.ShadowPosH       = mul(float4(vin.PosL, 1.0f), gLightWorldViewProjT);
-	vout.NormalW          = vin.Normal.xyz;
-	vout.TangentW         = vin.Tangent.xyz;
-	vout.BitangentW       = vin.Bitangent.xyz;
 
     return vout;
 }

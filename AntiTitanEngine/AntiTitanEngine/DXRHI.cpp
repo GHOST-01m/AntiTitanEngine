@@ -872,15 +872,20 @@ void DXRHI::ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource
 	D3D12_RESOURCE_STATES afterType;
 	switch (AfterStateType)
 	{
-	case 0:afterType = D3D12_RESOURCE_STATE_COMMON; break;
-	case 1:afterType = D3D12_RESOURCE_STATE_DEPTH_WRITE; break;
-	case 2:afterType = D3D12_RESOURCE_STATE_RENDER_TARGET; break;
-	case 3:afterType = D3D12_RESOURCE_STATE_PRESENT; break;
-	case 4:afterType = D3D12_RESOURCE_STATE_GENERIC_READ; break;
+	case STATE_COMMON                 :afterType = D3D12_RESOURCE_STATE_COMMON; break;
+	case STATE_DEPTH_WRITE            :afterType = D3D12_RESOURCE_STATE_DEPTH_WRITE; break;
+	case STATE_RENDER_TARGET          :afterType = D3D12_RESOURCE_STATE_RENDER_TARGET; break;
+	case STATE_PRESENT                :afterType = D3D12_RESOURCE_STATE_PRESENT; break;
+	case STATE_GENERIC_READ           :afterType = D3D12_RESOURCE_STATE_GENERIC_READ; break;
+	case STATE_PIXEL_SHADER_RESOURCE  :afterType = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; break;
 
-	assert(0);break;
+		assert(0); break;
 	}
 
+	auto test = std::dynamic_pointer_cast<DXPrimitive_GPUResource>(myResource)->currentType;
+
+	if (afterType != dxGpuResource->currentType)
+	{
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(
 		dxGpuResource->mResource.Get(),
 		dxGpuResource->currentType,
@@ -888,6 +893,7 @@ void DXRHI::ResourceTransition(std::shared_ptr<Primitive_GPUResource> myResource
 
 	//转换之后把之前的状态设置为刚才设置好的状态
 	std::dynamic_pointer_cast<DXPrimitive_GPUResource>(myResource)->currentType = afterType;
+	}
 }
 
 void DXRHI::ExecuteCommandList()

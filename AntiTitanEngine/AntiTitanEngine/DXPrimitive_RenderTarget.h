@@ -28,8 +28,8 @@ public:
 
 public:
 	//Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
-	std::vector<std::shared_ptr<Primitive_GPUResource>> mSwapChainResource;
-	std::shared_ptr<Primitive_GPUResource> mDSVResource;
+	//std::vector<std::shared_ptr<Primitive_GPUResource>> mSwapChainResource;
+	//std::shared_ptr<Primitive_GPUResource> mDSVResource;
 
 public:
 	CD3DX12_CPU_DESCRIPTOR_HANDLE mhCpuSrvHandle;

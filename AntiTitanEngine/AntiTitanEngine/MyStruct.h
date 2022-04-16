@@ -218,8 +218,8 @@ enum ResourceStateType
 	STATE_DEPTH_WRITE     = 1,
 	STATE_RENDER_TARGET   = 2,
 	STATE_PRESENT         = 3,
-	STATE_GENERIC_READ    = 4
-
+	STATE_GENERIC_READ    = 4,
+	STATE_PIXEL_SHADER_RESOURCE = 5
 }ResourceStateType;
 
 typedef
