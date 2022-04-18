@@ -107,6 +107,9 @@ void Renderer::CreateShader()
 
 	mRenderPrimitiveManager->InsertShaderToLib("ToneMap",
 		mRHI->CreateShader("ToneMap", L"Shaders\\ToneMap.hlsl"));
+
+	mRenderPrimitiveManager->InsertShaderToLib("TestPostProcess",
+		mRHI->CreateShader("TestPostProcess", L"Shaders\\TestPostProcess.hlsl"));
 }
 
 void Renderer::CreatePipeline()
@@ -145,6 +148,10 @@ void Renderer::CreatePipeline()
 	auto ToneMapShader = mRenderPrimitiveManager->GetShaderByName("ToneMap");
 	mRenderPrimitiveManager->InsertPipelineToLib("ToneMapPipeline",
 		mRHI->CreatePipeline("ToneMapPipeline", ToneMapShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
+
+	auto TestPostProcessShader = mRenderPrimitiveManager->GetShaderByName("TestPostProcess");
+	mRenderPrimitiveManager->InsertPipelineToLib("TestPostProcessPipeline",
+		mRHI->CreatePipeline("TestPostProcessPipeline", TestPostProcessShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
 }
 
 void Renderer::CreateRenderTarget()
@@ -260,6 +267,16 @@ void Renderer::CreateRenderTarget()
 			mRenderPrimitiveManager->InsertRenderTargetToLib("ToneMapRenderTarget", ToneMapRenderTarget);
 		}
 	}
+	//TestPostProcess======================================
+	{
+		auto TestPostProcessRenderTarget = mRHI->CreateRenderTarget(
+			"TestPostProcessRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R8G8B8A8_UNORM,
+			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 9,
+			mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 9,
+			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 9,
+			false, 1, mClientWidth, mClientHeight);
+		mRenderPrimitiveManager->InsertRenderTargetToLib("TestPostProcessRenderTarget", TestPostProcessRenderTarget);
+	}
 }
 
 void Renderer::LoadMeshAndSetBuffer()
@@ -321,6 +338,7 @@ void Renderer::Draw()
 
 	DrawShadowPass();
 	DrawBloomPass();
+	DrawTestPostProcessPass();
 	DrawScenePass();
 
 	mRHI->DrawFinal();
@@ -750,6 +768,39 @@ void Renderer::DrawBloomPass()
 	mRHI->RenderDocEndEvent();
 }
 
+void Renderer::DrawTestPostProcessPass()
+{
+	mRHI->RenderDocBeginEvent("TestPostProcess");
+	auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
+	auto TestPostProcessRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("TestPostProcessRenderTarget");
+	mRHI->SetScreenSetViewPort(
+		TestPostProcessRendertarget->width,
+		TestPostProcessRendertarget->height);
+	mRHI->SetScissorRect(
+		long(TestPostProcessRendertarget->width),
+		long(TestPostProcessRendertarget->height));
+	mRHI->ResourceTransition(TestPostProcessRendertarget->mSwapChainResource[0], STATE_RENDER_TARGET);
+	mRHI->ClearRenderTargetView(TestPostProcessRendertarget, mClearColor, 0);
+	mRHI->ClearDepthStencilView(TestPostProcessRendertarget);
+	mRHI->OMSetRenderTargets(TestPostProcessRendertarget);
+	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
+
+	FVector4* screenSize = new FVector4();
+	screenSize->X = mClientWidth;
+	screenSize->Y = mClientHeight;
+	screenSize->Z = -1.0f;
+	screenSize->W = -1.0f;
+
+	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
+	mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
+	mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+
+	delete screenSize;
+	mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+	mRHI->ResourceTransition(TestPostProcessRendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
+	mRHI->RenderDocEndEvent();
+}
+
 void Renderer::DrawScenePass()
 {
 	//Draw Merge Scene================================================
@@ -808,7 +859,8 @@ void Renderer::DrawScenePass()
 		mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
 		mRHI->ClearDepthStencilView(Rendertarget);
 		mRHI->OMSetRenderTargets(Rendertarget);
-		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
+		//mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
 		
 		FVector4* screenSize = new FVector4();
 		screenSize->X = mClientWidth ;

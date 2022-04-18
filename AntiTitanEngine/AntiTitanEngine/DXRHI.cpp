@@ -665,7 +665,7 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 	Rendertarget->name = RenderTargetName;
 	Rendertarget->width = Width;
 	Rendertarget->height = Height;
-
+	Rendertarget->defaultPipeline = "basePipeline";
 	auto dxRendertarget = std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(Rendertarget);
 	dxRendertarget->mSwapChainResource.resize(SwapChainCount);
 	for (auto i=0;i< SwapChainCount;i++ ){

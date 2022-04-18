@@ -1,10 +1,5 @@
-//***************************************************************************************
-// color.hlsl by Frank Luna (C) 2015 All Rights Reserved.
-//
-// Transforms and colors geometry.
-//***************************************************************************************
 
-Texture2D    gSceneColor : register(t0);
+Texture2D    gDiffuseMap : register(t0);
 Texture2D    gSunMergeColor  : register(t1);
 Texture2D    gShadowMap  : register(t2);
 
@@ -21,7 +16,7 @@ int4 bagabaga:register(b2);
 
 cbuffer cbPerObject : register(b0)
 {
-	float4x4 gWorldViewProj; 
+	float4x4 gWorldViewProj;
 	float4x4 gWorldViewProjMat4;
 	float4x4 Rotator;
 	float4x4 gWorld;                  //ת�ã��������
@@ -46,7 +41,7 @@ cbuffer cbPerObject : register(b0)
 struct VertexIn
 {
 	float3 PosL      : POSITION;
-    float4 Color     : COLOR;
+	float4 Color     : COLOR;
 	float4 Normal    : NORMAL;
 	float4 Tangent   : TANGENT;
 	float4 Bitangent  : BITANGENT;
@@ -77,14 +72,19 @@ float3 ACESToneMapping(float3 color, float adapted_lum)
 	return (color * (A * color + B)) / (color * (C * color + D) + E);
 }
 
+float randomNoise(float x)
+{
+	return frac(sin(dot(x,78.233)) * 43758.5453);
+}
+
 //VS=================================================================================
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
 
-	vout.PosH             = float4(vin.PosL, 1.0f);
+	vout.PosH = float4(vin.PosL, 1.0f);
 
-    return vout;
+	return vout;
 }
 
 //PS====================================================================================
@@ -93,21 +93,44 @@ float4 PS(VertexOut pin) : SV_Target
 	int X = floor(pin.PosH.x);
 	int Y = floor(pin.PosH.y);
 
+	float Width = RenderTargetSize[0] ;
+	float Height = RenderTargetSize[1] ;
+
+	float DeltaU = 1.0f / RenderTargetSize[0];
+	float DeltaV = 1.0f / RenderTargetSize[1];
+
 	float2 Tex;
-	Tex.x = 1.0f * X / RenderTargetSize[0];
-	Tex.y = 1.0f * Y / RenderTargetSize[1];
-	//Tex.x = 1.0f * X / gRenderTargetSize[0];
-	//Tex.y = 1.0f * Y / gRenderTargetSize[1];
+	Tex.x = 1.0f * X / Width;
+	Tex.y = 1.0f * Y / Height;
 
-	float4 SceneColor = gSceneColor.Sample(gsamLinearWrap, Tex);
-	float4 BloomColor = gSunMergeColor.Sample(gsamLinearWrap, Tex);
+	//float4 Color0 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU, -DeltaV));
+	//float4 Color1 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU, -DeltaV));
+	//float4 Color2 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU, +DeltaV));
+	//float4 Color3 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU, +DeltaV));
+	//float4 Color4 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU, 0));
+	//float4 Color5 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU, 0));
+	//float4 Color6 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(0, +DeltaV));
+	//float4 Color7 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(0, +DeltaV));
+	//float4 AvailableColor = Color0 * 0.25f + Color1 * 0.25f + Color2 * 0.25f + Color3 * 0.25f;
+	//float4 AvailableColor = Color4 * 0.25f + Color5 * 0.25f + Color6 * 0.25f + Color7 * 0.25f;
 
-	half3 LinearColor = SceneColor.rgb + BloomColor.rgb;
+	//float4 AvailableColor = (Color0  + Color1  + Color2  + Color3  +Color4  + Color5 + Color6  + Color7 ) * 0.125f;
 
-	float4 OutColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
-	OutColor.rgb = ACESToneMapping(LinearColor, 1.0f);
-	OutColor.a = SceneColor.a;
+	float4 OutColor;
+
+	float  BlockSize = 100.0f;
+	float2 block = randomNoise(floor((Tex * BlockSize).x));
+	float  displaceNoise = pow(block.x, 8.0) * pow(block.x, 3.0);
+
+	OutColor.r = gDiffuseMap.Sample(gsamLinearClamp, Tex);
+	//OutColor.g = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU * 5, -DeltaV));
+	//OutColor.b = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU * 5, -DeltaV));
+	OutColor.g = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(displaceNoise * 0.05 * randomNoise(50.0f), 0.0f));
+	OutColor.b = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(displaceNoise * 0.05 * randomNoise(50.0f), 0.0f));
+
+	//OutColor.rgb = (AvailableColor.rgb);
+
+	OutColor.a = 1.0f;
 
 	return OutColor;
-
 };

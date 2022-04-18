@@ -16,6 +16,8 @@ public:
 
 public:
 	std::string name;
+	std::string defaultPipeline;
+
 	float width;
 	float height;
 };

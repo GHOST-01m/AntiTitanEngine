@@ -154,6 +154,7 @@ float Luminance(float3 InColor)
 {
 	return dot(InColor, float3(0.3f, 0.59f, 0.11f));
 }
+
 //VS=================================================================================
 VertexOut VS(VertexIn vin)
 {
@@ -235,5 +236,4 @@ float4 PS(VertexOut pin) : SV_Target
 	return pow(FinalColor, 1 / 2.2f);
 	//return FinalColor;
 	//return OutColor;
-
 };

@@ -37,6 +37,7 @@ public:
 	void Draw();
 		void DrawShadowPass();
 		void DrawBloomPass();
+		void DrawTestPostProcessPass();
 		void DrawScenePass();
 
 	void Destroy();
