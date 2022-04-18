@@ -497,19 +497,36 @@ void Renderer::DrawShadowPass()
 	mRHI->ClearDepthStencilView(Rendertarget);
 	mRHI->OMSetRenderTargets(Rendertarget);
 
-	for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+	auto scene = Engine::Get()->GetAssetManager()->GetScene();
+	for (auto sceneActor : scene->actorLib)
 	{
+		auto actor = sceneActor.second;
+		auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+		auto DrawMeshName = actor->staticmeshName;
+		auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
 
-		auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-		auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
-		auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
+		mRHI->CommitShaderParameter_Heap(0, actor->CBVoffset, mCbvHeap);
 		mRHI->DrawMesh(mesh);
 
 		mRHI->CommitShaderParameters();//这个提交shader函数没有做完
 	}
+
+	//for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+	//{
+	//	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+	//	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
+
+	//	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
+	//	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+	//	auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+	//	mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
+	//	mRHI->DrawMesh(mesh);
+
+	//	mRHI->CommitShaderParameters();//这个提交shader函数没有做完
+	//}
 	mRHI->RenderDocEndEvent();
 }
 
@@ -533,22 +550,36 @@ void Renderer::DrawBloomPass()
 		mRHI->OMSetRenderTargets(HDRRendertarget);
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("HDRPipeline"));
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-		for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+		
+		auto scene = Engine::Get()->GetAssetManager()->GetScene();
+		for (auto sceneActor: scene->actorLib)
 		{
+			auto actor = sceneActor.second;
 			auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-			auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
+			auto DrawMeshName = actor->staticmeshName;
 			auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
 
-			mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
-
-			//贴图
+			mRHI->CommitShaderParameter_Heap(0, actor->CBVoffset, mCbvHeap);
 			mRHI->CommitShaderParameter_Heap(1, mesh->material->GetTextureByName("TestTexture")->heapOffset, mCbvHeap);
-
-			//单独的Nromal图
 			mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
-
 			mRHI->DrawMesh(mesh);
 		}
+		//for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
+		//{
+		//	auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+		//	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
+		//	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+
+		//	mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
+
+		//	//贴图
+		//	mRHI->CommitShaderParameter_Heap(1, mesh->material->GetTextureByName("TestTexture")->heapOffset, mCbvHeap);
+
+		//	//单独的Nromal图
+		//	mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
+
+		//	mRHI->DrawMesh(mesh);
+		//}
 		mRHI->ResourceTransition(HDRRendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
 		mRHI->RenderDocEndEvent();
 	}

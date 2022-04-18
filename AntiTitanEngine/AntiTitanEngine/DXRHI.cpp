@@ -1089,6 +1089,7 @@ void DXRHI::CommitShaderParameters()
 
 	auto dxshadowRT=std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(mRenderPrimitiveManager->GetRenderTargetByName("shadowRenderTarget"));
 	mCommandList->SetGraphicsRootDescriptorTable(4, dxshadowRT->mhGpuSrvHandle);
+
 	//-------------------------------------------------------------------------------
 }
 

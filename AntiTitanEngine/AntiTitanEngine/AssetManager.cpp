@@ -58,6 +58,7 @@ void AssetManager::LoadExternalMapActor(std::string Path) {
 		actor->quat = mMapActor.ActorsQuatArray[index];
 		actor->staticmeshName = mMapActor.MeshNameArray[index];
 		actor->transform = mMapActor.ActorsTransformArray[index];
+		actor->CBVoffset = index;
 		mScene->actorLib.insert(std::pair<std::string, std::shared_ptr<Actor>>(actor->actorName, actor));
 	}
 }

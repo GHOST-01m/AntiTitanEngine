@@ -10,4 +10,7 @@ public:
 	std::string staticmeshName;
 	Transform transform;
 	Quat quat;
+
+public:
+	int CBVoffset = -1;
 };
