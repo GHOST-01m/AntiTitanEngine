@@ -117,20 +117,35 @@ float4 PS(VertexOut pin) : SV_Target
 	//float4 AvailableColor = (Color0  + Color1  + Color2  + Color3  +Color4  + Color5 + Color6  + Color7 ) * 0.125f;
 
 	float4 OutColor;
+	float4 OutColorR;
+	float4 OutColorG;
+	float4 OutColorB;
+
 
 	float  BlockSize = 100.0f;
 	float2 block = randomNoise(floor((Tex * BlockSize).x));
 	float  displaceNoise = pow(block.x, 8.0) * pow(block.x, 3.0);
 
-	OutColor.r = gDiffuseMap.Sample(gsamLinearClamp, Tex);
+	OutColor.r = (gDiffuseMap.Sample(gsamLinearClamp, Tex).r + 
+		gDiffuseMap.Sample(gsamLinearClamp, Tex).g + 
+		gDiffuseMap.Sample(gsamLinearClamp, Tex).b)*0.333;
+	OutColorR = gDiffuseMap.Sample(gsamLinearClamp, Tex);
 	//OutColor.g = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU * 5, -DeltaV));
 	//OutColor.b = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU * 5, -DeltaV));
-	OutColor.g = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU*10, 0.0f));
-	OutColor.b = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU*10, 0.0f));
-
+	
+	OutColor.g =( gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU*10, 0.0f)).r+
+		gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU * 10, 0.0f)).g+
+		gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU * 10, 0.0f)).b )*0.333;
+	OutColorG = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU * 10, 0.0f));
+	
+	OutColor.b =( gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU*10, 0.0f)).r+
+		gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU * 10, 0.0f)).g+
+		gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU * 10, 0.0f)).b)*0.333;
+	OutColorB = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(DeltaU * 10, 0.0f));
 	//OutColor.rgb = (AvailableColor.rgb);
 
 	OutColor.a = 1.0f;
 
 	return OutColor;
+	//return float4(OutColorR.r, OutColorG.g, OutColorB.b,1);
 };
