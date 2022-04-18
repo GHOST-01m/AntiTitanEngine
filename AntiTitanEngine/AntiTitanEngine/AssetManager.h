@@ -3,12 +3,14 @@
 #include "map"
 #include "vector"
 #include "FLight.h"
+#include "Scene.h"
 class AssetManager
 {
 public:
 	std::map<std::string,std::shared_ptr<StaticMesh>> StaticMeshLib;
 	std::shared_ptr<StaticMesh>   GetStaticMeshByName(std::string name);
 	void InsertStaticMeshToLib(std::string name, std::shared_ptr<StaticMesh> staticMesh);
+	std::shared_ptr<Scene> GetScene();
 
 public:
 	std::vector<std::unique_ptr<MeshGeometry>>* GetGeometryLibrary();
@@ -20,6 +22,7 @@ public:
 
 public:
 	MapActorsInfo mMapActor;
+	std::shared_ptr<Scene> mScene;
 	std::shared_ptr<FLight> mLight;
 	std::shared_ptr<FLight> GetLight();
 	std::map<int, std::string> MapofGeosMesh;//通过Mesh名字找到Geos数组里对应的MeshGeometry

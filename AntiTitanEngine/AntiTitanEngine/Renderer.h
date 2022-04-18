@@ -4,6 +4,7 @@
 #include "RenderPrimitiveManager.h"
 #include "MyStruct.h"
 #include "PipelineState_DESC.h"
+#include "Scene.h"
 #include <pix.h>
 
 class Renderer
@@ -16,11 +17,13 @@ private:
 	std::shared_ptr<RHI> mRHI;
 	std::shared_ptr<Camera> mCamera;
 	std::shared_ptr<RenderPrimitiveManager> mRenderPrimitiveManager;
+	std::shared_ptr<Scene> mScene;
 
 public:
 	std::shared_ptr<RHI> GetRHI();
 	std::shared_ptr<Camera> GetCamera();
 	std::shared_ptr<RenderPrimitiveManager> GetRenderPrimitiveManager();
+	std::shared_ptr<Scene> GetScene();
 
 public:
 	bool Init();

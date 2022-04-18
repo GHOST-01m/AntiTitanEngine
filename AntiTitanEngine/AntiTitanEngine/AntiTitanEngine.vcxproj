@@ -144,6 +144,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Actor.h" />
     <ClInclude Include="FMaterial.h" />
     <ClInclude Include="MapActorsInfo.h" />
     <ClInclude Include="AssetManager.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="OpenGLRHI.h" />
     <ClInclude Include="RHI.h" />
     <ClInclude Include="RenderPrimitiveManager.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="TopAPP.h" />
     <ClInclude Include="GameLogic.h" />
     <ClInclude Include="GameTimer.h" />
@@ -190,6 +192,7 @@
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Actor.cpp" />
     <ClCompile Include="FMaterial.cpp" />
     <ClCompile Include="MapActorsInfo.cpp" />
     <ClCompile Include="AssetManager.cpp" />
@@ -217,6 +220,7 @@
     <ClCompile Include="Primitive_Shader.cpp" />
     <ClCompile Include="Primitive_Texture.cpp" />
     <ClCompile Include="Primitive_MeshBuffer.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="TopAPP.cpp" />
     <ClCompile Include="GameLogic.cpp" />
     <ClCompile Include="GameTimer.cpp" />

@@ -124,7 +124,7 @@ public:
 		void SetScissorRect(long Right, long Bottom)override;
 
 //	void Update() override;
-		void CommitResourceToGPU(int elementIndex, ObjectConstants objConstants) override;
+		void CommitConstantBufferToGPU(int elementIndex, ObjectConstants objConstants) override;
 	
 	//void Draw() override;
 		void DrawReset() override;
@@ -137,7 +137,7 @@ public:
 		void OMSetRenderTargets(std::shared_ptr<Primitive_RenderTarget>renderTarget)override;
 		void SetDescriptorHeap(std::shared_ptr<Primitive_Heap> heap) override;
 		void SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline)override;
-		void DrawMesh(int ActorIndex, int TextureIndex)override;
+		void DrawMesh(std::shared_ptr<StaticMesh>mesh) override;
 		void DrawFinal()override;
 	
 	//Postprocess
@@ -147,7 +147,7 @@ public:
 	void CommitShaderParameter_Texture(int rootParameterIndex, std::shared_ptr<Primitive_RenderTarget> rendertarget) override;
 	void CommitShaderParameter_Constant(int rootParameterIndex, int numValue, void* value)override;
 	void CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap)override;
-	
+	void CommitShaderParameter_Heap(int rootParameterIndex, int offset, std::shared_ptr<Primitive_Heap>heap) override;
 	void FlushCommandQueue();
 	void SetSwapChain();
 	//void LoadAsset();

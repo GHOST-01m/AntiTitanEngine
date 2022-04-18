@@ -14,6 +14,11 @@ std::shared_ptr<RenderPrimitiveManager> Renderer::GetRenderPrimitiveManager()
 	return mRenderPrimitiveManager;
 }
 
+std::shared_ptr<Scene> Renderer::GetScene()
+{
+	return mScene;
+}
+
 bool Renderer::Init()
 {
 	Engine::Get()->GetAssetManager()->LoadExternalMapActor(MapActorLoadPath);
@@ -326,7 +331,7 @@ void Renderer::Update()
 		ObjectConstants objConstants;
 		UpdateShadow(index, objConstants);
 		UpdateMesh(index, objConstants);
-		mRHI->CommitResourceToGPU(index,objConstants);
+		mRHI->CommitConstantBufferToGPU(index,objConstants);
 	}
 	auto a = Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size();
 	mRHI->CalculateFrameStats();
@@ -496,7 +501,13 @@ void Renderer::DrawShadowPass()
 	{
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
-		mRHI->DrawMesh(ActorIndex, 0);
+
+		auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
+		auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+		auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+		mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
+		mRHI->DrawMesh(mesh);
+
 		mRHI->CommitShaderParameters();//这个提交shader函数没有做完
 	}
 	mRHI->RenderDocEndEvent();
@@ -524,7 +535,19 @@ void Renderer::DrawBloomPass()
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
 		{
-			mRHI->DrawMesh(ActorIndex, 0);
+			auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+			auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
+			auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+
+			mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
+
+			//贴图
+			mRHI->CommitShaderParameter_Heap(1, mesh->material->GetTextureByName("TestTexture")->heapOffset, mCbvHeap);
+
+			//单独的Nromal图
+			mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
+
+			mRHI->DrawMesh(mesh);
 		}
 		mRHI->ResourceTransition(HDRRendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
 		mRHI->RenderDocEndEvent();

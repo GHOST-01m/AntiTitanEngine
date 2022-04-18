@@ -1,14 +1,9 @@
 #include "stdafx.h"
 #include "MapActorsInfo.h"
 
-void MapActorsInfo::SetSceneActorsInfoFromBat(const std::string& StaticMeshPath) {
-
-	//std::string test = "E:/DX12Homework/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/AntiTitanEngine/MapActorInfo/MapActorInfo.bat";
-	std::string test = "MapActorInfo/MapActorInfo.bat";
+void MapActorsInfo::LoadSceneActorsInfoFromBat(const std::string& StaticMeshPath) {
 		
 	std::ifstream BatFile(StaticMeshPath, std::ios::in | std::ios::binary);
-
-	//std::ifstream BatFile(test, std::ios::in | std::ios::binary);
 
 	if (BatFile.is_open())
 	{

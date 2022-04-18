@@ -15,7 +15,7 @@ public:
 	std::vector<Quat> ActorsQuatArray;
 
 public:
-	void SetSceneActorsInfoFromBat(const std::string& filepath);
+	void LoadSceneActorsInfoFromBat(const std::string& filepath);
 
 	int Size() {
 		int size;

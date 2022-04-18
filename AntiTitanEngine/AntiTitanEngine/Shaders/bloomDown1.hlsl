@@ -101,21 +101,21 @@ float4 PS(VertexOut pin) : SV_Target
 
 	float StartRaduas = 2.0f / 14.0f;
 	float4 Color0 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 0.0f));
-	float4 Color1 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 1.0f));
-	float4 Color2 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 2.0f));
-	float4 Color3 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 3.0f));
-	float4 Color4 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 4.0f));
-	float4 Color5 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 5.0f));
-	float4 Color6 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 6.0f));
-	float4 Color7 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 7.0f));
-	float4 Color8 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 8.0f));
-	float4 Color9 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 9.0f));
-	float4 Color10 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 10.0f));
-	float4 Color11 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 11.0f));
-	float4 Color12 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 12.0f));
-	float4 Color13 = gBloomInput.Sample(gsamPointClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 13.0f));
+	float4 Color1 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 1.0f));
+	float4 Color2 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 2.0f));
+	float4 Color3 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 3.0f));
+	float4 Color4 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 4.0f));
+	float4 Color5 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 5.0f));
+	float4 Color6 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 6.0f));
+	float4 Color7 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 7.0f));
+	float4 Color8 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 8.0f));
+	float4 Color9 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 9.0f));
+	float4 Color10 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 10.0f));
+	float4 Color11 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 11.0f));
+	float4 Color12 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 12.0f));
+	float4 Color13 = gBloomInput.Sample(gsamLinearClamp, Tex + DeltaUV * BloomDownScale * Circle(StartRaduas, 14.0f, 13.0f));
 
-	float4 Color = gBloomInput.Sample(gsamPointClamp, Tex);
+	float4 Color = gBloomInput.Sample(gsamLinearClamp, Tex);
 
 	float Weight = 1.0f / 15.0f;
 

@@ -988,7 +988,7 @@ void DXRHI::SetScissorRect(long Right, long Bottom)
 	mScissorRect = { 0, 0, Right, Bottom };
 	mCommandList->RSSetScissorRects(1, &mScissorRect);
 }
-void DXRHI::CommitResourceToGPU(int elementIndex, ObjectConstants objConstants)
+void DXRHI::CommitConstantBufferToGPU(int elementIndex, ObjectConstants objConstants)
 {
 	mObjectCB->CopyData(elementIndex, objConstants);
 }
@@ -1092,31 +1092,11 @@ void DXRHI::CommitShaderParameters()
 	//-------------------------------------------------------------------------------
 }
 
-void DXRHI::DrawMesh(int ActorIndex,int TextureIndex)
+void DXRHI::DrawMesh(std::shared_ptr<StaticMesh>mesh)
 {
-	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
-	auto mCbvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
-
 	mCommandList->IASetVertexBuffers(0, 1, &std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetVertexBufferView());
 	mCommandList->IASetIndexBuffer(&std::dynamic_pointer_cast<DXPrimitive_MeshBuffer>(mesh->meshBuffer)->GetIndexBufferView());
 	mCommandList->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	heapHandle.Offset(ActorIndex, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
-
-	//ÌùÍ¼
-	auto GPUHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	GPUHandle.Offset(mesh->material->GetTextureByName("TestTexture")->heapOffset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	mCommandList->SetGraphicsRootDescriptorTable(1, GPUHandle);
-
-	//µ¥¶ÀµÄNromalÍ¼
-	auto TextureHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-	TextureHandle.Offset(mesh->material->GetTextureByName("NormalTexture")->heapOffset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
-	mCommandList->SetGraphicsRootDescriptorTable(3, TextureHandle);
-
 	mCommandList->DrawIndexedInstanced(UINT(mesh->MeshInfo.MeshIndexInfo.size()), 1, 0, 0, 0);
 }
 
@@ -1236,6 +1216,14 @@ void DXRHI::CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Pri
 	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(mCbvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	heapHandle.Offset(offset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	mCommandList->SetGraphicsRootDescriptorTable(0, heapHandle);
+}
+
+void DXRHI::CommitShaderParameter_Heap(int rootParameterIndex, int offset, std::shared_ptr<Primitive_Heap>heap)
+{
+	auto dxheap = std::dynamic_pointer_cast<DXPrimitive_Heap>(heap);
+	auto heapHandle = CD3DX12_GPU_DESCRIPTOR_HANDLE(dxheap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	heapHandle.Offset(offset, md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	mCommandList->SetGraphicsRootDescriptorTable(rootParameterIndex, heapHandle);
 }
 
 void DXRHI::FlushCommandQueue()

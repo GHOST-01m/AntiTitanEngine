@@ -10,6 +10,11 @@ void AssetManager::InsertStaticMeshToLib(std::string name, std::shared_ptr<Stati
 	StaticMeshLib.insert(std::pair<std::string, std::shared_ptr<StaticMesh>>(name, staticMesh));
 }
 
+std::shared_ptr<Scene> AssetManager::GetScene()
+{
+	return mScene;
+}
+
 std::vector<std::unique_ptr<MeshGeometry>>* AssetManager::GetGeometryLibrary()
 {
 	return &Geos;
@@ -44,7 +49,17 @@ std::shared_ptr<FLight> AssetManager::GetLight()
 }
 
 void AssetManager::LoadExternalMapActor(std::string Path) {
-	mMapActor.SetSceneActorsInfoFromBat(Path);
+	mMapActor.LoadSceneActorsInfoFromBat(Path);
+	mScene = std::make_shared<Scene>();
+	for (auto index=0;index< mMapActor.Size();index++)
+	{
+		std::shared_ptr<Actor> actor=std::make_shared<Actor>();
+		actor->actorName = mMapActor.ActorNameArray[index];
+		actor->quat = mMapActor.ActorsQuatArray[index];
+		actor->staticmeshName = mMapActor.MeshNameArray[index];
+		actor->transform = mMapActor.ActorsTransformArray[index];
+		mScene->actorLib.insert(std::pair<std::string, std::shared_ptr<Actor>>(actor->actorName, actor));
+	}
 }
 
 void AssetManager::LoadAsset(

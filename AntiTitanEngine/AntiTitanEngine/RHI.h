@@ -37,7 +37,7 @@ public:
 
 
 //	virtual void Update()=0;
-		virtual void CommitResourceToGPU(int elementIndex, ObjectConstants objConstants) = 0;
+		virtual void CommitConstantBufferToGPU(int elementIndex, ObjectConstants objConstants) = 0;
 		virtual void CalculateFrameStats()=0;
 	//virtual void Draw() = 0;
 		//virtual void DrawSceneToShadowMap() = 0;
@@ -52,7 +52,7 @@ public:
 		virtual void SetDescriptorHeap(std::shared_ptr<Primitive_Heap> heap) = 0;
 		virtual void SetPipelineState(std::shared_ptr<Primitive_Pipeline> pipeline) = 0;
 		virtual void CommitShaderParameters() = 0;
-		virtual void DrawMesh(int ActorIndex,int TextureIndex) = 0;
+		virtual void DrawMesh(std::shared_ptr<StaticMesh>mesh) = 0;
 		virtual void DrawFinal() = 0;
 
 
@@ -61,6 +61,8 @@ public:
 		virtual void CommitShaderParameter_Texture(int rootParameterIndex, std::shared_ptr<Primitive_RenderTarget> rendertarget) = 0;
 		virtual void CommitShaderParameter_Constant(int rootParameterIndex, int numValue,void* value) = 0;
 		virtual void CommitShaderParameter_ConstantBuffer(int offset, std::shared_ptr<Primitive_Heap>heap) = 0;
+		virtual void CommitShaderParameter_Heap(int rootParameterIndex,int offset, std::shared_ptr<Primitive_Heap>heap) = 0;
+
 
 		virtual void RenderDocBeginEvent(std::string)=0;
 		virtual void RenderDocEndEvent()=0;

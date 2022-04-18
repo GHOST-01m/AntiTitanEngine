@@ -92,10 +92,10 @@ float4 PS(VertexOut pin) : SV_Target
 	Tex.x = 1.0f * X / Width;
 	Tex.y = 1.0f * Y / Height;
 
-	float4 Color0 = gDiffuseMap.Sample(gsamPointClamp, Tex + float2(-DeltaU, -DeltaV));
-	float4 Color1 = gDiffuseMap.Sample(gsamPointClamp, Tex + float2(+DeltaU, -DeltaV));
-	float4 Color2 = gDiffuseMap.Sample(gsamPointClamp, Tex + float2(-DeltaU, +DeltaV));
-	float4 Color3 = gDiffuseMap.Sample(gsamPointClamp, Tex + float2(+DeltaU, +DeltaV));
+	float4 Color0 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU, -DeltaV));
+	float4 Color1 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU, -DeltaV));
+	float4 Color2 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(-DeltaU, +DeltaV));
+	float4 Color3 = gDiffuseMap.Sample(gsamLinearClamp, Tex + float2(+DeltaU, +DeltaV));
 
 	float4 AvailableColor = Color0 * 0.25f + Color1 * 0.25f + Color2 * 0.25f + Color3 * 0.25f;
 
