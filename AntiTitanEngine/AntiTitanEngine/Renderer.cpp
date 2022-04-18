@@ -859,8 +859,8 @@ void Renderer::DrawScenePass()
 		mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
 		mRHI->ClearDepthStencilView(Rendertarget);
 		mRHI->OMSetRenderTargets(Rendertarget);
-		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
-		//mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
+		//mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
 		
 		FVector4* screenSize = new FVector4();
 		screenSize->X = mClientWidth ;
