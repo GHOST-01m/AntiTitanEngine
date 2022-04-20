@@ -581,7 +581,6 @@ void Renderer::DrawShadowPass()
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
-
 		mRHI->CommitShaderParameter_Heap(0, actor->CBVoffset, mCbvHeap);
 		mRHI->DrawMesh(mesh);
 
@@ -695,7 +694,7 @@ void Renderer::DrawBloomPass()
 		mRHI->OMSetRenderTargets(Down2Rendertarget);
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("bloomDownPipeline"));
 
-		FVector4* screenSize = new FVector4();
+		std::unique_ptr<FVector4> screenSize = std::make_unique<FVector4>();
 		screenSize->X = mClientWidth/4;
 		screenSize->Y = mClientHeight/4;
 		screenSize->Z = -1.0f;
@@ -703,9 +702,9 @@ void Renderer::DrawBloomPass()
 
 		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
 		mRHI->CommitShaderParameter_Texture(1, SetupRendertarget);
-		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize.get());
 		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-		delete screenSize;
+		
 		mRHI->ResourceTransition(Down2Rendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
 		mRHI->RenderDocEndEvent();
 	}
