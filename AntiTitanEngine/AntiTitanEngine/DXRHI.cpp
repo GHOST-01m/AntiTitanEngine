@@ -613,7 +613,7 @@ std::shared_ptr<Primitive_Pipeline> DXRHI::CreatePipeline(std::string pipelineNa
 		};
 	}
 
-		psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+	psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 
 	psoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 	psoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
@@ -654,10 +654,10 @@ std::shared_ptr<Primitive_Pipeline> DXRHI::CreatePipeline(std::string pipelineNa
 
 std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 	std::string RenderTargetName,
-	int resourceDimension, int initialResourceStateType, int ResourceFormat,
-	std::shared_ptr<Primitive_Heap>rtvHeap, int rtvOffset,
-	std::shared_ptr<Primitive_Heap>srvHeap, int srvOffset,
-	std::shared_ptr<Primitive_Heap>dsvHeap, int dsvOffset,
+	int resourceDimension, int ResourceFormat,
+	std::shared_ptr<Primitive_Heap>rtvHeap,
+	std::shared_ptr<Primitive_Heap>srvHeap,
+	std::shared_ptr<Primitive_Heap>dsvHeap, 
 	bool rtvBindToSwapChain, int SwapChainCount, float Width, float Height)
 {
 	auto Rendertarget = std::make_shared<DXPrimitive_RenderTarget>();
@@ -679,17 +679,19 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 		auto rtvSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		auto mRtvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(rtvHeap);
 		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-		rtvHeapHandle.Offset(rtvOffset, rtvSize);
+		
+		rtvHeapHandle.Offset(mRtvHeap->currentHeapOffset, rtvSize);
 		for (auto i = 0; i < SwapChainCount; i++)
 		{
 			if (rtvBindToSwapChain)
 			{
 				ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->mResource)));
 				md3dDevice->CreateRenderTargetView(std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->mResource.Get(), nullptr, rtvHeapHandle);
-				std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->rtvHeapOffsetLocation = rtvOffset;
+				std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->rtvHeapOffsetLocation = mRtvHeap->currentHeapOffset;
 				std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->rtvSize = rtvSize;
 				rtvHeapHandle.Offset(1, mRtvDescriptorSize);
-				rtvOffset++;
+				
+				mRtvHeap->currentHeapOffset++;
 			}
 			else
 			{
@@ -705,11 +707,11 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 
 				md3dDevice->CreateRenderTargetView(std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->mResource.Get(), &rtvDesc, rtvHeapHandle);
-				std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->rtvHeapOffsetLocation = rtvOffset;
+				std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->rtvHeapOffsetLocation = mRtvHeap->currentHeapOffset;
 				std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->mSwapChainResource[i])->rtvSize = rtvSize;
 
 				rtvHeapHandle.Offset(1, mRtvDescriptorSize);
-				rtvOffset++;
+				mRtvHeap->currentHeapOffset++;
 			}
 		}
 		Rendertarget->rtvHeapName = mRtvHeap->name;
@@ -721,7 +723,7 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 		CreateResource(
 			std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource()),
 			D24_UNORM_S8_UINT, resourceDimension,
-			initialResourceStateType,
+			STATE_DEPTH_WRITE,
 			int(Width), int(Height),false);
 
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
@@ -735,11 +737,12 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 
 		auto mDsvHeap=std::dynamic_pointer_cast<DXPrimitive_Heap>(dsvHeap);
 		Rendertarget->mhCpuDsvHandle = mDsvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		Rendertarget->mhCpuDsvHandle.Offset(dsvOffset, DsvSize);
+		Rendertarget->mhCpuDsvHandle.Offset(mDsvHeap->currentHeapOffset, DsvSize);
 		//ResourceTransition(Rendertarget->GetCommonResource(),1);
 		md3dDevice->CreateDepthStencilView(std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource())->mResource.Get(), &dsvDesc, Rendertarget->mhCpuDsvHandle);
-		std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource())->dsvHeapOffsetLocation = dsvOffset;
+		std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource())->dsvHeapOffsetLocation = mDsvHeap->currentHeapOffset;
 		std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource())->dsvSize = DsvSize;
+		mDsvHeap->currentHeapOffset++;
 	}
 
 	if (srvHeap != nullptr)
@@ -761,9 +764,10 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 
 		auto mSrvHeap = std::dynamic_pointer_cast<DXPrimitive_Heap>(srvHeap);
 		Rendertarget->mhCpuSrvHandle = mSrvHeap->mDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		Rendertarget->mhCpuSrvHandle.Offset(srvOffset, srvSize);
+		Rendertarget->mhCpuSrvHandle.Offset(mSrvHeap->currentHeapOffset, srvSize);
 		Rendertarget->mhGpuSrvHandle = mSrvHeap->mDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-		Rendertarget->mhGpuSrvHandle.Offset(srvOffset, srvSize);
+		Rendertarget->mhGpuSrvHandle.Offset(mSrvHeap->currentHeapOffset, srvSize);
+		
 		if (rtvHeap == nullptr)
 		{
 			md3dDevice->CreateShaderResourceView(std::dynamic_pointer_cast<DXPrimitive_GPUResource>(Rendertarget->GetDSVResource())->mResource.Get(), &srvDesc, Rendertarget->mhCpuSrvHandle);
@@ -773,6 +777,8 @@ std::shared_ptr<Primitive_RenderTarget> DXRHI::CreateRenderTarget(
 			md3dDevice->CreateShaderResourceView(std::dynamic_pointer_cast<DXPrimitive_GPUResource>(dxRendertarget->mSwapChainResource[0])->mResource.Get(), &srvDesc, Rendertarget->mhCpuSrvHandle);
 			std::dynamic_pointer_cast<DXPrimitive_GPUResource>(dxRendertarget->mSwapChainResource[0])->srvSize = srvSize;
 		}
+
+		mSrvHeap->currentHeapOffset++;
 	}
 
 	return Rendertarget;
@@ -1106,17 +1112,14 @@ void DXRHI::DrawFinal()
 	auto mRenderPrimitiveManager = Engine::Get()->GetRenderer()->GetRenderPrimitiveManager();
 	auto baseRenderRarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
 	auto currentBackBuffer = std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(baseRenderRarget)->GetCurrentSwapChainBuffer();
-	auto CurrentBackBufferResource = std::dynamic_pointer_cast<DXPrimitive_GPUResource>(currentBackBuffer)->mResource;
 
 	auto mCamera = Engine::Get()->GetRenderer()->GetCamera();
 	mCommandList->SetGraphicsRoot32BitConstants(2, 4, &mCamera->GetPosition(), 0);
 
-	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBufferResource.Get(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
+	ResourceTransition(currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT);
+	
 	ExecuteCommandList();
-	//WaitCommandComplete();
-	// swap the back and front buffers
+
 	ThrowIfFailed(mSwapChain->Present(0, 0));
 
 	auto SwapChainBufferCount = std::dynamic_pointer_cast<DXPrimitive_RenderTarget>(baseRenderRarget)->GetSwapChainBufferCount();

@@ -98,6 +98,9 @@ void Renderer::CreateShader()
 	mRenderPrimitiveManager->InsertShaderToLib("HDR",
 		mRHI->CreateShader("HDR", L"Shaders\\HDR.hlsl"));
 
+	mRenderPrimitiveManager->InsertShaderToLib("HDRShadowHighLightLess",
+		mRHI->CreateShader("HDRShadowHighLightLess", L"Shaders\\HDRShadowHighLightLess.hlsl"));
+
 	mRenderPrimitiveManager->InsertShaderToLib("bloomSetup",
 		mRHI->CreateShader("bloomSetup", L"Shaders\\bloomSetup.hlsl"));
 	
@@ -115,6 +118,9 @@ void Renderer::CreateShader()
 
 	mRenderPrimitiveManager->InsertShaderToLib("TestPostProcess",
 		mRHI->CreateShader("TestPostProcess", L"Shaders\\TestPostProcess.hlsl"));
+
+	mRenderPrimitiveManager->InsertShaderToLib("EdgeDetectionSobel",
+		mRHI->CreateShader("EdgeDetectionSobel", L"Shaders\\EdgeDetectionSobel.hlsl"));
 }
 
 void Renderer::CreatePipeline()
@@ -129,10 +135,15 @@ void Renderer::CreatePipeline()
 	mRenderPrimitiveManager->InsertPipelineToLib("shadowPipeline",
 		mRHI->CreatePipeline("shadowPipeline", shadowShader, 0, RenderTargetFormat_UNKNOWN, true));
 
-	//Bloom管线===================================================================
+	//HDR管线===================================================================
 	auto HDRShader = mRenderPrimitiveManager->GetShaderByName("HDR");
 	mRenderPrimitiveManager->InsertPipelineToLib("HDRPipeline",
 		mRHI->CreatePipeline("HDRPipeline", HDRShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
+
+	auto HDRHDRShadowHighLightLessShader = mRenderPrimitiveManager->GetShaderByName("HDRShadowHighLightLess");
+	mRenderPrimitiveManager->InsertPipelineToLib("HDRShadowHighLightLessPipeline",
+		mRHI->CreatePipeline("HDRShadowHighLightLessPipeline", HDRHDRShadowHighLightLessShader, 1, RenderTargetFormat_R16G16B16A16_FLOAT, false));
+	//Bloom管线===================================================================
 
 	auto bloomSetUpShader = mRenderPrimitiveManager->GetShaderByName("bloomSetup");
 	mRenderPrimitiveManager->InsertPipelineToLib("bloomSetupPipeline",
@@ -157,6 +168,10 @@ void Renderer::CreatePipeline()
 	auto TestPostProcessShader = mRenderPrimitiveManager->GetShaderByName("TestPostProcess");
 	mRenderPrimitiveManager->InsertPipelineToLib("TestPostProcessPipeline",
 		mRHI->CreatePipeline("TestPostProcessPipeline", TestPostProcessShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
+	
+		auto EdgeDetectionSobelShader = mRenderPrimitiveManager->GetShaderByName("EdgeDetectionSobel");
+	mRenderPrimitiveManager->InsertPipelineToLib("EdgeDetectionSobelPipeline",
+		mRHI->CreatePipeline("EdgeDetectionSobelPipeline", EdgeDetectionSobelShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
 }
 
 void Renderer::CreateRenderTarget()
@@ -164,110 +179,120 @@ void Renderer::CreateRenderTarget()
 	//基础RenderTarget=======================================================
 	{
 	auto baseRenderTarget = mRHI->CreateRenderTarget(
-		"baseRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R8G8B8A8_UNORM,
-		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),0,
-		nullptr,0,
-		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),0,
+		"baseRenderTarget", TEXTURE2D, R8G8B8A8_UNORM,
+		mRenderPrimitiveManager->GetHeapByName("mRtvHeap"),
+		nullptr,
+		mRenderPrimitiveManager->GetHeapByName("mDsvHeap"),
 		true, 2, mClientWidth,mClientHeight);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("baseRenderTarget", baseRenderTarget);
 	}
 	//阴影RenderTarget=====================================================
 	{
 	auto shadowRenderTarget = mRHI->CreateRenderTarget(
-		"shadowRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE , D24_UNORM_S8_UINT,
-		nullptr, 0,
-		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"), 0,
-		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"), 0,
+		"shadowRenderTarget", TEXTURE2D,  D24_UNORM_S8_UINT,
+		nullptr, 
+		mRenderPrimitiveManager->GetHeapByName("mShadowSrvDescriptorHeap"), 
+		mRenderPrimitiveManager->GetHeapByName("mShadowDsvDescriptorHeap"), 
 		false, 0, 2048,2048);
 	mRenderPrimitiveManager->InsertRenderTargetToLib("shadowRenderTarget", shadowRenderTarget);
 	}
+	//HDRRenderTarget=====================================================
+	{
+		auto HDRShadowHighLightLessRenderTarget = mRHI->CreateRenderTarget(
+			"HDRShadowHighLightLessRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+			mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
+			false, 1, mClientWidth, mClientHeight);
+		mRenderPrimitiveManager->InsertRenderTargetToLib("HDRShadowHighLightLessRenderTarget", HDRShadowHighLightLessRenderTarget);
+	}
 	//BloomRenderTarget=====================================================
-	{ 
+	{
 		{
 			auto HDRRenderTarget = mRHI->CreateRenderTarget(
-				"HDRRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 0,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 0,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 0,
+				"HDRRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, mClientWidth, mClientHeight);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("HDRRenderTarget", HDRRenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomSetupRenderTarget = mRHI->CreateRenderTarget(
-				"bloomSetupRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 1,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 1,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 1,
+				"bloomSetupRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, mClientWidth / 4, mClientHeight / 4);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomSetupRenderTarget", bloomSetupRenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomDown2RenderTarget = mRHI->CreateRenderTarget(
-				"bloomDown2RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 2,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 2,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 2,
+				"bloomDown2RenderTarget", TEXTURE2D, R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, (mClientWidth / 4) / 2, (mClientHeight / 4) / 2);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDown2RenderTarget", bloomDown2RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomDown3RenderTarget = mRHI->CreateRenderTarget(
-				"bloomDown3RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 3,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 3,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 3,
+				"bloomDown3RenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, ((mClientWidth / 4) / 2)/2, ((mClientHeight / 4) / 2)/2);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDown3RenderTarget", bloomDown3RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomDown4RenderTarget = mRHI->CreateRenderTarget(
-				"bloomDown4RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 4,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 4,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 4,
+				"bloomDown4RenderTarget", TEXTURE2D, R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, (((mClientWidth / 4) / 2) / 2)/2, (((mClientHeight / 4) / 2) / 2)/2);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomDown4RenderTarget", bloomDown4RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomUpRenderTarget = mRHI->CreateRenderTarget(
-				"bloomUpRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 5,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 5,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 5,
+				"bloomUpRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, (((mClientWidth / 4) / 2) / 2), (((mClientHeight / 4) / 2) / 2));
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomUpRenderTarget", bloomUpRenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomUp2RenderTarget = mRHI->CreateRenderTarget(
-				"bloomUp2RenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 6,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 6,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 6,
+				"bloomUp2RenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, (mClientWidth / 4)/2, (mClientHeight / 4)/2 );
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomUp2RenderTarget", bloomUp2RenderTarget);
 		}
 		//------------------------------------
 		{
 			auto bloomMergeRenderTarget = mRHI->CreateRenderTarget(
-				"bloomMergeRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 7,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 7,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 7,
+				"bloomMergeRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, (mClientWidth / 4) , (mClientHeight / 4) );
 			mRenderPrimitiveManager->InsertRenderTargetToLib("bloomMergeRenderTarget", bloomMergeRenderTarget);
 		}
 		{
 			auto ToneMapRenderTarget = mRHI->CreateRenderTarget(
-				"ToneMapRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R8G8B8A8_UNORM,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 8,
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 8,
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 8,
+				"ToneMapRenderTarget", TEXTURE2D, R8G8B8A8_UNORM,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 				false, 1, mClientWidth, mClientHeight);
 			mRenderPrimitiveManager->InsertRenderTargetToLib("ToneMapRenderTarget", ToneMapRenderTarget);
 		}
@@ -275,12 +300,22 @@ void Renderer::CreateRenderTarget()
 	//TestPostProcess======================================
 	{
 		auto TestPostProcessRenderTarget = mRHI->CreateRenderTarget(
-			"TestPostProcessRenderTarget", TEXTURE2D, STATE_DEPTH_WRITE, R8G8B8A8_UNORM,
-			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 9,
-			mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 9,
-			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 9,
+			"TestPostProcessRenderTarget", TEXTURE2D, R8G8B8A8_UNORM,
+			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+			mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 			false, 1, mClientWidth, mClientHeight);
 		mRenderPrimitiveManager->InsertRenderTargetToLib("TestPostProcessRenderTarget", TestPostProcessRenderTarget);
+	}
+	//EdgeDetectionSobel===================================
+	{
+		auto EdgeDetectionSobelRenderTarget = mRHI->CreateRenderTarget(
+			"EdgeDetectionSobelRenderTarget", TEXTURE2D, R8G8B8A8_UNORM,
+			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
+			mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
+			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
+			false, 1, mClientWidth, mClientHeight);
+		mRenderPrimitiveManager->InsertRenderTargetToLib("EdgeDetectionSobelRenderTarget", EdgeDetectionSobelRenderTarget);
 	}
 }
 
@@ -341,12 +376,51 @@ void Renderer::Draw()
 {
 	mRHI->DrawReset();
 
+	DrawBaseScenePass();
 	DrawShadowPass();
 	DrawBloomPass();
 	DrawTestPostProcessPass();
 	DrawScenePass();
 
 	mRHI->DrawFinal();
+}
+
+void Renderer::DrawBaseScenePass()
+{
+	{
+		mRHI->RenderDocBeginEvent("DrawHDRBaseScene");
+		// Draw HDR Scene ================================================
+		auto HDRShadowHighLightLessRenderTarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRShadowHighLightLessRenderTarget");
+
+		mRHI->SetScreenSetViewPort(
+			HDRShadowHighLightLessRenderTarget->width,
+			HDRShadowHighLightLessRenderTarget->height);
+		mRHI->SetScissorRect(
+			long(HDRShadowHighLightLessRenderTarget->width),
+			long(HDRShadowHighLightLessRenderTarget->height));
+		mRHI->ResourceTransition(HDRShadowHighLightLessRenderTarget->mSwapChainResource[0], STATE_RENDER_TARGET);
+		mRHI->ClearRenderTargetView(HDRShadowHighLightLessRenderTarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(HDRShadowHighLightLessRenderTarget);
+		mRHI->OMSetRenderTargets(HDRShadowHighLightLessRenderTarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("HDRShadowHighLightLessPipeline"));
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+
+		auto scene = Engine::Get()->GetAssetManager()->GetScene();
+		for (auto sceneActor : scene->actorLib)
+		{
+			auto actor = sceneActor.second;
+			auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+			auto DrawMeshName = actor->staticmeshName;
+			auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+
+			mRHI->CommitShaderParameter_Heap(0, actor->CBVoffset, mCbvHeap);
+			mRHI->CommitShaderParameter_Heap(1, mesh->material->GetTextureByName("TestTexture")->heapOffset, mCbvHeap);
+			mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
+			mRHI->DrawMesh(mesh);
+		}
+		mRHI->ResourceTransition(HDRShadowHighLightLessRenderTarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
+		mRHI->RenderDocEndEvent();
+	}
 }
 
 void Renderer::UpdateMesh(int i, ObjectConstants& objConstants)
@@ -514,19 +588,6 @@ void Renderer::DrawShadowPass()
 		mRHI->CommitShaderParameters();//这个提交shader函数没有做完
 	}
 
-	//for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
-	//{
-	//	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
-	//	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("shadowPipeline"));
-
-	//	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-	//	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
-	//	auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-	//	mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
-	//	mRHI->DrawMesh(mesh);
-
-	//	mRHI->CommitShaderParameters();//这个提交shader函数没有做完
-	//}
 	mRHI->RenderDocEndEvent();
 }
 
@@ -824,35 +885,70 @@ void Renderer::DrawBloomPass()
 
 void Renderer::DrawTestPostProcessPass()
 {
-	mRHI->RenderDocBeginEvent("TestPostProcess");
-	auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
-	auto TestPostProcessRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("TestPostProcessRenderTarget");
-	mRHI->SetScreenSetViewPort(
-		TestPostProcessRendertarget->width,
-		TestPostProcessRendertarget->height);
-	mRHI->SetScissorRect(
-		long(TestPostProcessRendertarget->width),
-		long(TestPostProcessRendertarget->height));
-	mRHI->ResourceTransition(TestPostProcessRendertarget->mSwapChainResource[0], STATE_RENDER_TARGET);
-	mRHI->ClearRenderTargetView(TestPostProcessRendertarget, mClearColor, 0);
-	mRHI->ClearDepthStencilView(TestPostProcessRendertarget);
-	mRHI->OMSetRenderTargets(TestPostProcessRendertarget);
-	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
+	{
+		//Glich======================================================
+		mRHI->RenderDocBeginEvent("TestPostProcess");
+		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
+		auto TestPostProcessRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("TestPostProcessRenderTarget");
+		mRHI->SetScreenSetViewPort(
+			TestPostProcessRendertarget->width,
+			TestPostProcessRendertarget->height);
+		mRHI->SetScissorRect(
+			long(TestPostProcessRendertarget->width),
+			long(TestPostProcessRendertarget->height));
+		mRHI->ResourceTransition(TestPostProcessRendertarget->mSwapChainResource[0], STATE_RENDER_TARGET);
+		mRHI->ClearRenderTargetView(TestPostProcessRendertarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(TestPostProcessRendertarget);
+		mRHI->OMSetRenderTargets(TestPostProcessRendertarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
 
-	FVector4* screenSize = new FVector4();
-	screenSize->X = mClientWidth;
-	screenSize->Y = mClientHeight;
-	screenSize->Z = -1.0f;
-	screenSize->W = -1.0f;
+		FVector4* screenSize = new FVector4();
+		screenSize->X = mClientWidth;
+		screenSize->Y = mClientHeight;
+		screenSize->Z = -1.0f;
+		screenSize->W = -1.0f;
 
-	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
-	mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
-	mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
+		mRHI->CommitShaderParameter_Texture(1, HDRRendertarget);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
 
-	delete screenSize;
-	mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
-	mRHI->ResourceTransition(TestPostProcessRendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
-	mRHI->RenderDocEndEvent();
+		delete screenSize;
+		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		mRHI->ResourceTransition(TestPostProcessRendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
+		mRHI->RenderDocEndEvent();
+	}
+	{
+		//EdgeDetectionSobel=============================================
+		mRHI->RenderDocBeginEvent("EdgeDetectionSobel");
+		auto HDRShadowHighLightLessRenderTarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRShadowHighLightLessRenderTarget");
+		auto EdgeDetectionSobelRenderTarget = mRenderPrimitiveManager->GetRenderTargetByName("EdgeDetectionSobelRenderTarget");
+		mRHI->SetScreenSetViewPort(
+			EdgeDetectionSobelRenderTarget->width,
+			EdgeDetectionSobelRenderTarget->height);
+		mRHI->SetScissorRect(
+			long(EdgeDetectionSobelRenderTarget->width),
+			long(EdgeDetectionSobelRenderTarget->height));
+		mRHI->ResourceTransition(EdgeDetectionSobelRenderTarget->mSwapChainResource[0], STATE_RENDER_TARGET);
+		mRHI->ClearRenderTargetView(EdgeDetectionSobelRenderTarget, mClearColor, 0);
+		mRHI->ClearDepthStencilView(EdgeDetectionSobelRenderTarget);
+		mRHI->OMSetRenderTargets(EdgeDetectionSobelRenderTarget);
+		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("EdgeDetectionSobelPipeline"));
+
+		FVector4* screenSize = new FVector4();
+		screenSize->X = mClientWidth;
+		screenSize->Y = mClientHeight;
+		screenSize->Z = -1.0f;
+		screenSize->W = -1.0f;
+
+		mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"));
+		mRHI->CommitShaderParameter_Texture(1, HDRShadowHighLightLessRenderTarget);
+		mRHI->CommitShaderParameter_Constant(2, 4, screenSize);
+
+		delete screenSize;
+		mRHI->BuildTriangleAndDraw(Engine::Get()->GetAssetManager()->GetStaticMeshByName("triangle")->meshBuffer);
+		mRHI->ResourceTransition(EdgeDetectionSobelRenderTarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
+		mRHI->RenderDocEndEvent();
+	}
 }
 
 void Renderer::DrawScenePass()
@@ -898,9 +994,10 @@ void Renderer::DrawScenePass()
 	{
 		mRHI->RenderDocBeginEvent("ToneMap");
 
+		//auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRShadowHighLightLessRenderTarget");
 		auto HDRRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRRenderTarget");
 		auto bloomMergeRendertarget = mRenderPrimitiveManager->GetRenderTargetByName("bloomMergeRenderTarget");
-
+		
 		auto Rendertarget = mRenderPrimitiveManager->GetRenderTargetByName("baseRenderTarget");
 
 		mRHI->SetScreenSetViewPort(
@@ -909,11 +1006,13 @@ void Renderer::DrawScenePass()
 		mRHI->SetScissorRect(
 			long(Rendertarget->width),
 			long(Rendertarget->height));
-		mRHI->ResourceBarrier();
+		//mRHI->ResourceBarrier();
+		mRHI->ResourceTransition(Rendertarget->GetCurrentSwapChainBuffer(),STATE_RENDER_TARGET);
 		mRHI->ClearRenderTargetView(Rendertarget, mClearColor, 0);
 		mRHI->ClearDepthStencilView(Rendertarget);
 		mRHI->OMSetRenderTargets(Rendertarget);
 		//mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("TestPostProcessPipeline"));
+		//mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("EdgeDetectionSobelPipeline"));
 		mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("ToneMapPipeline"));
 		
 		FVector4* screenSize = new FVector4();

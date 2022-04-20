@@ -8,7 +8,7 @@ DXPrimitive_Heap::~DXPrimitive_Heap()
 
 int DXPrimitive_Heap::GetCurrentHeapSize()
 {
-	return currentHeapSize;
+	return currentHeapOffset;
 }
 
 Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DXPrimitive_Heap::GetDXHeap()

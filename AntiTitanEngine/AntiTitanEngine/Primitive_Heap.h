@@ -8,6 +8,6 @@ public:
 	virtual int GetCurrentHeapSize()=0;
 
 public:
-	int currentHeapSize;
+	int currentHeapOffset;
 };
 

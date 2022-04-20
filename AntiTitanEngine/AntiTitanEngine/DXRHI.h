@@ -89,7 +89,7 @@ public:
 		std::shared_ptr<Primitive_Heap> CreateDescriptorHeap(std::string heapName, int NumDescriptors, int HeapType, int Flag) override;//Type:0-CBVSRVUAV  1-SAMPLE  2-RTV  3-DSV  4-NUMTYPE
 		std::shared_ptr<Primitive_Shader> CreateShader(std::string ShaderName, std::wstring ShaderPath) override;//InputLayout暂时写死了
 		std::shared_ptr<Primitive_Pipeline> CreatePipeline(std::string pipelineName, std::shared_ptr<Primitive_Shader>,int NumRenderTargets, int RenderTargetType, bool isShadowPipeline) override;//暂定type0是basepipeline用的，1是shadow用的
-		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceDimension, int initialResourceStateType, int ResourceFormat, std::shared_ptr<Primitive_Heap>rtvHeap, int rtvOffset, std::shared_ptr<Primitive_Heap>srvHeap, int srvOffset, std::shared_ptr<Primitive_Heap>dsvHeap, int dsvOffset, bool rtvBindToSwapChain, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
+		std::shared_ptr<Primitive_RenderTarget> CreateRenderTarget(std::string RenderTargetName, int resourceDimension, int ResourceFormat, std::shared_ptr<Primitive_Heap>rtvHeap, std::shared_ptr<Primitive_Heap>srvHeap, std::shared_ptr<Primitive_Heap>dsvHeap, bool rtvBindToSwapChain, int SwapChainCount, float Width, float Height)override;//resourceType: 0.UNKNOW;1.BUFFER;2.TEXTURE1D;3.TEXTURE2D;4.TEXTURE3D
 		std::shared_ptr<Primitive_MeshBuffer> CreateMeshBuffer(std::shared_ptr<StaticMesh> mesh) override;
 		std::shared_ptr<Primitive_Texture> CreateTexture(std::string, std::wstring Path, int currentHeapOffset) override;
 

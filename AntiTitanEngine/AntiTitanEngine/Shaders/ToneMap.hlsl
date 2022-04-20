@@ -49,7 +49,7 @@ struct VertexIn
     float4 Color     : COLOR;
 	float4 Normal    : NORMAL;
 	float4 Tangent   : TANGENT;
-	float4 Bitangent  : BITANGENT;
+	float4 Bitangent : BITANGENT;
 	float2 TexCoord  : TEXCOORD;
 };
 

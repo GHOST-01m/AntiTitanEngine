@@ -38,6 +38,7 @@ public:
 		void UpdateShadow(int index, ObjectConstants& objConstants);
 
 	void Draw();
+		void DrawBaseScenePass();
 		void DrawShadowPass();
 		void DrawBloomPass();
 		void DrawTestPostProcessPass();

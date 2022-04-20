@@ -181,7 +181,6 @@ VertexOut VS(VertexIn vin)
 	//ColorChange.z = vin.Normal.z ;
 	//ColorChange.w = vin.Normal.w ;
 
-	//��NTB����ȷ����ת����
 	vin.Normal = normalize(mul(vin.Normal, Rotator));
 	vin.Tangent = mul(vin.Tangent, Rotator);
 	vin.Bitangent = mul(vin.Bitangent, Rotator);
@@ -224,14 +223,14 @@ float4 PS(VertexOut pin) : SV_Target
 	//float4 FinalColor = diffuseAlbedo;
 	float4 FinalColor = (pin.Color);
 
-	float4 directLight = float4(ComputeDirectionalLight(
-		LightDirection.xyz, LightStrength.xyz,
-		FinalColor, Fresnel, gRoughness,
-		//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);
-		normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);
+	//float4 directLight = float4(ComputeDirectionalLight(
+	//	LightDirection.xyz, LightStrength.xyz,
+	//	FinalColor, Fresnel, gRoughness,
+	//	//NormalMap.xyz, normalize(CameraLocation-pin.PosW)), 1);
+	//	normalize(pin.NormalW), normalize(CameraLocation-pin.PosW)), 1);
 
-	float4 AmbientAlbedo = FinalColor * 0.03;
-	FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * (directLight);
+	//float4 AmbientAlbedo = FinalColor * 0.03;
+	//FinalColor = AmbientAlbedo + (shadowFactor + 0.1) * (directLight);
 
 	return pow(FinalColor, 1 / 2.2f);
 	//return FinalColor;
