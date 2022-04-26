@@ -87,9 +87,6 @@ void Engine::Tick()
 	mTimer->Tick();
 	mRenderer->Update();
 	mRenderer->Draw();
-	//mRenderer.Update();
-	//mRenderer.Draw();
-	//mRenderer.CalculateFrameStats();
 }
 
 void Engine::EngineDestroy() {

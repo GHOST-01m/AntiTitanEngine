@@ -42,6 +42,7 @@ public:
 		void DrawShadowPass();
 		void DrawBloomPass();
 		void DrawTestPostProcessPass();
+		void DrawTextureScenePass();//Use to test
 		void DrawScenePass();
 
 	void Destroy();

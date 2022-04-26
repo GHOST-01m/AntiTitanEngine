@@ -121,6 +121,9 @@ void Renderer::CreateShader()
 
 	mRenderPrimitiveManager->InsertShaderToLib("EdgeDetectionSobel",
 		mRHI->CreateShader("EdgeDetectionSobel", L"Shaders\\EdgeDetectionSobel.hlsl"));
+
+	mRenderPrimitiveManager->InsertShaderToLib("HDRUseTextureShader",
+		mRHI->CreateShader("HDRUseTextureShader", L"Shaders\\HDRUseTexture.hlsl"));
 }
 
 void Renderer::CreatePipeline()
@@ -172,6 +175,10 @@ void Renderer::CreatePipeline()
 		auto EdgeDetectionSobelShader = mRenderPrimitiveManager->GetShaderByName("EdgeDetectionSobel");
 	mRenderPrimitiveManager->InsertPipelineToLib("EdgeDetectionSobelPipeline",
 		mRHI->CreatePipeline("EdgeDetectionSobelPipeline", EdgeDetectionSobelShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
+
+		auto HDRUseTextureShader = mRenderPrimitiveManager->GetShaderByName("HDRUseTextureShader");
+	mRenderPrimitiveManager->InsertPipelineToLib("HDRUseTexturePipeline",
+		mRHI->CreatePipeline("HDRUseTexturePipeline", HDRUseTextureShader, 1, RenderTargetFormat_R8G8B8A8_UNORM, false));
 }
 
 void Renderer::CreateRenderTarget()
@@ -198,6 +205,16 @@ void Renderer::CreateRenderTarget()
 	}
 	//HDRRenderTarget=====================================================
 	{
+		{
+			auto HDRRenderTarget = mRHI->CreateRenderTarget(
+				"HDRRenderTarget", TEXTURE2D, R16G16B16A16_FLOAT,
+				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"),
+				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"),
+				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"),
+				false, 1, mClientWidth, mClientHeight);
+			mRenderPrimitiveManager->InsertRenderTargetToLib("HDRRenderTarget", HDRRenderTarget);
+		}
+		{
 		auto HDRShadowHighLightLessRenderTarget = mRHI->CreateRenderTarget(
 			"HDRShadowHighLightLessRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
 			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
@@ -205,18 +222,10 @@ void Renderer::CreateRenderTarget()
 			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
 			false, 1, mClientWidth, mClientHeight);
 		mRenderPrimitiveManager->InsertRenderTargetToLib("HDRShadowHighLightLessRenderTarget", HDRShadowHighLightLessRenderTarget);
+		}
 	}
 	//BloomRenderTarget=====================================================
 	{
-		{
-			auto HDRRenderTarget = mRHI->CreateRenderTarget(
-				"HDRRenderTarget", TEXTURE2D,  R16G16B16A16_FLOAT,
-				mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"), 
-				mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"), 
-				mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"), 
-				false, 1, mClientWidth, mClientHeight);
-			mRenderPrimitiveManager->InsertRenderTargetToLib("HDRRenderTarget", HDRRenderTarget);
-		}
 		//------------------------------------
 		{
 			auto bloomSetupRenderTarget = mRHI->CreateRenderTarget(
@@ -317,6 +326,16 @@ void Renderer::CreateRenderTarget()
 			false, 1, mClientWidth, mClientHeight);
 		mRenderPrimitiveManager->InsertRenderTargetToLib("EdgeDetectionSobelRenderTarget", EdgeDetectionSobelRenderTarget);
 	}
+	//HDRUseTexture==========================================
+	{
+		auto HDRUseTextureRenderTarget = mRHI->CreateRenderTarget(
+			"HDRUseTextureRenderTarget", TEXTURE2D, R8G8B8A8_UNORM,
+			mRenderPrimitiveManager->GetHeapByName("BloomRtvHeap"),
+			mRenderPrimitiveManager->GetHeapByName("BloomSrvHeap"),
+			mRenderPrimitiveManager->GetHeapByName("BloomDsvHeap"),
+			false, 1, mClientWidth, mClientHeight);
+		mRenderPrimitiveManager->InsertRenderTargetToLib("HDRUseTextureRenderTarget", HDRUseTextureRenderTarget);
+	}
 }
 
 void Renderer::LoadMeshAndSetBuffer()
@@ -380,6 +399,7 @@ void Renderer::Draw()
 	DrawShadowPass();
 	DrawBloomPass();
 	DrawTestPostProcessPass();
+	DrawTextureScenePass();
 	DrawScenePass();
 
 	mRHI->DrawFinal();
@@ -624,22 +644,6 @@ void Renderer::DrawBloomPass()
 			mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
 			mRHI->DrawMesh(mesh);
 		}
-		//for (int ActorIndex = 0; ActorIndex < Engine::Get()->GetAssetManager()->GetMapActorInfo()->Size(); ActorIndex++)
-		//{
-		//	auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
-		//	auto DrawMeshName = Engine::Get()->GetAssetManager()->GetMapActorInfo()->MeshNameArray[ActorIndex];
-		//	auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
-
-		//	mRHI->CommitShaderParameter_Heap(0, ActorIndex, mCbvHeap);
-
-		//	//ÌùÍ¼
-		//	mRHI->CommitShaderParameter_Heap(1, mesh->material->GetTextureByName("TestTexture")->heapOffset, mCbvHeap);
-
-		//	//µ¥¶ÀµÄNromalÍ¼
-		//	mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
-
-		//	mRHI->DrawMesh(mesh);
-		//}
 		mRHI->ResourceTransition(HDRRendertarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
 		mRHI->RenderDocEndEvent();
 	}
@@ -948,6 +952,42 @@ void Renderer::DrawTestPostProcessPass()
 		mRHI->ResourceTransition(EdgeDetectionSobelRenderTarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
 		mRHI->RenderDocEndEvent();
 	}
+}
+
+void Renderer::DrawTextureScenePass()
+{
+	mRHI->RenderDocBeginEvent("DrawTextureScene");
+	// Draw Texture Scene ================================================
+	auto HDRUseTextureRenderTarget = mRenderPrimitiveManager->GetRenderTargetByName("HDRUseTextureRenderTarget");
+
+	mRHI->SetScreenSetViewPort(
+		HDRUseTextureRenderTarget->width,
+		HDRUseTextureRenderTarget->height);
+	mRHI->SetScissorRect(
+		long(HDRUseTextureRenderTarget->width),
+		long(HDRUseTextureRenderTarget->height));
+	mRHI->ResourceTransition(HDRUseTextureRenderTarget->mSwapChainResource[0], STATE_RENDER_TARGET);
+	mRHI->ClearRenderTargetView(HDRUseTextureRenderTarget, mClearColor, 0);
+	mRHI->ClearDepthStencilView(HDRUseTextureRenderTarget);
+	mRHI->OMSetRenderTargets(HDRUseTextureRenderTarget);
+	mRHI->SetPipelineState(mRenderPrimitiveManager->GetPipelineByName("HDRUseTexturePipeline"));
+	mRHI->SetDescriptorHeap(mRenderPrimitiveManager->GetHeapByName("mCbvHeap"));
+
+	auto scene = Engine::Get()->GetAssetManager()->GetScene();
+	for (auto sceneActor : scene->actorLib)
+	{
+		auto actor = sceneActor.second;
+		auto mCbvHeap = mRenderPrimitiveManager->GetHeapByName("mCbvHeap");
+		auto DrawMeshName = actor->staticmeshName;
+		auto mesh = Engine::Get()->GetAssetManager()->GetStaticMeshByName(DrawMeshName);
+
+		mRHI->CommitShaderParameter_Heap(0, actor->CBVoffset, mCbvHeap);
+		mRHI->CommitShaderParameter_Heap(1, mesh->material->GetTextureByName("TestTexture")->heapOffset, mCbvHeap);
+		mRHI->CommitShaderParameter_Heap(3, mesh->material->GetTextureByName("NormalTexture")->heapOffset, mCbvHeap);
+		mRHI->DrawMesh(mesh);
+	}
+	mRHI->ResourceTransition(HDRUseTextureRenderTarget->mSwapChainResource[0], STATE_PIXEL_SHADER_RESOURCE);
+	mRHI->RenderDocEndEvent();
 }
 
 void Renderer::DrawScenePass()

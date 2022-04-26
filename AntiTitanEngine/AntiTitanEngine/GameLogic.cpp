@@ -3,14 +3,17 @@
 
 bool GameLogic::InitGameLogic()
 {
-	Engine::Get()->GetRenderer()->GetCamera()->SetPosition(300.0f, -3000.0f, 1000.0f);
-	Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed = 0.5;
+	Engine::Get()->GetRenderer()->GetCamera()->SetPosition(5300.0f, -1800.0f, 1500.0f);
+	Engine::Get()->GetRenderer()->GetCamera()->MoveSpeed = 2;
 
 	//Engine::Get()->GetAssetManager()->LoadExternalMapActor("MapActorInfo/MapActorInfo.bat");
 	Engine::Get()->GetAssetManager()->mLight = std::make_shared<FLight>();
 	Engine::Get()->GetAssetManager()->mLight->LoadLightFromBat("MapLightInfo/MapLightInfo.bat");
 	Engine::Get()->GetAssetManager()->mLight->InitView();
 	Engine::Get()->GetAssetManager()->mLight->InitProj();
+
+	Engine::Get()->GetRenderer()->GetCamera()->Yaw(1.3f);
+	Engine::Get()->GetRenderer()->GetCamera()->Pitch(0.3f);
 
 	return true;
 }

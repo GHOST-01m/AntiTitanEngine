@@ -302,9 +302,6 @@
     <ClCompile Include="GameLogic.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="Common\DDSTextureLoader.cpp">
       <Filter>Source Files\D3D</Filter>
     </ClCompile>
@@ -378,6 +375,9 @@
       <Filter>Source Files\Render</Filter>
     </ClCompile>
     <ClCompile Include="Actor.cpp">
+      <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
       <Filter>Source Files\Render</Filter>
     </ClCompile>
   </ItemGroup>
